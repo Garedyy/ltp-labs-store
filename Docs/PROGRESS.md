@@ -43,7 +43,7 @@
 | 11  | `feature/cart-page`                   | merged  | 2026-09-11 | 2026-09-11 | [#11](https://github.com/Garedyy/ltp-lab-store-/pull/11) | D-8                                                           |
 | 12  | `feature/a11y-audit`                  | merged  | 2026-09-11 | 2026-09-11 | [#12](https://github.com/Garedyy/ltp-lab-store-/pull/12) | TO VERIFY 6, 7 resolved                                       |
 | 13  | `feature/performance`                 | merged  | 2026-09-11 | 2026-09-11 | [#13](https://github.com/Garedyy/ltp-lab-store-/pull/13) | D-9 (budget superseded by measurements)                       |
-| 14  | `feature/docs-release`                | pr-open | 2026-09-11 |            | #TBD                                                     |                                                               |
+| 14  | `feature/docs-release`                | pr-open | 2026-09-11 |            | [#14](https://github.com/Garedyy/ltp-lab-store-/pull/14) |                                                               |
 
 ## "Done when" checklists (plan §4)
 
