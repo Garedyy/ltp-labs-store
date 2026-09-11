@@ -34,7 +34,7 @@ export function CartLineItem({ item, flash }: CartLineItemProps) {
       />
       <div className="flex min-w-0 flex-col gap-2">
         <h2 className="text-body font-medium">
-          <Link to={item.href} lang={lang} prefetch="intent">
+          <Link id={`line-title-${item.productId}`} to={item.href} lang={lang} prefetch="intent">
             {item.title}
           </Link>
         </h2>
@@ -53,7 +53,11 @@ export function CartLineItem({ item, flash }: CartLineItemProps) {
         <p className="font-medium">
           <VisuallyHidden>{t("cart.items.lineTotal")}</VisuallyHidden> {item.linePriceFormatted}
         </p>
-        <remove.Form method="post" noValidate>
+        <remove.Form
+          method="post"
+          noValidate
+          aria-label={t("cart.items.remove", { title: item.title })}
+        >
           <input type="hidden" name="intent" value="remove" />
           <input type="hidden" name="productId" value={item.productId} />
           <noscript>

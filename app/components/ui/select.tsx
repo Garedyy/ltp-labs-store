@@ -21,14 +21,14 @@ export function Select({
   ...props
 }: SelectProps) {
   return (
-    <div className={cx("flex items-center gap-2", className)}>
+    <div className={cx("flex max-w-full min-w-0 flex-wrap items-center gap-2", className)}>
       <label htmlFor={id} className={cx("font-medium", hideLabel && "sr-only")}>
         {label}
       </label>
-      <span className="relative">
+      <span className="relative max-w-full min-w-0">
         <select
           id={id}
-          className="min-h-11 appearance-none rounded-lg border border-border-strong bg-surface ps-3 pe-9 text-fg"
+          className="min-h-11 w-full max-w-full appearance-none rounded-lg border border-border-strong bg-surface ps-3 pe-9 text-fg"
           {...props}
         >
           {options.map((option) => (

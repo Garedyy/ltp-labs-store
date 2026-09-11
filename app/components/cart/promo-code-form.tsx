@@ -18,8 +18,8 @@ export function PromoCodeForm({ promoCode, flash }: PromoCodeFormProps) {
   const error = result && !result.ok ? result.error : null;
 
   useEffect(() => {
-    if (apply.data && !apply.data.ok) input.current?.focus();
-  }, [apply.data]);
+    if (apply.state === "idle" && apply.data && !apply.data.ok) input.current?.focus();
+  }, [apply.state, apply.data]);
 
   // After "Remove code" the input is rendered again: give it focus once it exists.
   useEffect(() => {
@@ -46,7 +46,12 @@ export function PromoCodeForm({ promoCode, flash }: PromoCodeFormProps) {
   }
 
   return (
-    <apply.Form method="post" noValidate className="border-t border-border pt-4">
+    <apply.Form
+      method="post"
+      noValidate
+      aria-label={t("cart.promo.label")}
+      className="border-t border-border pt-4"
+    >
       <input type="hidden" name="intent" value="apply-promo" />
       <noscript>
         <input type="hidden" name="noJs" value="1" />

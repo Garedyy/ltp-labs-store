@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Accessibility audit: reflow at 320 px with text spacing on every route, WCAG 2.2 scans of
+  error, cart, disclosure and media-emulation states; visible quantity label, named cart forms,
+  shrinking sort select.
 - Cart page: line items with stepper and removal, summary with totals, promo codes, mocked
   checkout (card / PayPal) and confirmation page; everything works without JavaScript.
 - Cart session: signed cookie cart, sanitisation, integer-cent totals, promo codes, intents,

@@ -19,7 +19,7 @@ export function SiteHeader({ cartCount }: { cartCount: number }) {
       <div className="relative mx-auto flex min-h-header max-w-[87rem] items-center justify-between gap-3 rounded-2xl bg-surface ps-4 pe-3 shadow-header sm:ps-6 lg:grid lg:min-h-header-lg lg:grid-cols-[1fr_auto_1fr]">
         <Link
           to={href("/:lang", { lang })}
-          className="text-body font-semibold tracking-tight whitespace-nowrap text-primary uppercase no-underline sm:text-h5"
+          className="min-w-0 text-body font-semibold tracking-tight text-primary uppercase no-underline sm:text-h5"
           prefetch="intent"
         >
           {t("common.brand")}

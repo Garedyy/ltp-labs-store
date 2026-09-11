@@ -77,8 +77,15 @@ Catalogue, product and cart events are added by their branches.
   (`DECISIONS.md` D-3). Labels are unique per route × locale × state; JSON reports go to
   `test-results/a11y/`.
 - **Coverage**: every route in `tests/e2e/routes.ts` × `en`/`pt` on desktop and mobile
-  (`a11y.spec.ts`), plus the open mobile menu. Error states, media emulation and the full state
-  matrix arrive with `feature/a11y-audit`.
+  (`a11y.spec.ts`), plus the open mobile menu. `a11y-states.spec.ts` scans the states the route
+  list cannot express: the 502 page (fault injection `/products/999`), the catalogue with a failing
+  category service, the filled cart, the cart with an invalid quantity and an invalid promo code,
+  the cart with a promo applied, the product page after "Add to cart", the order confirmation, the
+  open language panel, and `/` + product under `prefers-reduced-motion: reduce` and
+  `forced-colors: active`.
+- **Reflow** (`reflow.spec.ts`): every route × locale at 320 × 256 px asserts
+  `scrollWidth <= 320`, before and after injecting the WCAG 1.4.12 text-spacing CSS; plus the
+  filled cart and the open mobile menu.
 - **Keyboard** (`keyboard.spec.ts`): skip link first and functional; desktop tab order; Escape on
   the language panel restores focus; mobile menu Escape restores focus; navigating from the menu
   closes it and focuses `main`; client navigation announces the title.
@@ -109,6 +116,17 @@ Run before each release and after any change to the shell or a page structure:
 6. **Keyboard-only** run of every flow; **reduced motion** and **forced colours** (Windows High
    Contrast or `emulateMedia`).
 7. **Lighthouse** accessibility score.
+
+## Findings fixed by the automated audit (2026-09-11)
+
+| Finding                                                                                                       | Fix                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Portuguese sort `<select>` overflowed 320 px (intrinsic width of the longest option, worse with text spacing) | `Select` shrinks inside its flex chain (`min-w-0`, `max-w-full`, `w-full`)                             |
+| Quantity input had no visible label; cart forms shared the same (empty) name                                  | visible "Qty" / "Qtd." label + `aria-labelledby` (label + line title); `aria-label` on every cart form |
+| Quantity submitted on every keystroke (React `onChange`), racing the focus handoff                            | submit on blur / Enter (native change semantics)                                                       |
+| Header icon links stayed visible below 640 px (`inline-flex` beat `hidden`)                                   | display left to the caller                                                                             |
+| Low-stock text "Only n left"                                                                                  | "Only n in stock" (sensory wording)                                                                    |
+| Duplicate review labels                                                                                       | "Review n of N" + reviewer name                                                                        |
 
 ## Manual audit log
 

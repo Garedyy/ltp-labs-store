@@ -15,7 +15,7 @@ export function SortForm({ query }: { query: CatalogueQuery }) {
   ];
 
   return (
-    <Form method="get" noValidate className="flex flex-wrap items-center gap-2">
+    <Form method="get" noValidate className="flex max-w-full min-w-0 flex-wrap items-center gap-2">
       {query.q && <input type="hidden" name="q" value={query.q} />}
       {query.category && <input type="hidden" name="category" value={query.category} />}
       <Select
