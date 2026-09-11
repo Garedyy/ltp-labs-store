@@ -30,12 +30,12 @@ npm run dev        # http://localhost:5173
 
 ## Scripts
 
-| Script | Purpose |
-|---|---|
-| `npm run dev` | Development server with HMR |
-| `npm run build` | Production build into `build/` |
-| `npm start` | Serve the production build (`SESSION_SECRET` etc. must be exported — `.env` is not read) |
-| `npm run typecheck` | `react-router typegen && tsc` |
+| Script              | Purpose                                                                                  |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| `npm run dev`       | Development server with HMR                                                              |
+| `npm run build`     | Production build into `build/`                                                           |
+| `npm start`         | Serve the production build (`SESSION_SECRET` etc. must be exported — `.env` is not read) |
+| `npm run typecheck` | `react-router typegen && tsc`                                                            |
 
 More scripts (lint, format, unit, e2e, licence check) arrive with the tooling branch.
 
@@ -50,6 +50,18 @@ Docs/           challenge brief, wireframes, API contract, plan, progress, archi
 ## Licence policy and credits
 
 Every dependency, font, icon and snippet must carry a permissive licence (MIT, ISC, BSD, Apache-2.0,
-Unlicense, 0BSD, CC0; OFL-1.1 for fonts) — never commercial, never copyleft. Credits and the
-enforcement script are documented as the corresponding branches land. The project itself ships no
-licence file (all rights reserved).
+Unlicense, 0BSD, CC0, MIT-0, BlueOak-1.0.0, Python-2.0; OFL-1.1 for fonts) — never commercial,
+never copyleft. `npm run check:licenses` walks the whole `node_modules` tree in CI. The project
+itself ships no licence file (all rights reserved).
+
+Documented exceptions (`Docs/DECISIONS.md` D-1) — unmodified, build- or lint-time only, never part
+of the shipped bundle:
+
+| Package                              | Licence   | Why it is there                                               |
+| ------------------------------------ | --------- | ------------------------------------------------------------- |
+| `lightningcss` (+ platform binaries) | MPL-2.0   | required by Vite 8 and Tailwind CSS 4                         |
+| `caniuse-lite`                       | CC-BY-4.0 | browserslist data pulled by Babel through `@react-router/dev` |
+| `axe-core`                           | MPL-2.0   | rule metadata used by `eslint-plugin-jsx-a11y`                |
+
+Third-party credits: [DummyJSON](https://dummyjson.com) (product data), IBM Equal Access
+`accessibility-checker` (Apache-2.0). Font and icon credits are added with the design-system branch.

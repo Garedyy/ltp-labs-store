@@ -17,13 +17,26 @@ _TO DO: event → message key → focus target table._
 
 ## Automated coverage
 
-_TO DO: IBM accessibility-checker matrix, keyboard and reflow specs._
+- **Engine**: IBM Equal Access `accessibility-checker` (Apache-2.0), policy `WCAG_2_2`, configured
+  in `.achecker.yml`; `tests/e2e/a11y-check.ts` exposes `expectAccessible(page, label)` and fails on
+  every `violation` / `potentialviolation` except the manual-review rules below (`DECISIONS.md` D-3).
+  Labels are unique per route × locale × state; JSON reports go to `test-results/a11y/`.
+- **Coverage**: every route in `tests/e2e/routes.ts` (grown by each feature PR) × `en`/`pt`, plus
+  open disclosures, error states, empty cart and media emulation (added by `feature/a11y-audit`).
+- **Static**: `eslint-plugin-jsx-a11y` strict with the design-system primitives mapped to their
+  native elements.
+
+### Manual-review rules (excluded from the automated failure list)
+
+| Rule id              | Why the engine cannot decide                                                                                                                      | How it is verified                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `style_color_misuse` | fires on any stylesheet that sets colours (Tailwind preflight is enough); asks a human to confirm colour is never the only carrier of information | design rule "never colour alone" (plan §3.6) + Chrome vision-deficiency emulation in the audit log |
 
 ## Manual audit log
 
-| Date | Tool / AT | Scope | Result |
-|---|---|---|---|
-| — | — | — | not run yet |
+| Date | Tool / AT | Scope | Result      |
+| ---- | --------- | ----- | ----------- |
+| —    | —         | —     | not run yet |
 
 ## Known limitations
 

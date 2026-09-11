@@ -1,0 +1,12 @@
+node_modules
+build
+.react-router
+playwright-report
+test-results
+coverage
+package-lock.json
+Docs/*.yaml
+Docs/*.png
+CLAUDE.md
+.claude
+Docs/PROJECT_PLAN.md
