@@ -29,23 +29,23 @@
 
 ## Feature branches (plan §4)
 
-| #   | Branch                                | Status  | Started    | Merged     | PR                                                     | Notes                                                         |
-| --- | ------------------------------------- | ------- | ---------- | ---------- | ------------------------------------------------------ | ------------------------------------------------------------- |
-| 0   | bootstrap (`development` from `main`) | merged  | 2026-09-11 | 2026-09-11 | —                                                      | tracker added on `main`; `development` pushed                 |
-| 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified                                      |
-| 2   | `feature/tooling`                     | merged  | 2026-09-11 | 2026-09-11 | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2) | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
-| 3   | `feature/design-system`               | merged  | 2026-09-11 | 2026-09-11 | [#3](https://github.com/Garedyy/ltp-lab-store-/pull/3) | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
-| 4   | `feature/i18n-foundation`             | merged  | 2026-09-11 | 2026-09-11 | [#4](https://github.com/Garedyy/ltp-lab-store-/pull/4) | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
-| 5   | `feature/app-shell`                   | merged  | 2026-09-11 | 2026-09-11 | [#5](https://github.com/Garedyy/ltp-lab-store-/pull/5) | TO VERIFY 2 resolved; D-3 addendum, D-5                       |
-| 6   | `feature/dummyjson-client`            | merged  | 2026-09-11 | 2026-09-11 | [#6](https://github.com/Garedyy/ltp-lab-store-/pull/6) | TO VERIFY 5 resolved                                          |
-| 7   | `feature/catalogue`                   | merged  | 2026-09-11 | 2026-09-11 | [#7](https://github.com/Garedyy/ltp-lab-store-/pull/7) | D-6                                                           |
-| 8   | `feature/search`                      | merged  | 2026-09-11 | 2026-09-11 | [#8](https://github.com/Garedyy/ltp-lab-store-/pull/8) |                                                               |
-| 9   | `feature/product-detail`              | merged  | 2026-09-11 | 2026-09-11 | [#9](https://github.com/Garedyy/ltp-lab-store-/pull/9) | D-7; Add-to-cart button present, action in branch 10          |
-| 10  | `feature/cart-session`                | pr-open | 2026-09-11 |            | #TBD                                                   |                                                               |
-| 11  | `feature/cart-page`                   | todo    |            |            |                                                        |                                                               |
-| 12  | `feature/a11y-audit`                  | todo    |            |            |                                                        |                                                               |
-| 13  | `feature/performance`                 | todo    |            |            |                                                        |                                                               |
-| 14  | `feature/docs-release`                | todo    |            |            |                                                        |                                                               |
+| #   | Branch                                | Status  | Started    | Merged     | PR                                                       | Notes                                                         |
+| --- | ------------------------------------- | ------- | ---------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------- |
+| 0   | bootstrap (`development` from `main`) | merged  | 2026-09-11 | 2026-09-11 | —                                                        | tracker added on `main`; `development` pushed                 |
+| 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1)   | dev + typecheck verified                                      |
+| 2   | `feature/tooling`                     | merged  | 2026-09-11 | 2026-09-11 | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2)   | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
+| 3   | `feature/design-system`               | merged  | 2026-09-11 | 2026-09-11 | [#3](https://github.com/Garedyy/ltp-lab-store-/pull/3)   | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
+| 4   | `feature/i18n-foundation`             | merged  | 2026-09-11 | 2026-09-11 | [#4](https://github.com/Garedyy/ltp-lab-store-/pull/4)   | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
+| 5   | `feature/app-shell`                   | merged  | 2026-09-11 | 2026-09-11 | [#5](https://github.com/Garedyy/ltp-lab-store-/pull/5)   | TO VERIFY 2 resolved; D-3 addendum, D-5                       |
+| 6   | `feature/dummyjson-client`            | merged  | 2026-09-11 | 2026-09-11 | [#6](https://github.com/Garedyy/ltp-lab-store-/pull/6)   | TO VERIFY 5 resolved                                          |
+| 7   | `feature/catalogue`                   | merged  | 2026-09-11 | 2026-09-11 | [#7](https://github.com/Garedyy/ltp-lab-store-/pull/7)   | D-6                                                           |
+| 8   | `feature/search`                      | merged  | 2026-09-11 | 2026-09-11 | [#8](https://github.com/Garedyy/ltp-lab-store-/pull/8)   |                                                               |
+| 9   | `feature/product-detail`              | merged  | 2026-09-11 | 2026-09-11 | [#9](https://github.com/Garedyy/ltp-lab-store-/pull/9)   | D-7; Add-to-cart button present, action in branch 10          |
+| 10  | `feature/cart-session`                | pr-open | 2026-09-11 |            | [#10](https://github.com/Garedyy/ltp-lab-store-/pull/10) |                                                               |
+| 11  | `feature/cart-page`                   | todo    |            |            |                                                          |                                                               |
+| 12  | `feature/a11y-audit`                  | todo    |            |            |                                                          |                                                               |
+| 13  | `feature/performance`                 | todo    |            |            |                                                          |                                                               |
+| 14  | `feature/docs-release`                | todo    |            |            |                                                          |                                                               |
 
 ## "Done when" checklists (plan §4)
 
