@@ -131,6 +131,20 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   request, but responses that race on the cookie are last-write-wins (documented limitation; the
   e2e waits for each step).
 
+## D-9 · JavaScript budget: measured floor instead of the plan's 90 KB
+
+- **Date / branch**: 2026-09-11 · `feature/performance`
+- **Context**: the plan set "catalogue route < 90 KB gzipped JS". Measured: React DOM + React
+  Router 8 + i18next + react-i18next alone weigh ≈ 115 KB gzip; the whole catalogue page preloads
+  ≈ 138 KB. The three runtime libraries are fixed by decisions 1 and 4.
+- **Decision**: keep the stack, record the measured figures in the README, and trim what is ours:
+  locale resources are now split into one chunk per language and only the rendered locale is
+  downloaded (`app/i18n/load-locale.client.ts`); route chunks stay at 1–3 KB. The budget line in
+  the plan is superseded by the measured numbers; Lighthouse mobile (94 / 100 / 100 / 100) meets
+  the plan's ≥ 90 / 100 targets.
+- **Consequences**: a future reduction would require replacing i18next (decision 4) or React
+  Router's client runtime — out of scope for this challenge.
+
 ## TO VERIFY resolutions
 
 | #   | Item                                                           | Status | Resolution |

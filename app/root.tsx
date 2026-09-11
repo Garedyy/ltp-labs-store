@@ -12,6 +12,7 @@ import {
 
 import { RouteErrorBoundary } from "~/components/pages/route-error-boundary";
 import { isLocale, LOCALES, localeCodes, localeFromHtmlLang } from "~/i18n/config";
+import { ensureLocaleResources } from "~/i18n/load-locale.client";
 import { switchLocale } from "~/i18n/paths";
 import { getInstance, getLocale, i18nextMiddleware } from "~/middleware/i18next";
 import { responseHeadersMiddleware } from "~/middleware/response-headers";
@@ -28,6 +29,7 @@ export const middleware: Route.MiddlewareFunction[] = [
 export const links: Route.LinksFunction = () => [
   { rel: "preload", href: manropeUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
   { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+  { rel: "preconnect", href: "https://cdn.dummyjson.com" },
 ];
 
 export const shouldRevalidate = revalidateOnPathnameOrSubmit;
@@ -94,7 +96,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App({ loaderData }: Route.ComponentProps) {
   const { i18n } = useTranslation();
   useEffect(() => {
-    if (i18n.language !== loaderData.locale) void i18n.changeLanguage(loaderData.locale);
+    const locale = loaderData.locale;
+    if (i18n.language === locale || !isLocale(locale)) return;
+    void ensureLocaleResources(i18n, locale).then(() => i18n.changeLanguage(locale));
   }, [i18n, loaderData.locale]);
   return <Outlet />;
 }
