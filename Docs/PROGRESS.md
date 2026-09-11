@@ -19,12 +19,10 @@
 ## Resume here
 
 - **Current branch**: `feature/project-scaffold` (PR open → `development`)
-- **Current step**: branch 1 complete and verified; waiting for the PR to be squash-merged
-- **Next action**: once PR 1 is merged, `git checkout development && git pull`, branch
-  `feature/tooling` (plan §4 branch 2) — but first settle the open question below, because
-  `scripts/check-licenses.mjs` depends on it
-- **Open questions for the user**: Q1 (licence policy vs `lightningcss` MPL-2.0 / `caniuse-lite`
-  CC-BY-4.0 — see "Open questions")
+- **Current step**: branch 1 complete and verified; Q1 resolved (D-1); merging PR 1
+- **Next action**: `git checkout development && git pull`, branch `feature/tooling`
+  (plan §4 branch 2); `check-licenses.mjs` must implement the D-1 named exceptions
+- **Open questions for the user**: none
 
 ## Feature branches (plan §4)
 
@@ -133,11 +131,19 @@ Tick a box only once the criterion has been verified locally (command output see
 
 ## Deviations from the plan
 
-None yet. Record any deliberate deviation here with its reason and the matching `DECISIONS.md` entry.
+| Date | Deviation | Reason | Record |
+|---|---|---|---|
+| 2026-09-11 | Decision 30 amended: named exceptions `lightningcss` (MPL-2.0) and `caniuse-lite` (CC-BY-4.0) in `check-licenses.mjs` | unavoidable build-time transitive deps of Vite 8 / Tailwind 4 / Babel | `DECISIONS.md` D-1 |
+
+## Working agreements (added during implementation)
+
+- **PR merges**: Claude squash-merges each feature PR into `development` itself once the "done
+  when" criteria, `npm run check` and e2e are verified green (user decision 2026-09-11), then
+  proceeds to the next branch; the user reviews a posteriori.
 
 ## Open questions
 
-- **Q1 (blocking for branch 2)** — The licence audit of the scaffold tree (175 packages) finds
+- ~~Q1~~ **resolved 2026-09-11 → D-1 (named exceptions)**. Original question: the licence audit of the scaffold tree (175 packages) finds
   `lightningcss` **MPL-2.0** (hard dependency of both `vite@8` and `@tailwindcss/node@4`) and
   `caniuse-lite` **CC-BY-4.0** (via `@react-router/dev` → Babel → browserslist). Both are
   build-time-only, unmodified, and never ship in the app bundle, but decision 30 bans MPL outright
@@ -145,10 +151,10 @@ None yet. Record any deliberate deviation here with its reason and the matching 
   avoided with the approved stack. Proposed: amend decision 30 with a named-exception list for
   unmodified build-time-only transitive packages (`lightningcss`, `caniuse-lite`), recorded in
   `DECISIONS.md`, enforced by `check-licenses.mjs` (exceptions must be listed with a reason) and
-  credited in the README. Awaiting the user's answer.
+  credited in the README.
 
 ## Session log
 
 | Date | Session summary |
 |---|---|
-| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR opened; licence issue Q1 raised (lightningcss MPL-2.0). |
+| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). |
