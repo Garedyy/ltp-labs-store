@@ -32,7 +32,7 @@
 | --- | ------------------------------------- | ------- | ---------- | ---------- | ------------------------------------------------------ | ------------------------------------------------------------- |
 | 0   | bootstrap (`development` from `main`) | merged  | 2026-09-11 | 2026-09-11 | —                                                      | tracker added on `main`; `development` pushed                 |
 | 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified                                      |
-| 2   | `feature/tooling`                     | pr-open | 2026-09-11 |            | #TBD                                                   | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
+| 2   | `feature/tooling`                     | pr-open | 2026-09-11 |            | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2) | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
 | 3   | `feature/design-system`               | todo    |            |            |                                                        |                                                               |
 | 4   | `feature/i18n-foundation`             | todo    |            |            |                                                        |                                                               |
 | 5   | `feature/app-shell`                   | todo    |            |            |                                                        |                                                               |
