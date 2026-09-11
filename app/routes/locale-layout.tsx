@@ -13,6 +13,7 @@ import { isLocale } from "~/i18n/config";
 import { detectLocale } from "~/i18n/detect-locale.server";
 import { withLocale } from "~/i18n/paths";
 import type { Route } from "./+types/locale-layout";
+import { revalidateOnPathnameOrSubmit } from "~/lib/revalidate";
 
 const ASSET_DENY_LIST = new Set([
   "favicon.ico",
@@ -39,6 +40,8 @@ const validateLocale: Route.MiddlewareFunction = async ({ params, url, request }
 };
 
 export const middleware: Route.MiddlewareFunction[] = [validateLocale];
+
+export const shouldRevalidate = revalidateOnPathnameOrSubmit;
 
 export function loader() {
   return { cartCount: 0 };

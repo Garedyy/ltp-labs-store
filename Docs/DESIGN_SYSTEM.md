@@ -123,7 +123,12 @@ icon sits next to text.
   viewport), card `rounded-2xl border border-border p-4`, one 44 px checkbox row per category.
   Product card: `rounded-2xl border p-3`, `aspect-square rounded-xl bg-surface-placeholder object-contain`
   image, `focus-within` ring. First three images eager (first `fetchPriority="high"`), rest lazy.
-- Other screens: filled in by `feature/product-detail` and `feature/cart-page`. Coming-soon, 404 and error
+- **Product**: `grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12`; gallery
+  `aspect-square rounded-2xl bg-surface-placeholder object-contain`, thumbnails
+  `flex gap-2 overflow-x-auto size-16 rounded-lg border-2`; title `text-h3 md:text-h2 font-medium`,
+  rating, price `text-h4` + badge, stock line, full-width Add to cart, "Product details" uppercase
+  label + `text-body-sm` description, practical `<dl>`, tags; reviews `lg:col-span-2`.
+- **Cart**: filled in by `feature/cart-page`. Coming-soon, 404 and error
   pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
 
 ## Deviations from ltplabs.com and the wireframes

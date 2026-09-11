@@ -1,9 +1,10 @@
 import { data } from "react-router";
 
 import { ApiError } from "~/services/dummyjson/client.server";
+import type { ErrorCode } from "./error-codes";
 
-export function notFound(): never {
-  throw data(null, { status: 404 });
+export function notFound(code: ErrorCode = "page-not-found"): never {
+  throw data({ code }, { status: 404 });
 }
 
 export function methodNotAllowed(): never {
@@ -15,11 +16,14 @@ export function badRequest(): never {
 }
 
 export function serviceUnavailable(): never {
-  throw data(null, { status: 502 });
+  throw data({ code: "service-unavailable" satisfies ErrorCode }, { status: 502 });
 }
 
 // ApiError is server-only; loaders convert it so the boundary renders 404 or 502.
 export function toRouteError(error: unknown): unknown {
-  if (error instanceof ApiError) return data(null, { status: error.status });
+  if (error instanceof ApiError) {
+    const code: ErrorCode = error.status === 404 ? "page-not-found" : "service-unavailable";
+    return data({ code }, { status: error.status });
+  }
   return error;
 }

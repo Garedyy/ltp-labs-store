@@ -23,7 +23,7 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
   set-language             set-language.tsx      action only (lng cookie), GET → 405
   (pathless)               locale-errors.tsx     shared ErrorBoundary inside the shell
     index                  catalogue.tsx         loader: categories → query → products → CatalogueView
-    products/:productId    product.tsx           placeholder (title + description) until feature/product-detail
+    products/:productId    product.tsx           loader: getProduct → ProductView; ?image read client-side
     search                 search.tsx            ?q → searchProducts; empty q renders the prompt without fetching
     cart                   cart.tsx              placeholder until feature/cart-page
     about|contact|blog|account                   translated "coming soon" pages
@@ -37,10 +37,6 @@ layout's own middleware (asset deny-list) reach the shell-less root boundary; ev
 renders inside the mounted shell through `locale-errors.tsx`. Loaders, actions and middleware
 read `url` from their arguments — never `request.url`, which may carry `.data` suffixes.
 Internal links use `href("/:lang/…", { lang })`.
-
-## Error and notice codes
-
-_TO DO (cart-session)._
 
 ## Data layer (DummyJSON)
 
@@ -95,6 +91,24 @@ whitespace-only `q` renders the form and a prompt with no API call; otherwise
 `searchProducts(q, params)` with the same sort and pagination. `handle.initialFocus = "#search-q"`
 makes `RouteAnnouncer` focus the search box on client navigation; results announce
 `catalogue.search.announce{q,count}`. Search titles quote `q` in the locale's quotation marks.
+
+### Product page (`app/routes/product.tsx`)
+
+`getProduct(id)` (invalid or unknown id → 404 `product-not-found`, API failure → 502) →
+`buildProductView` (`app/lib/product/view.server.ts`): integer-cent prices, original price derived
+from `discountPercentage` (shown only when ≥ 1 % and ≥ 1 cent apart), `formatPercent`, rating and
+review dates formatted per locale, practical-information rows (brand omitted when missing,
+dimensions in cm, weight in kg — plan assumption). The gallery reads `?image` from the URL
+(`clampImageIndex`) because thumbnails navigate with `replace` and `shouldRevalidate` returns
+`false` when only `?image` changed — no `.data` request. Shell loaders (`root`, `locale-layout`,
+`locale-errors`) share `revalidateOnPathnameOrSubmit` for the same reason.
+
+## Error and notice codes
+
+`app/lib/error-codes.ts` is the single source: `page-not-found`, `product-not-found`,
+`service-unavailable` (cart codes arrive with the cart branches). Loaders throw
+`data({ code }, { status })` through `notFound(code)` / `toRouteError`; `RouteErrorBoundary` and
+the `locale-errors` meta map the code to `errors.<key>` — a missing translation is a compile error.
 
 ### URL contract (`app/lib/catalogue/query.ts`)
 

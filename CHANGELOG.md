@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Product page: gallery with URL-driven thumbnails, price with derived original price and
+  discount badge, rating, stock status, practical information, tags, reviews; typed error codes.
 - Search page (`/search?q=`) with the same sort and pagination, prompt and no-result states.
 - Catalogue: home page with the 9-product grid, sort (five options), single-category filter,
   pagination, results summary, translated category names, 404 on out-of-range pages, 502 page
