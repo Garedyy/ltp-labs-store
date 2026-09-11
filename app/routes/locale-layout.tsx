@@ -12,6 +12,8 @@ import { RouteErrorBoundary } from "~/components/pages/route-error-boundary";
 import { isLocale } from "~/i18n/config";
 import { detectLocale } from "~/i18n/detect-locale.server";
 import { withLocale } from "~/i18n/paths";
+import { countItems, sanitiseLines } from "~/services/cart/cart";
+import { getCartSession } from "~/services/cart/session.server";
 import type { Route } from "./+types/locale-layout";
 import { revalidateOnPathnameOrSubmit } from "~/lib/revalidate";
 
@@ -43,8 +45,10 @@ export const middleware: Route.MiddlewareFunction[] = [validateLocale];
 
 export const shouldRevalidate = revalidateOnPathnameOrSubmit;
 
-export function loader() {
-  return { cartCount: 0 };
+// No API call and no commit here: the header count only needs the sanitised cookie.
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getCartSession(request);
+  return { cartCount: countItems(sanitiseLines(session.get("cart"))) };
 }
 
 function Shell({ cartCount, children }: { cartCount: number; children: React.ReactNode }) {

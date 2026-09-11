@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Cart session: signed cookie cart, sanitisation, integer-cent totals, promo codes, intents,
+  `add` action with fetcher and no-JS Post/Redirect/Get, live header count.
 - Product page: gallery with URL-driven thumbnails, price with derived original price and
   discount badge, rating, stock status, practical information, tags, reviews; typed error codes.
 - Search page (`/search?q=`) with the same sort and pagination, prompt and no-result states.

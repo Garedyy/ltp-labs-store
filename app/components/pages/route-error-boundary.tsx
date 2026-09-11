@@ -7,11 +7,9 @@ import { ERROR_MESSAGE_KEYS, isErrorCode } from "~/lib/error-codes";
 import { ErrorPage } from "./error-page";
 
 export type ErrorMessageKey =
-  | "notFound"
-  | "productNotFound"
+  | (typeof ERROR_MESSAGE_KEYS)[keyof typeof ERROR_MESSAGE_KEYS]
   | "methodNotAllowed"
   | "badRequest"
-  | "serviceUnavailable"
   | "unexpected";
 
 function messageKeyFor(status: number): ErrorMessageKey {
