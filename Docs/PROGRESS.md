@@ -41,7 +41,7 @@
 | 6   | `feature/dummyjson-client`            | merged  | 2026-09-11 | 2026-09-11 | [#6](https://github.com/Garedyy/ltp-lab-store-/pull/6) | TO VERIFY 5 resolved                                          |
 | 7   | `feature/catalogue`                   | merged  | 2026-09-11 | 2026-09-11 | [#7](https://github.com/Garedyy/ltp-lab-store-/pull/7) | D-6                                                           |
 | 8   | `feature/search`                      | merged  | 2026-09-11 | 2026-09-11 | [#8](https://github.com/Garedyy/ltp-lab-store-/pull/8) |                                                               |
-| 9   | `feature/product-detail`              | pr-open | 2026-09-11 |            | #TBD                                                   | D-7; Add-to-cart button present, action in branch 10          |
+| 9   | `feature/product-detail`              | pr-open | 2026-09-11 |            | [#9](https://github.com/Garedyy/ltp-lab-store-/pull/9) | D-7; Add-to-cart button present, action in branch 10          |
 | 10  | `feature/cart-session`                | todo    |            |            |                                                        |                                                               |
 | 11  | `feature/cart-page`                   | todo    |            |            |                                                        |                                                               |
 | 12  | `feature/a11y-audit`                  | todo    |            |            |                                                        |                                                               |
