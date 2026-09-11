@@ -8,9 +8,17 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import manropeUrl from "./fonts/manrope-latin.woff2?url";
 import "./styles/app.css";
 
 export const links: Route.LinksFunction = () => [
+  {
+    rel: "preload",
+    href: manropeUrl,
+    as: "font",
+    type: "font/woff2",
+    crossOrigin: "anonymous",
+  },
   { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
 ];
 

@@ -18,12 +18,11 @@
 
 ## Resume here
 
-- **Current branch**: `feature/tooling` (PR open → `development`)
-- **Current step**: branch 2 complete; local criteria verified; waiting for CI on the PR, then
-  squash-merge
-- **Next action**: once PR 2 CI is green and merged, `git checkout development && git pull`, branch
-  `feature/design-system` (plan §4 branch 3): tokens, Manrope + OFL, `ui/*` + tests, `Icon`,
-  `DESIGN_SYSTEM.md`
+- **Current branch**: `feature/design-system` (PR open → `development`)
+- **Current step**: branch 3 complete; local criteria verified; waiting for CI, then squash-merge
+- **Next action**: after merge, `git checkout development && git pull`, branch
+  `feature/i18n-foundation` (plan §4 branch 4): `i18n/*`, `locales/*`, middleware, entries,
+  `routes.ts`, `locale-layout`, `locale-errors`, `set-language`, `I18N.md`
 - **Open questions for the user**: none
 
 ## Feature branches (plan §4)
@@ -32,8 +31,8 @@
 | --- | ------------------------------------- | ------- | ---------- | ---------- | ------------------------------------------------------ | ------------------------------------------------------------- |
 | 0   | bootstrap (`development` from `main`) | merged  | 2026-09-11 | 2026-09-11 | —                                                      | tracker added on `main`; `development` pushed                 |
 | 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified                                      |
-| 2   | `feature/tooling`                     | pr-open | 2026-09-11 |            | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2) | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
-| 3   | `feature/design-system`               | todo    |            |            |                                                        |                                                               |
+| 2   | `feature/tooling`                     | merged  | 2026-09-11 | 2026-09-11 | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2) | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
+| 3   | `feature/design-system`               | pr-open | 2026-09-11 |            | #TBD                                                   | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
 | 4   | `feature/i18n-foundation`             | todo    |            |            |                                                        |                                                               |
 | 5   | `feature/app-shell`                   | todo    |            |            |                                                        |                                                               |
 | 6   | `feature/dummyjson-client`            | todo    |            |            |                                                        |                                                               |
@@ -65,10 +64,10 @@ Tick a box only once the criterion has been verified locally (command output see
 
 ### 3 · `feature/design-system`
 
-- [ ] styles, font + OFL, `ui/*` with tests, `cx`, `Icon` (Remix Icon paths + attribution), `DESIGN_SYSTEM.md`
-- [ ] every `ui/*` has a role/name test
-- [ ] contrast table reproduced with a tool
-- [ ] font appears once in `build/client/assets`
+- [x] styles, font + OFL, `ui/*` with tests, `cx`, `Icon` (Remix Icon v4.8.0 paths + attribution), `DESIGN_SYSTEM.md`
+- [x] every `ui/*` has a role/name test (12 primitives, 23 assertions, 2026-09-11)
+- [x] contrast table reproduced with a tool (`app/styles/contrast.test.ts`, 15 checks computed from `tokens.css`, 2026-09-11)
+- [x] font appears once in `build/client/assets` (`manrope-latin-C46ZzDBF.woff2`, same hash in CSS `url()` and preload, 2026-09-11)
 
 ### 4 · `feature/i18n-foundation`
 
@@ -176,6 +175,6 @@ Tick a box only once the criterion has been verified locally (command output see
 
 ## Session log
 
-| Date       | Session summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened and squash-merged; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). Branch 2 (tooling) built and verified locally: ESLint/Prettier/Vitest/Playwright/IBM checker/licence script/Husky/commitlint/CI; axe-core exception approved; TO VERIFY 8 resolved; PR #2 opened. |
+| Date       | Session summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened and squash-merged; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). Branch 2 (tooling) built and verified locally: ESLint/Prettier/Vitest/Playwright/IBM checker/licence script/Husky/commitlint/CI; axe-core exception approved; TO VERIFY 8 resolved; PR #2 merged. Branch 3 (design-system): tokens, Manrope, 12 `ui/*` primitives + tests, contrast test, Remix Icon v4.8.0 (D-4), TO VERIFY 3 resolved; PR opened. |

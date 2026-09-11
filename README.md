@@ -63,5 +63,11 @@ of the shipped bundle:
 | `caniuse-lite`                       | CC-BY-4.0 | browserslist data pulled by Babel through `@react-router/dev` |
 | `axe-core`                           | MPL-2.0   | rule metadata used by `eslint-plugin-jsx-a11y`                |
 
-Third-party credits: [DummyJSON](https://dummyjson.com) (product data), IBM Equal Access
-`accessibility-checker` (Apache-2.0). Font and icon credits are added with the design-system branch.
+Third-party credits:
+
+- [DummyJSON](https://dummyjson.com) — product data.
+- [Manrope](https://github.com/sharanda/manrope) — font, SIL Open Font License 1.1
+  (`app/fonts/OFL.txt`), self-hosted latin subset from Google Fonts.
+- [Remix Icon](https://remixicon.com) v4.8.0 — 16 icon paths, Apache License 2.0
+  (`app/components/ui/icon.tsx`). Later Remix Icon releases use a custom licence and are not used.
+- IBM Equal Access [`accessibility-checker`](https://github.com/IBMa/equal-access) — Apache-2.0.

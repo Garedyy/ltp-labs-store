@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Design system: three-layer colour tokens, self-hosted Manrope, `ui/*` primitives with
+  role/name tests, contrast test, Remix Icon v4.8.0 paths, `Docs/DESIGN_SYSTEM.md`.
 - Tooling: ESLint 9 (typescript-eslint, react, react-hooks, jsx-a11y strict, i18next
   `no-literal-string`), Prettier with Tailwind plugin, Vitest + Testing Library, Playwright with four
   Chromium projects and the IBM `accessibility-checker` WCAG 2.2 scan, licence checker, Husky +
