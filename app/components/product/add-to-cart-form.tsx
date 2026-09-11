@@ -35,6 +35,7 @@ export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps)
     <fetcher.Form
       method="post"
       noValidate
+      aria-label={t("product.addToCart")}
       className="flex flex-col gap-3"
       onSubmit={(event) => {
         if (pending) event.preventDefault();

@@ -17,6 +17,7 @@ export default {
     unitPrice: "Preço unitário",
     lineTotal: "Total da linha",
     remove: "Remover {{title}}",
+    quantityShort: "Qtd.",
     quantityLabel: "Quantidade de {{title}}",
     decrease: "Diminuir a quantidade de {{title}}",
     increase: "Aumentar a quantidade de {{title}}",

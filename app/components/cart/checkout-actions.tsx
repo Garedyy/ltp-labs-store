@@ -7,7 +7,12 @@ import { Button } from "~/components/ui/button";
 export function CheckoutActions() {
   const { t } = useTranslation();
   return (
-    <Form method="post" noValidate className="flex flex-col gap-3">
+    <Form
+      method="post"
+      noValidate
+      aria-label={t("cart.summary.checkout")}
+      className="flex flex-col gap-3"
+    >
       <input type="hidden" name="intent" value="checkout" />
       <Button
         type="submit"

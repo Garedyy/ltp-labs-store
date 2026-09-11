@@ -44,7 +44,7 @@ test.describe("cart page", () => {
       items.first().getByRole("link", { name: "Essence Mascara Lash Princess" }),
     ).toBeVisible();
     await expect(
-      items.first().getByRole("textbox", { name: "Quantity of Essence Mascara Lash Princess" }),
+      items.first().getByRole("textbox", { name: "Qty Essence Mascara Lash Princess" }),
     ).toHaveValue("2");
     await expect(row(page, /^Subtotal$/)).toHaveText("$21.97");
     await expect(row(page, /^Shipping$/)).toHaveText("$20.00");
@@ -54,24 +54,22 @@ test.describe("cart page", () => {
     const plus = apple.getByRole("button", { name: "Increase quantity of Apple" });
     for (let i = 2; i <= 8; i += 1) {
       await plus.click();
-      await expect(apple.getByRole("textbox", { name: "Quantity of Apple" })).toHaveValue(
-        String(i),
-      );
+      await expect(apple.getByRole("textbox", { name: "Qty Apple" })).toHaveValue(String(i));
     }
     await expect(plus).toHaveAttribute("aria-disabled", "true");
-    await apple.getByRole("textbox", { name: "Quantity of Apple" }).fill("50");
-    await apple.getByRole("textbox", { name: "Quantity of Apple" }).press("Tab");
+    await apple.getByRole("textbox", { name: "Qty Apple" }).fill("50");
+    await apple.getByRole("textbox", { name: "Qty Apple" }).press("Tab");
     await expect(
       page.getByRole("status").filter({ hasText: "Quantity limited to 8." }),
     ).toHaveCount(1);
-    await expect(apple.getByRole("textbox", { name: "Quantity of Apple" })).toHaveValue("8");
+    await expect(apple.getByRole("textbox", { name: "Qty Apple" })).toHaveValue("8");
     await expect(page.getByRole("link", { name: "Cart, 10 items" })).toBeVisible();
   });
 
   test("an invalid quantity is refused and focus moves to the input", async ({ page }) => {
     await addProduct(page, 2);
     await page.goto("/en/cart");
-    const input = page.getByRole("textbox", { name: "Quantity of Eyeshadow Palette with Mirror" });
+    const input = page.getByRole("textbox", { name: "Qty Eyeshadow Palette with Mirror" });
     await input.fill("abc");
     await input.press("Tab");
     await expect(page.getByRole("alert")).toContainText("Enter a whole number");

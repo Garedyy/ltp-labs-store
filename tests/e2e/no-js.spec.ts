@@ -65,14 +65,14 @@ test("the cart works without JavaScript: stepper, promo, remove, checkout", asyn
     .click();
   await expect(page).toHaveURL(/\/en\/cart$/);
   await expect(page.getByRole("status").filter({ hasText: "updated to 2" })).toBeFocused();
-  await expect(page.getByRole("textbox", { name: /Quantity of/ })).toHaveValue("2");
+  await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("2");
   await page.getByRole("textbox", { name: "Promo code" }).fill("LTP10");
   await page.getByRole("button", { name: "Apply" }).click();
   await expect(page.getByText("Code LTP10 applied", { exact: true })).toBeVisible();
-  await page.getByRole("textbox", { name: /Quantity of/ }).fill("x");
-  await page.getByRole("textbox", { name: /Quantity of/ }).press("Enter");
+  await page.getByRole("textbox", { name: /^Qty / }).fill("x");
+  await page.getByRole("textbox", { name: /^Qty / }).press("Enter");
   await expect(page.getByRole("alert")).toContainText("Enter a whole number");
-  await expect(page.getByRole("textbox", { name: /Quantity of/ })).toBeFocused();
+  await expect(page.getByRole("textbox", { name: /^Qty / })).toBeFocused();
   await page.getByRole("button", { name: "Check out" }).click();
   await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
