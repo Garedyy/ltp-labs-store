@@ -36,7 +36,7 @@
 | 3   | `feature/design-system`               | merged  | 2026-09-11 | 2026-09-11 | [#3](https://github.com/Garedyy/ltp-lab-store-/pull/3) | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
 | 4   | `feature/i18n-foundation`             | merged  | 2026-09-11 | 2026-09-11 | [#4](https://github.com/Garedyy/ltp-lab-store-/pull/4) | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
 | 5   | `feature/app-shell`                   | merged  | 2026-09-11 | 2026-09-11 | [#5](https://github.com/Garedyy/ltp-lab-store-/pull/5) | TO VERIFY 2 resolved; D-3 addendum, D-5                       |
-| 6   | `feature/dummyjson-client`            | pr-open | 2026-09-11 |            | #TBD                                                   | TO VERIFY 5 resolved                                          |
+| 6   | `feature/dummyjson-client`            | pr-open | 2026-09-11 |            | [#6](https://github.com/Garedyy/ltp-lab-store-/pull/6) | TO VERIFY 5 resolved                                          |
 | 7   | `feature/catalogue`                   | todo    |            |            |                                                        |                                                               |
 | 8   | `feature/search`                      | todo    |            |            |                                                        |                                                               |
 | 9   | `feature/product-detail`              | todo    |            |            |                                                        |                                                               |
