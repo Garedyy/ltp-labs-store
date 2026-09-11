@@ -33,6 +33,17 @@ describe("Disclosure", () => {
     expect(summary).toHaveFocus();
   });
 
+  it("closes when focus leaves the panel", async () => {
+    const user = userEvent.setup();
+    renderMenu();
+    const details = screen.getByText("Menu").closest("details") as HTMLDetailsElement;
+    details.open = true;
+    screen.getByRole("link", { name: "About" }).focus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Outside" })).toHaveFocus();
+    expect(details.open).toBe(false);
+  });
+
   it("closes on a pointer down outside", async () => {
     const user = userEvent.setup();
     renderMenu();

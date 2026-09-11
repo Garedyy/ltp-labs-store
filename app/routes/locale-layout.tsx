@@ -1,7 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { data, Outlet, redirect } from "react-router";
 
-import { LanguageSwitcher } from "~/components/layout/language-switcher";
+import { AnnouncerProvider } from "~/components/layout/announcer";
+import { useNavigationPending } from "~/components/layout/navigation-status";
+import { PageContainer } from "~/components/layout/page-container";
+import { RouteAnnouncer } from "~/components/layout/route-announcer";
+import { SiteFooter } from "~/components/layout/site-footer";
+import { SiteHeader } from "~/components/layout/site-header";
 import { SkipLink } from "~/components/layout/skip-link";
 import { RouteErrorBoundary } from "~/components/pages/route-error-boundary";
 import { isLocale } from "~/i18n/config";
@@ -39,38 +44,35 @@ export function loader() {
   return { cartCount: 0 };
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ cartCount, children }: { cartCount: number; children: React.ReactNode }) {
   const { t } = useTranslation();
+  const pending = useNavigationPending();
   return (
-    <>
+    <AnnouncerProvider>
       <SkipLink>{t("common.skipToContent")}</SkipLink>
-      <header className="px-4 pt-4 lg:px-6 lg:pt-6">
-        <div className="mx-auto flex min-h-header max-w-[87rem] items-center justify-between rounded-2xl bg-surface ps-6 pe-3 shadow-header">
-          <span className="text-h5 font-semibold tracking-tight text-primary uppercase">
-            {t("common.brand")}
-          </span>
-          <LanguageSwitcher />
-        </div>
-      </header>
-      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[87rem] px-4 py-8 lg:px-6">
-        {children}
+      <SiteHeader cartCount={cartCount} />
+      <main id="main" tabIndex={-1} aria-busy={pending || undefined} className="py-8">
+        <PageContainer>{children}</PageContainer>
       </main>
-    </>
+      <SiteFooter />
+      <RouteAnnouncer />
+    </AnnouncerProvider>
   );
 }
 
-export default function LocaleLayout() {
+export default function LocaleLayout({ loaderData }: Route.ComponentProps) {
   return (
-    <Shell>
+    <Shell cartCount={loaderData.cartCount}>
       <Outlet />
     </Shell>
   );
 }
 
-export function ErrorBoundary(props: Route.ErrorBoundaryProps) {
+// TO VERIFY 2: loaderData is typed on ErrorBoundaryProps; fall back to 0 when it is absent.
+export function ErrorBoundary({ error, loaderData }: Route.ErrorBoundaryProps) {
   return (
-    <Shell>
-      <RouteErrorBoundary error={props.error} />
+    <Shell cartCount={loaderData?.cartCount ?? 0}>
+      <RouteErrorBoundary error={error} />
     </Shell>
   );
 }

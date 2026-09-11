@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- App shell: sticky floating header (nav, Search/Account/Cart icon links with badge, language
+  switcher, mobile menu), footer, announcer + route announcer, navigation status bar, coming-soon
+  pages, keyboard and WCAG 2.2 scans on every route, `Docs/ACCESSIBILITY.md` v1.
 - i18n foundation: locale-prefixed routing with middleware validation, `/` redirect, typed EN/PT
   resources, server-only `Intl` formatting, language switcher + `set-language` action, hreflang,
   `Docs/I18N.md`.

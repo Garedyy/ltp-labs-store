@@ -10,7 +10,8 @@ type DisclosureProps = {
   children: ReactNode;
 };
 
-// Native <details>: Enter/Space and aria-expanded come for free. JS adds Escape and outside-click.
+// Native <details>: Enter/Space and aria-expanded come for free. JS adds Escape, outside-click and
+// closing when focus leaves, so an open panel never covers the element that receives focus.
 export function Disclosure({
   summary,
   summaryLabel,
@@ -26,17 +27,24 @@ export function Disclosure({
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== "Escape" || !details?.open) return;
+      event.stopPropagation();
       details.open = false;
       details.querySelector("summary")?.focus();
     }
     function onPointerDown(event: PointerEvent) {
       if (details?.open && !details.contains(event.target as Node)) details.open = false;
     }
+    function onFocusOut(event: FocusEvent) {
+      const next = event.relatedTarget;
+      if (details?.open && next instanceof Node && !details.contains(next)) details.open = false;
+    }
 
     details.addEventListener("keydown", onKeyDown);
+    details.addEventListener("focusout", onFocusOut);
     document.addEventListener("pointerdown", onPointerDown);
     return () => {
       details.removeEventListener("keydown", onKeyDown);
+      details.removeEventListener("focusout", onFocusOut);
       document.removeEventListener("pointerdown", onPointerDown);
     };
   }, []);

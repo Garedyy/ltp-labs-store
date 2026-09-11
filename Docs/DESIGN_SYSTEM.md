@@ -97,13 +97,37 @@ see `DECISIONS.md` D-4). Path data is copied verbatim into `icon.tsx`; attributi
 Icons never carry meaning alone: every icon-only control has an accessible name and every status
 icon sits next to text.
 
+## Header and footer anatomy
+
+- Header wrapper: `sticky top-0 z-40 px-4 pt-4 lg:px-6 lg:pt-6 [@media(max-height:30rem)]:static`.
+- Card: `relative mx-auto flex min-h-header max-w-[87rem] items-center justify-between gap-3 rounded-2xl bg-surface ps-4 pe-3 shadow-header sm:ps-6 lg:grid lg:min-h-header-lg lg:grid-cols-[1fr_auto_1fr]`
+  — brand · centred nav · actions.
+- Nav items: `flex min-h-11 items-center rounded-lg px-2.5 py-2 text-tagline font-medium text-primary hover:bg-surface-muted aria-[current=page]:bg-surface-muted aria-[current=page]:underline`.
+- Icon links: `size-11 rounded-xl border border-border-strong text-primary hover:bg-surface-muted`
+  (outlined instead of ltplabs' orange squares — contrast). Cart badge:
+  `absolute -end-1 -top-1 min-w-5 rounded-full bg-accent px-1 text-[0.6875rem] leading-5 font-medium text-accent-fg`.
+- Language switcher: outlined pill `min-h-11 rounded-xl border border-border px-3`; panel
+  `absolute end-0 mt-2 rounded-xl border bg-surface p-2 shadow-header`.
+- Breakpoints: `< sm` logo + cart + menu (Search/Account inside the menu); `sm`–`lg` adds the
+  Search and Account icons; `lg+` three-column card with the nav and the switcher inline.
+- Loading bar: `h-0.5 bg-accent` under the card, revealed by a 300 ms CSS delay.
+- Footer: `mt-16 rounded-t-3xl bg-surface-inverse px-4 py-8 text-fg-inverse lg:px-6 lg:py-12`;
+  brand link, footer nav in header order, language links.
+
 ## Layout per screen
 
 See `PROJECT_PLAN.md` §3.8 — filled in with the real class recipes as each screen lands
-(`feature/app-shell`, `feature/catalogue`, `feature/product-detail`, `feature/cart-page`).
+(`feature/catalogue`, `feature/product-detail`, `feature/cart-page`). Coming-soon, 404 and error
+pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
 
 ## Deviations from ltplabs.com and the wireframes
 
-Recorded as they are implemented (header `sticky` instead of `fixed`, outlined icon buttons instead
-of orange squares, `<nav><ul>` instead of `<div>` of `<button aria-haspopup>`, Manrope logo, visible
-`<h1>` and minimal footer absent from the wireframes).
+| Deviation                                                                    | Reason                                                                     |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Header `sticky` instead of `fixed`, static under 30 rem viewport height      | no content hidden under the bar at 400 % zoom (reflow)                     |
+| Outlined medium-blue icon buttons instead of orange squares                  | orange is 2.9:1; icons must reach 3:1                                      |
+| `<nav><ul>` of links instead of ltplabs' `<div>` of `<button aria-haspopup>` | navigation semantics, `aria-current`                                       |
+| Manrope logo instead of a condensed cut                                      | licence (Bw Modelica is commercial)                                        |
+| Wireframe's thin header border replaced by the floating card shadow          | ltplabs identity                                                           |
+| Visible page `<h1>` and minimal footer, absent from the wireframes           | heading structure, footer landmark and language links                      |
+| Closed `<details>` content hidden with `display: none`                       | Chromium keeps layout boxes for closed panels, which overlap other content |
