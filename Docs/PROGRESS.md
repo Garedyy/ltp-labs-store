@@ -42,7 +42,7 @@
 | 9   | `feature/product-detail`              | merged  | 2026-09-11 | 2026-09-11 | [#9](https://github.com/Garedyy/ltp-lab-store-/pull/9)   | D-7; Add-to-cart button present, action in branch 10          |
 | 10  | `feature/cart-session`                | merged  | 2026-09-11 | 2026-09-11 | [#10](https://github.com/Garedyy/ltp-lab-store-/pull/10) |                                                               |
 | 11  | `feature/cart-page`                   | merged  | 2026-09-11 | 2026-09-11 | [#11](https://github.com/Garedyy/ltp-lab-store-/pull/11) | D-8                                                           |
-| 12  | `feature/a11y-audit`                  | pr-open | 2026-09-11 |            | #TBD                                                     | TO VERIFY 6, 7 resolved                                       |
+| 12  | `feature/a11y-audit`                  | pr-open | 2026-09-11 |            | [#12](https://github.com/Garedyy/ltp-lab-store-/pull/12) | TO VERIFY 6, 7 resolved                                       |
 | 13  | `feature/performance`                 | todo    |            |            |                                                          |                                                               |
 | 14  | `feature/docs-release`                | todo    |            |            |                                                          |                                                               |
 
