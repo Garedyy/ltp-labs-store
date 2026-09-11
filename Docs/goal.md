@@ -38,20 +38,20 @@ The challenge involves developing a simple e-commerce application in Remix that 
 
 ## Internationalization (i18n)
 
-- The application must support at least two languages: English (default) and French
-- The active locale is resolved server-side in Remix (URL prefix such as `/en/...` and `/fr/...`, or cookie + `Accept-Language` fallback) so that SSR output is already localized
+- The application must support at least two languages: English (default) and Portuguese (pt-PT)
+- The active locale is resolved server-side in Remix (URL prefix such as `/en/...` and `/pt/...`, or cookie + `Accept-Language` fallback) so that SSR output is already localized
 - A language switcher must be available in the header and must preserve the current page (product detail, cart, filters, pagination)
 - No hardcoded UI strings in components: all text lives in translation files (one namespace per feature, e.g. `common`, `home`, `product`, `cart`)
 - Prices, numbers and dates must be formatted with the `Intl` API according to the active locale (currency symbol, decimal separator, thousands separator)
 - Pluralization must be handled through the i18n layer (e.g. "1 item" / "2 items"), never through string concatenation
 - The `<html lang>` attribute must reflect the active locale
-- Layout must not depend on text length: labels, buttons and badges must accommodate longer French translations without overflow
+- Layout must not depend on text length: labels, buttons and badges must accommodate longer Portuguese translations without overflow
 - Product data coming from the API may remain in its original language; only the UI chrome is required to be translated
 - Optional: `hreflang` alternate links for SEO, and RTL-ready layout (logical CSS properties)
 
 ## Accessibility (a11y)
 
-- Target compliance: WCAG 2.1 level AA
+- Target compliance: WCAG 2.2 level AA
 - Use semantic HTML landmarks (`header`, `nav`, `main`, `footer`) and a coherent heading hierarchy (a single `h1` per page)
 - Every interactive element must be reachable and operable with the keyboard alone, with a visible focus indicator
 - A "Skip to main content" link must be the first focusable element on each page
