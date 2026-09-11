@@ -66,7 +66,11 @@ describe("parseProductSummaryList", () => {
     });
   });
 
-  it("rejects a list with one malformed item or a missing total", () => {
+  it("accepts summaries without category (select) and rejects malformed items", () => {
+    expect(
+      parseProductSummaryList({ products: [{ id: 1, title: "T", price: 2 }], total: 1 })
+        ?.products[0],
+    ).toEqual({ id: 1, title: "T", price: 2, thumbnail: "", stock: 0 });
     expect(parseProductSummaryList({ products: [{ id: 1 }], total: 1 })).toBeNull();
     expect(parseProductSummaryList({ products: [] })).toBeNull();
     expect(parseProductSummaryList({ products: [], total: 0 })).toEqual({

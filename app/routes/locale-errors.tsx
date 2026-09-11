@@ -1,9 +1,33 @@
 import { Outlet } from "react-router";
 
-import { RouteErrorBoundary } from "~/components/pages/route-error-boundary";
+import { RouteErrorBoundary, statusOf } from "~/components/pages/route-error-boundary";
+import { pageMeta } from "~/lib/meta";
+import { getInstance } from "~/middleware/i18next";
 import type { Route } from "./+types/locale-errors";
 
-// Pathless layout: leaf errors render here, inside the mounted shell of locale-layout.
+// Pathless layout: leaf errors render here, inside the mounted shell of locale-layout. Its loader
+// only supplies translated titles so an errored leaf still gets a <title>.
+export function loader({ context }: Route.LoaderArgs) {
+  const t = getInstance(context).t;
+  return {
+    errorTitles: {
+      notFound: t("errors.notFound.title"),
+      serviceUnavailable: t("errors.serviceUnavailable.title"),
+      badRequest: t("errors.badRequest.title"),
+      methodNotAllowed: t("errors.methodNotAllowed.title"),
+      unexpected: t("errors.unexpected.title"),
+    },
+  };
+}
+
+export function meta({ error, loaderData, matches }: Route.MetaArgs) {
+  if (!error || !loaderData) return [];
+  return pageMeta({
+    title: loaderData.errorTitles[statusOf(error)],
+    brand: matches[0].loaderData.brand,
+  });
+}
+
 export default function LocaleErrors() {
   return <Outlet />;
 }

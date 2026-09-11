@@ -116,9 +116,15 @@ icon sits next to text.
 
 ## Layout per screen
 
-See `PROJECT_PLAN.md` §3.8 — filled in with the real class recipes as each screen lands
-(`feature/catalogue`, `feature/product-detail`, `feature/cart-page`). Coming-soon, 404 and error
-pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
+- **Home / catalogue**: `grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]`; results column
+  `flex min-w-0 flex-col gap-6` (h1 `text-h4`, toolbar `flex flex-wrap items-center justify-between gap-4`,
+  grid `grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3`, pagination `flex-wrap justify-center sm:justify-end`);
+  aside `lg:col-start-2 lg:row-start-1 lg:self-start` (not sticky — 24 rows exceed a tablet
+  viewport), card `rounded-2xl border border-border p-4`, one 44 px checkbox row per category.
+  Product card: `rounded-2xl border p-3`, `aspect-square rounded-xl bg-surface-placeholder object-contain`
+  image, `focus-within` ring. First three images eager (first `fetchPriority="high"`), rest lazy.
+- Other screens: filled in by `feature/product-detail` and `feature/cart-page`. Coming-soon, 404 and error
+  pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
 
 ## Deviations from ltplabs.com and the wireframes
 

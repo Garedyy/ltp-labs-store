@@ -1,25 +1,74 @@
-import { useTranslation } from "react-i18next";
+import { redirect } from "react-router";
 
+import { CatalogueResults } from "~/components/catalogue/catalogue-results";
+import { CategoryFilter } from "~/components/catalogue/category-filter";
+import { isLocale } from "~/i18n/config";
+import { getLocale, getInstance } from "~/middleware/i18next";
+import { parseCatalogueQuery } from "~/lib/catalogue/query";
+import { buildCatalogueView, listParamsFor } from "~/lib/catalogue/view.server";
+import { notFound, toRouteError } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
-import { getInstance } from "~/middleware/i18next";
+import {
+  getCategories,
+  getProducts,
+  getProductsByCategory,
+} from "~/services/dummyjson/products.server";
+import { isCategorySlug } from "~/services/dummyjson/types";
 import type { Route } from "./+types/catalogue";
 
-export function loader({ context }: Route.LoaderArgs) {
+export async function loader(args: Route.LoaderArgs) {
+  try {
+    return await load(args);
+  } catch (error) {
+    throw toRouteError(error);
+  }
+}
+
+async function load({ context, url }: Route.LoaderArgs) {
+  const locale = getLocale(context);
+  if (!isLocale(locale)) notFound();
   const t = getInstance(context).t;
-  return { title: t("catalogue.title"), description: t("catalogue.description") };
+  const categories = await getCategories();
+  const query = parseCatalogueQuery(
+    url.searchParams,
+    categories.map((category) => category.slug),
+  );
+  if (query.canonical !== undefined) throw redirect(url.pathname + query.canonical);
+
+  const params = listParamsFor(query);
+  const list = query.category
+    ? await getProductsByCategory(query.category, params)
+    : await getProducts(params);
+  if (list.total > 0 && query.page > Math.ceil(list.total / 9)) notFound();
+
+  const category = categories.find((candidate) => candidate.slug === query.category);
+  const categoryName =
+    category && isCategorySlug(category.slug)
+      ? t(`catalogue.categories.${category.slug}`)
+      : category?.name;
+  const baseTitle = categoryName ?? t("catalogue.title");
+  const title =
+    query.page > 1 ? t("catalogue.pageTitle", { title: baseTitle, page: query.page }) : baseTitle;
+
+  return {
+    view: buildCatalogueView({ list, query, categories, locale, title }),
+    description: t("catalogue.description"),
+  };
 }
 
 export function meta({ loaderData, matches }: Route.MetaArgs) {
-  return pageMeta({ ...loaderData, brand: matches[0].loaderData.brand });
+  return pageMeta({
+    title: loaderData.view.title,
+    description: loaderData.description,
+    brand: matches[0].loaderData.brand,
+  });
 }
 
-// Placeholder until feature/catalogue renders the product grid.
 export default function Catalogue({ loaderData }: Route.ComponentProps) {
-  const { t } = useTranslation();
   return (
-    <>
-      <h1 className="text-h4 font-medium">{loaderData.title}</h1>
-      <p className="mt-2 text-fg-muted">{t("catalogue.description")}</p>
-    </>
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
+      <CatalogueResults view={loaderData.view} showJumpLink />
+      <CategoryFilter view={loaderData.view} />
+    </div>
   );
 }

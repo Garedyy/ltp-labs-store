@@ -8,6 +8,7 @@ export default [
       layout("routes/locale-errors.tsx", [
         index("routes/catalogue.tsx"),
         route("search", "routes/search.tsx"),
+        route("products/:productId", "routes/product.tsx"),
         route("cart", "routes/cart.tsx"),
         route("about", "routes/about.tsx"),
         route("contact", "routes/contact.tsx"),

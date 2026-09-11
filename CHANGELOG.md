@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Catalogue: home page with the 9-product grid, sort (five options), single-category filter,
+  pagination, results summary, translated category names, 404 on out-of-range pages, 502 page
+  when the product service fails; product placeholder route.
 - DummyJSON client: typed guards following the API contract, 8 s timeout, 404/502 mapping,
   TTL cache with in-flight de-duplication, catalogue query/pagination helpers, fixtures and a
   fixture-backed mock API with fault injection for e2e.

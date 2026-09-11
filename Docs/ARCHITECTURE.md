@@ -22,14 +22,15 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
 /:lang                     locale-layout.tsx     middleware + shell
   set-language             set-language.tsx      action only (lng cookie), GET → 405
   (pathless)               locale-errors.tsx     shared ErrorBoundary inside the shell
-    index                  catalogue.tsx
+    index                  catalogue.tsx         loader: categories → query → products → CatalogueView
+    products/:productId    product.tsx           placeholder (title + description) until feature/product-detail
     search                 search.tsx            placeholder until feature/search
     cart                   cart.tsx              placeholder until feature/cart-page
     about|contact|blog|account                   translated "coming soon" pages
     *                      not-found.tsx         404 inside the shell
 ```
 
-`products/:productId` and `checkout/confirmation` are added by their feature branches. The shell
+`checkout/confirmation` is added by `feature/cart-page`. The shell
 (`locale-layout.tsx`) renders `SkipLink`, `SiteHeader` (with `cartCount` from its loader),
 `<main id="main">`, `SiteFooter`, the announcer regions and `RouteAnnouncer`. Errors thrown by the
 layout's own middleware (asset deny-list) reach the shell-less root boundary; every leaf error
@@ -71,6 +72,21 @@ Contract: [`dummyjson-openapi.yaml`](dummyjson-openapi.yaml). Code: `app/service
   of items returned as `limit`, so pages are always computed from `total`.
 - **Rate-limit strategy**: cache + de-duplication, `select` to shrink payloads, one list call per
   page, categories cached for an hour, no fan-out beyond the cart's product lookups.
+
+### Catalogue loader (`app/routes/catalogue.tsx`)
+
+`getCategories()` (1 h cache) → `parseCatalogueQuery(url.searchParams, slugs)` → unknown category
+→ 302 to the canonical URL → `getProductsByCategory` / `getProducts` with `listParamsFor(query)`
+→ `page > pageCount` with `total > 0` → 404 → `buildCatalogueView` (`formatPrice` per locale,
+`href` per card). Every `ApiError` becomes a `data(null, { status })` through `toRouteError`, so the
+boundary renders 404 or 502 inside the shell. Titles: "Shop" or the translated category name,
+"— page N" appended above page 1.
+
+Client-side behaviour is owned by `CatalogueResults`: on every search-param change it announces
+`catalogue.results.announce` and, when only `page` changed, focuses `#results-heading`.
+`CategoryFilter` keeps an optimistic selection while the navigation is pending and focuses its
+fieldset after "Clear filter". `SortForm` and the category form are plain GET forms (hidden inputs
+ordered so native submits also produce `q, category, sort`).
 
 ### URL contract (`app/lib/catalogue/query.ts`)
 

@@ -88,6 +88,20 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   `RouteAnnouncer` closes every open `<details>` on navigation.
 - **Consequences**: no overlay can hide the focused element; unit- and e2e-tested.
 
+## D-6 · Catalogue forms: visible sort label and an always-present Apply
+
+- **Date / branch**: 2026-09-11 · `feature/catalogue`
+- **Context**: the plan used an sr-only label for the sort `<select>` and a `<noscript>` Apply
+  button for the category form. IBM's `input_label_exists` does not credit the clipped label (and
+  `input_label_visible` would flag it under SC 3.3.2 anyway), and `form_submit_button_exists`
+  flags a form whose only submit lives in `<noscript>`.
+- **Decision**: the sort label is visible ("Sort by" next to the select; the empty option reads
+  "Default order"). The category form always contains a submit button: visible without JavaScript,
+  `sr-only` until focused when scripts run (`<html class="js">` is set by a one-line inline script
+  in the document head).
+- **Consequences**: both forms have an explicit, discoverable submit for every user; the list
+  summary guard also stops requiring `category`, which `select` never returns.
+
 ## TO VERIFY resolutions
 
 | #   | Item                                                           | Status | Resolution |

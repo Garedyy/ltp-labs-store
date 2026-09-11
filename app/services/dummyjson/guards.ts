@@ -24,17 +24,21 @@ function strings(value: unknown): string[] {
     : [];
 }
 
-function hasRequiredFields(
-  value: unknown,
-): value is Unknown & Pick<Product, "id" | "title" | "price" | "category"> {
+type Core = Unknown & Pick<Product, "id" | "title" | "price">;
+
+// Lists are fetched with `select`, which drops `category`; full products always carry it.
+function hasCoreFields(value: unknown): value is Core {
   return (
     isRecord(value) &&
     isFiniteNumber(value.id) &&
     Number.isInteger(value.id) &&
     typeof value.title === "string" &&
-    isFiniteNumber(value.price) &&
-    typeof value.category === "string"
+    isFiniteNumber(value.price)
   );
+}
+
+function hasRequiredFields(value: unknown): value is Core & Pick<Product, "category"> {
+  return hasCoreFields(value) && typeof value.category === "string";
 }
 
 function toReview(value: unknown): Review | null {
@@ -85,7 +89,7 @@ export function parseProduct(value: unknown): Product | null {
 }
 
 export function parseProductSummary(value: unknown): ProductSummary | null {
-  if (!hasRequiredFields(value)) return null;
+  if (!hasCoreFields(value)) return null;
   return {
     id: value.id,
     title: value.title,
