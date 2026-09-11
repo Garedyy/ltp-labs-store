@@ -1,8 +1,10 @@
 # The Online Store — LTP Labs frontend challenge
 
 A small e-commerce app (catalogue, product detail, cart) built for the LTP Labs frontend coding
-challenge. **Work in progress** — see [`Docs/PROGRESS.md`](Docs/PROGRESS.md) for the current state
-and [`Docs/PROJECT_PLAN.md`](Docs/PROJECT_PLAN.md) for the full architecture.
+challenge on the DummyJSON products API. Server-rendered, bilingual (EN / PT), WCAG 2.2 AA with
+and without JavaScript. Architecture: [`Docs/ARCHITECTURE.md`](Docs/ARCHITECTURE.md); the original
+plan: [`Docs/PROJECT_PLAN.md`](Docs/PROJECT_PLAN.md); implementation history:
+[`Docs/PROGRESS.md`](Docs/PROGRESS.md).
 
 ## Remix → React Router v8
 
@@ -40,13 +42,54 @@ npm run dev        # http://localhost:5173
 
 More scripts (lint, format, unit, e2e, licence check) arrive with the tooling branch.
 
+## Challenge checklist
+
+| Requirement ([`Docs/goal.md`](Docs/goal.md))                                                                                                                                                                                        | Where                                                                                                            | Verified by                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Homepage lists products fetched from the API, each linking to its detail page                                                                                                                                                       | `app/routes/catalogue.tsx`, `ProductCard`                                                                        | `catalogue.spec.ts`                                                                                                      |
+| Sort by the user's preference                                                                                                                                                                                                       | `SortForm` (price ↑↓, name A–Z / Z–A, rating)                                                                    | `catalogue.spec.ts`                                                                                                      |
+| Filter by category                                                                                                                                                                                                                  | `CategoryFilter` (single selection, 24 categories)                                                               | `catalogue.spec.ts`                                                                                                      |
+| Pagination                                                                                                                                                                                                                          | `Pagination` (9 per page, window of 5, `aria-current`)                                                           | `catalogue.spec.ts`                                                                                                      |
+| Product detail fetches the product; every Figma element present                                                                                                                                                                     | `app/routes/product.tsx`: image, title, price, Add to cart, "Product details"                                    | `product.spec.ts`                                                                                                        |
+| Extra elements                                                                                                                                                                                                                      | gallery thumbnails, rating + reviews, original price + discount badge, stock status, practical information, tags | `product.spec.ts`                                                                                                        |
+| "Add to cart" adds to the cart                                                                                                                                                                                                      | product route `action` (`intent=add`), signed cookie session                                                     | `cart-session.spec.ts`, no-JS spec                                                                                       |
+| Cart page reachable from the header icon, shows items, quantities, total, removal                                                                                                                                                   | `app/routes/cart.tsx`, `CartLineItem`, `QuantityStepper`, `CartSummary`                                          | `cart.spec.ts`                                                                                                           |
+| Responsive mobile + desktop                                                                                                                                                                                                         | mobile-first Tailwind, reflow at 320 px                                                                          | `reflow.spec.ts`, Pixel 7 project                                                                                        |
+| Loaders / actions used appropriately, clean routing                                                                                                                                                                                 | every read is a loader, every mutation an action; `app/routes.ts`                                                | e2e suite                                                                                                                |
+| i18n: EN default + PT, server-resolved locale, switcher keeping the page, no hard-coded strings, `Intl` formatting, plurals, `<html lang>`, hreflang, logical properties                                                            | `app/i18n/`, `app/locales/`, `LanguageSwitcher`                                                                  | `i18n.spec.ts`, `locales.test.ts`, ESLint                                                                                |
+| a11y: landmarks, one `h1`, keyboard, skip link, names on icon controls, alt text, labelled controls, pagination nav, live announcements, contrast, 44 px targets, reduced motion, works without JS, automated audit + screen reader | see [`Docs/ACCESSIBILITY.md`](Docs/ACCESSIBILITY.md)                                                             | IBM WCAG 2.2 scans on every route × locale × state, Lighthouse a11y 100, keyboard specs; VoiceOver run logged as pending |
+| Submitted on a VCS                                                                                                                                                                                                                  | GitHub, `main` ← `development` ← 14 feature PRs                                                                  | —                                                                                                                        |
+
 ## Repository map
 
 ```
-app/            application code (routes, components, services, i18n, styles)
-public/         static assets (favicon, robots.txt)
-Docs/           challenge brief, wireframes, API contract, plan, progress, architecture docs
+app/
+  routes.ts, root.tsx, entry.*.tsx   routing config, document shell, server/client entries
+  routes/                            one module per route (loader / action / meta / component)
+  components/ui | layout | catalogue | product | cart | pages
+  services/dummyjson/                API client, guards, cache, product functions (server only)
+  services/cart/                     cookie session, cart maths, promo codes, intents
+  i18n/, locales/, middleware/       locale config, formatting, EN/PT resources, middlewares
+  lib/                               catalogue query/pagination, product view, error codes, helpers
+  styles/, fonts/                    tokens, base styles, self-hosted Manrope
+tests/
+  e2e/                               Playwright specs, mock API, accessibility wrapper, route list
+  fixtures/dummyjson/                API fixtures (194 summaries, 24 categories, 10 products)
+  helpers/                           render / i18n / text helpers for Vitest
+scripts/check-licenses.mjs           licence allow-list enforcement
+Docs/                                brief, wireframes, API contract, plan, progress, ADRs, guides
 ```
+
+## Limitations and assumptions
+
+- Product data stays in English (`lang="en"` is set on it in Portuguese); search runs on the
+  English catalogue.
+- Images come in a single size from the DummyJSON CDN (`Cache-Control: no-store`).
+- The cookie cart is last-write-wins across tabs and racing requests; `minimumOrderQuantity` is
+  ignored; dimensions are assumed in cm and weight in kg (units are undocumented).
+- Checkout is a mock: no payment, nothing shipped; "Account", "About", "Contact" and "Blog" are
+  translated "coming soon" pages.
+- Cookies: `lng` (language choice) and `__cart` (cart) are strictly necessary — no banner.
 
 ## Performance
 
