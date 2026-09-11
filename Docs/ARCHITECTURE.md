@@ -6,11 +6,30 @@
 
 ## Request lifecycle
 
-_TO DO (app-shell / i18n-foundation)._
+1. `root.tsx` middleware: `i18nextMiddleware` (locale from the URL prefix, per-request i18next
+   instance in the router context) then `responseHeadersMiddleware` (`Cache-Control: private,
+no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
+2. `routes/locale-layout.tsx` middleware `validateLocale`: asset-like segment → 404; upper-case →
+   301; unknown → 302 to the detected locale; otherwise `next()`.
+3. Loaders run (root: `{ locale, origin, brand }`; layout: `{ cartCount }`; leaf).
+4. `entry.server.tsx` renders inside `I18nextProvider` with the request's instance (EN fallback
+   instance when the middleware never ran).
 
-## Routes
+## Routes (`app/routes.ts`)
 
-_TO DO (i18n-foundation): route tree, per-route table, URL contract, screen-state matrix._
+```
+/                          locale-redirect.tsx   302 → /{detected}
+/:lang                     locale-layout.tsx     middleware + shell
+  set-language             set-language.tsx      action only (lng cookie), GET → 405
+  (pathless)               locale-errors.tsx     shared ErrorBoundary inside the shell
+    index                  catalogue.tsx
+    *                      not-found.tsx         404 inside the shell
+```
+
+Further leaves (`search`, `products/:productId`, `cart`, `checkout/confirmation`, `about`,
+`contact`, `blog`, `account`) are added by their feature branches. Loaders, actions and middleware
+read `url` from their arguments — never `request.url`, which may carry `.data` suffixes.
+Internal links use `href("/:lang/…", { lang })`.
 
 ## Error and notice codes
 

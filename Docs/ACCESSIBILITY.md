@@ -32,6 +32,10 @@ _TO DO: event → message key → focus target table._
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `style_color_misuse` | fires on any stylesheet that sets colours (Tailwind preflight is enough); asks a human to confirm colour is never the only carrier of information | design rule "never colour alone" (plan §3.6) + Chrome vision-deficiency emulation in the audit log |
 
+Results located inside a **closed** `<details>` are also dropped (`DECISIONS.md` D-3 addendum): the
+engine reports `element_tabbable_unobscured` for controls that are not rendered at all. Open
+disclosures are scanned as a separate state.
+
 ## Manual audit log
 
 | Date | Tool / AT | Scope | Result      |

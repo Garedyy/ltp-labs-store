@@ -51,6 +51,11 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   (fail on `violation` and `potentialviolation`) minus an explicit `MANUAL_REVIEW_RULES` set; every
   entry must be justified in `Docs/ACCESSIBILITY.md` and covered by the manual audit protocol.
   Initial set: `style_color_misuse`.
+- **Addendum (2026-09-11, `feature/i18n-foundation`)**: the engine also ignores the open state of
+  `<details>` and reports `element_tabbable_unobscured` for controls inside a **closed** panel,
+  although a closed `<details>` renders nothing and nothing inside it is tabbable. The wrapper
+  computes the XPaths of closed `<details>` elements before the scan and drops issues under them;
+  open panels are scanned as their own state (branch 12).
 - **Consequences**: the scan stays strict for everything the engine can decide; manual-only rules
   are tracked in the audit log instead of being silently baselined.
 

@@ -15,6 +15,7 @@ mode with server-side rendering.
 ## Stack
 
 - React 19, React Router 8 (framework mode, SSR via `@react-router/node` + `@react-router/serve`)
+- i18next 26, react-i18next 17, remix-i18next 8
 - Tailwind CSS 4 (`@tailwindcss/vite`)
 - TypeScript 5 (strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`), Vite 8
 - Node 24, npm (no other package manager)

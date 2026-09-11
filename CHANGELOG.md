@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- i18n foundation: locale-prefixed routing with middleware validation, `/` redirect, typed EN/PT
+  resources, server-only `Intl` formatting, language switcher + `set-language` action, hreflang,
+  `Docs/I18N.md`.
 - Design system: three-layer colour tokens, self-hosted Manrope, `ui/*` primitives with
   role/name tests, contrast test, Remix Icon v4.8.0 paths, `Docs/DESIGN_SYSTEM.md`.
 - Tooling: ESLint 9 (typescript-eslint, react, react-hooks, jsx-a11y strict, i18next
