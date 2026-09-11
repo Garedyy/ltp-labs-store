@@ -41,3 +41,17 @@ test("searching works without JavaScript", async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/search\?q=laptop$/);
   await expect(page.getByText(/Showing 1–\d+ of \d+/)).toBeVisible();
 });
+
+test("adding to the cart twice without JavaScript redirects back and a refresh does not re-add", async ({
+  page,
+}) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await expect(page).toHaveURL(/\/en\/products\/1$/);
+  await expect(page.getByRole("status").filter({ hasText: "You now have 1 item." })).toBeFocused();
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await expect(page.getByRole("link", { name: "Cart, 2 items" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("link", { name: "Cart, 2 items" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "You now have" })).toHaveCount(0);
+});

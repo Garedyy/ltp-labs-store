@@ -105,8 +105,12 @@ dimensions in cm, weight in kg — plan assumption). The gallery reads `?image` 
 
 ## Error and notice codes
 
-`app/lib/error-codes.ts` is the single source: `page-not-found`, `product-not-found`,
-`service-unavailable` (cart codes arrive with the cart branches). Loaders throw
+`app/lib/error-codes.ts` is the single source. Error codes: `page-not-found`,
+`product-not-found`, `service-unavailable`, `invalid-intent`, `invalid-quantity`, `out-of-stock`,
+`cart-full`, `promo-required`, `promo-invalid`, `empty-cart`. Notice codes: `added`,
+`added-capped`, `quantity-updated`, `quantity-clamped`, `removed`, `promo-applied`,
+`promo-removed`, `items-removed`, `quantities-adjusted`. Both map to translation keys with
+`satisfies Record<Code, string>`. Loaders throw
 `data({ code }, { status })` through `notFound(code)` / `toRouteError`; `RouteErrorBoundary` and
 the `locale-errors` meta map the code to `errors.<key>` — a missing translation is a compile error.
 
@@ -135,9 +139,36 @@ these behaviours.
 `curl https://dummyjson.com/products/<id> > tests/fixtures/dummyjson/product-<id>.json` for each
 id above; then run `npm run test:e2e`.
 
-## Cart session
+## Cart session (`app/services/cart/`)
 
-_TO DO (cart-session / cart-page): flow, intents, PRG, concurrency._
+- **Cookie**: `createCookieSessionStorage` named `__cart`, signed with `SESSION_SECRET` (a fixed
+  development secret with a console warning when unset; production throws at boot), `httpOnly`,
+  `SameSite=Lax`, `secure` when `COOKIE_SECURE=true`, 30 days. Data:
+  `{ cart: { productId, quantity }[], promoCode?, lastOrder? }` plus flash slots. A tampered cookie
+  fails the signature and reads as an empty cart (`session.server.test.ts`, `cart-session.spec.ts`).
+- **Sanitisation** (`cart.ts`): every read goes through `sanitiseLines` — array, integer ids,
+  quantity 1..99, duplicates merged, first 50 lines. A 50-line cart serialises under 4000 bytes
+  (unit-tested).
+- **Maths** (`totals.ts`): integer cents; shipping $20 on a non-empty cart; `LTP10` = 10 % of the
+  subtotal (rounded); `FREESHIP` = free shipping (`promo-codes.ts`, case-insensitive, trimmed).
+- **Intents** (`intents.ts`): `set-quantity | remove | apply-promo | remove-promo | checkout` for
+  the cart route, all with **absolute** quantities (idempotent under rapid clicks); `add` belongs
+  to the product route. `noJs=1` (a hidden input inside `<noscript>`) marks a submission made
+  without JavaScript.
+- **`add` action** (`routes/product.tsx`): unsets `lastOrder`, refuses a missing product
+  (`product-not-found`, 400), a sold-out one (`out-of-stock`) or a 51st distinct line
+  (`cart-full`), otherwise `addLine` (quantity +1 in place, capped at `min(99, stock)` →
+  `added-capped`). With JavaScript the fetcher receives `data(result)` + `Set-Cookie`; without it
+  the result is flashed into the session and the action answers **303 back to the page**
+  (Post/Redirect/Get), where the loader reads and clears the flash and the status paragraph
+  receives focus.
+- **Header count**: the locale layout loader counts the sanitised cookie (no API call, no
+  commit) and revalidates after every submission.
+- **Concurrency**: `AddToCartForm` ignores submits while its fetcher is pending; the cookie is
+  last-write-wins across tabs (documented limitation).
+- `loadCartView` (used by the cart page) reconciles the cookie with the catalogue: vanished or
+  sold-out products are dropped (`items-removed`), quantities above stock clamped
+  (`quantities-adjusted`), totals formatted per locale.
 
 ## Progressive enhancement
 
@@ -145,7 +176,14 @@ _TO DO (app-shell)._
 
 ## Security
 
-_TO DO (cart-session): signed `__cart`, validated `lng`, SameSite, headers rationale._
+- `__cart` is signed (tampering → empty cart) and `httpOnly`; `lng` is validated against
+  `LOCALES` and written only by the `set-language` action with a same-origin `redirectTo`.
+- Every mutation is a same-origin `POST` on a `SameSite=Lax` cookie: no CSRF token is needed.
+- `SESSION_SECRET` rotation empties every cart (documented); no user-generated HTML is rendered.
+- Response headers: `Cache-Control: private, no-cache` (pages depend on cookies),
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
+  `X-Frame-Options: DENY`. No CSP: the app has one inline script (the `js` class) and no
+  third-party scripts; adding a nonce-based CSP is a documented follow-up.
 
 ## Conventions and recipes
 

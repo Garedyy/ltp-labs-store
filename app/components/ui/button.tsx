@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ComponentProps, ReactNode, Ref } from "react";
 import { Link } from "react-router";
 
 import { cx } from "~/lib/cx";
@@ -27,6 +27,7 @@ function buttonClasses(variant: ButtonVariant, size: ButtonSize, className?: str
 }
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  ref?: Ref<HTMLButtonElement>;
   variant?: ButtonVariant;
   size?: ButtonSize;
   pending?: boolean;

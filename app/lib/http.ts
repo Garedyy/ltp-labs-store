@@ -1,4 +1,4 @@
-import { data } from "react-router";
+import { data, redirect } from "react-router";
 
 import { ApiError } from "~/services/dummyjson/client.server";
 import type { ErrorCode } from "./error-codes";
@@ -26,4 +26,12 @@ export function toRouteError(error: unknown): unknown {
     return data({ code }, { status: error.status });
   }
   return error;
+}
+
+// Post/Redirect/Get for submissions made without JavaScript: back to the same page (303).
+export function redirectBack(request: Request, url: URL, headers: HeadersInit): Response {
+  const referer = request.headers.get("Referer");
+  const target =
+    referer && new URL(referer).origin === url.origin ? referer : url.pathname + url.search;
+  return redirect(target, { status: 303, headers });
 }
