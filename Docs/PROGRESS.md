@@ -18,18 +18,18 @@
 
 ## Resume here
 
-- **Current branch**: `main` (bootstrap)
-- **Current step**: bootstrap — tracker committed on `main`; `development` to be created from `main`
-- **Next action**: create `development`, push it, then branch `feature/project-scaffold` and run
-  `npx create-react-router@latest` per plan §4 branch 1
+- **Current branch**: `feature/project-scaffold` (PR open → `development`)
+- **Current step**: branch 1 complete and verified; Q1 resolved (D-1); merging PR 1
+- **Next action**: `git checkout development && git pull`, branch `feature/tooling`
+  (plan §4 branch 2); `check-licenses.mjs` must implement the D-1 named exceptions
 - **Open questions for the user**: none
 
 ## Feature branches (plan §4)
 
 | # | Branch | Status | Started | Merged | PR | Notes |
 |---|---|---|---|---|---|---|
-| 0 | bootstrap (`development` from `main`) | in-progress | 2026-09-11 | — | — | tracker added on `main` |
-| 1 | `feature/project-scaffold` | todo | | | | |
+| 0 | bootstrap (`development` from `main`) | merged | 2026-09-11 | 2026-09-11 | — | tracker added on `main`; `development` pushed |
+| 1 | `feature/project-scaffold` | pr-open | 2026-09-11 | | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified |
 | 2 | `feature/tooling` | todo | | | | |
 | 3 | `feature/design-system` | todo | | | | |
 | 4 | `feature/i18n-foundation` | todo | | | | |
@@ -49,9 +49,9 @@
 Tick a box only once the criterion has been verified locally (command output seen), not assumed.
 
 ### 1 · `feature/project-scaffold`
-- [ ] `npx create-react-router@latest` scaffold, `~` alias, dotfiles, `.env.example`, `Docs/` skeleton, README skeleton, `.gitignore`
-- [ ] `npm run dev` serves
-- [ ] `npm run typecheck` passes
+- [x] `npx create-react-router@latest` scaffold, `~` alias, dotfiles, `.env.example`, `Docs/` skeleton, README skeleton, `.gitignore`
+- [x] `npm run dev` serves (HTTP 200, `<html lang="en">`, 2026-09-11)
+- [x] `npm run typecheck` passes (2026-09-11)
 
 ### 2 · `feature/tooling`
 - [ ] ESLint 9 (+jsx-a11y, +i18next), Prettier, Vitest, Playwright + `accessibility-checker` skeleton, `scripts/check-licenses.mjs`, Husky, lint-staged, commitlint, CI, PR template, `CONTRIBUTING.md`, smoke tests
@@ -131,14 +131,30 @@ Tick a box only once the criterion has been verified locally (command output see
 
 ## Deviations from the plan
 
-None yet. Record any deliberate deviation here with its reason and the matching `DECISIONS.md` entry.
+| Date | Deviation | Reason | Record |
+|---|---|---|---|
+| 2026-09-11 | Decision 30 amended: named exceptions `lightningcss` (MPL-2.0) and `caniuse-lite` (CC-BY-4.0) in `check-licenses.mjs` | unavoidable build-time transitive deps of Vite 8 / Tailwind 4 / Babel | `DECISIONS.md` D-1 |
+
+## Working agreements (added during implementation)
+
+- **PR merges**: Claude squash-merges each feature PR into `development` itself once the "done
+  when" criteria, `npm run check` and e2e are verified green (user decision 2026-09-11), then
+  proceeds to the next branch; the user reviews a posteriori.
 
 ## Open questions
 
-None.
+- ~~Q1~~ **resolved 2026-09-11 → D-1 (named exceptions)**. Original question: the licence audit of the scaffold tree (175 packages) finds
+  `lightningcss` **MPL-2.0** (hard dependency of both `vite@8` and `@tailwindcss/node@4`) and
+  `caniuse-lite` **CC-BY-4.0** (via `@react-router/dev` → Babel → browserslist). Both are
+  build-time-only, unmodified, and never ship in the app bundle, but decision 30 bans MPL outright
+  and the plan's stack audit missed them. React Router v8 requires Vite 7/8, so they cannot be
+  avoided with the approved stack. Proposed: amend decision 30 with a named-exception list for
+  unmodified build-time-only transitive packages (`lightningcss`, `caniuse-lite`), recorded in
+  `DECISIONS.md`, enforced by `check-licenses.mjs` (exceptions must be listed with a reason) and
+  credited in the README.
 
 ## Session log
 
 | Date | Session summary |
 |---|---|
-| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap started (`development` from `main`). |
+| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). |
