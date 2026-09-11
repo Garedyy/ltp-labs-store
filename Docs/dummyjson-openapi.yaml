@@ -1,0 +1,1808 @@
+openapi: 3.0.3
+info:
+  title: DummyJSON E-Commerce API
+  description: |
+    Free REST API for a simple online store. Provides product, cart and user data.
+    Used for the LTP Labs project - building a simple online store with Remix.
+
+    Contract aligned with the official documentation at https://dummyjson.com/docs
+    and cross-checked against the server source code (github.com/Ovi/DummyJSON, master)
+    on 2026-09-11. Status codes, validation rules and error payloads below come from the
+    source code, as the documentation does not specify them.
+
+    ## Scope
+    This contract covers what the store needs: product reading, carts, user reading,
+    authentication and the HTTP mocks. Deliberately excluded although documented by the
+    provider: product and user writes (`POST /products/add`, `PUT/PATCH/DELETE /products/{id}`,
+    `POST /users/add`, `PUT/PATCH/DELETE /users/{id}`), `/users/{id}/posts`,
+    `/users/{id}/todos`, posts, comments, todos, recipes, quotes, images, tools, `/test`, `/ip`.
+    Singular path aliases also exist server-side (`/product`, `/cart`, `/user`) but are not listed.
+
+    ## Behaviour shared by all endpoints
+    - List endpoints support `limit`, `skip`, `select`, `sortBy`, `order` and `delay`.
+      `limit=0` returns all items. In responses, `limit` echoes the number of items actually
+      returned, not the value requested (a search yielding 23 results returns `limit: 23`).
+    - **Rate limit: 100 requests per 10 seconds per client IP**, enforced behind a proxy on the
+      forwarded IP. Exceeding it returns `429 { "message": "request limit exceeded, please wait
+      a few seconds" }`. For a server-rendered (Remix) application every call originates from
+      the server's IP, so this budget is shared by all visitors: cache aggressively.
+    - A trailing slash triggers a `301` redirect to the same path without it
+      (`/products/` -> `/products`). Clients that do not follow redirects will fail.
+    - Every **API** error is JSON with the shape `{ "message": "..." }` (see `Error` schema).
+      Exception: a path that matches no route at all returns the provider's HTML 404 page,
+      not JSON.
+    - Writes (POST/PUT/PATCH/DELETE) are simulated: nothing is persisted server-side.
+
+    ## Authenticated access to any resource
+    Every path in this document can also be requested under the `/auth/` prefix
+    (`/auth/products`, `/auth/carts/user/5`, ...). The prefixed form requires a valid access
+    token (Bearer header or `accessToken` cookie) and otherwise behaves identically; it exists
+    to exercise "logged-in user" flows. `/auth/carts/user/{userId}` is described below as a
+    representative example; the same pattern applies to all other paths.
+  version: 2.2.0
+  contact:
+    name: DummyJSON
+    url: https://dummyjson.com
+
+servers:
+  - url: https://dummyjson.com
+    description: Production API
+
+tags:
+  - name: Products
+    description: Product operations
+  - name: Carts
+    description: Cart operations
+  - name: Users
+    description: User operations
+  - name: Auth
+    description: |
+      Authentication and session tokens. The canonical paths are under `/auth/` (Auth section
+      of the documentation). `/user/login` and `/user/me` are documented duplicates listed in the
+      Users section and share the same server handlers.
+  - name: HTTP Mocking
+    description: HTTP status code testing
+
+paths:
+  /products:
+    get:
+      operationId: getAllProducts
+      tags: [Products]
+      summary: Get all products
+      description: |
+        Returns the paginated list of all available products (194 in total).
+        Supports sorting, field selection, filtering by modification date and pagination.
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Delay'
+        - $ref: '#/components/parameters/ModifiedAfter'
+        - $ref: '#/components/parameters/ModifiedBefore'
+      responses:
+        '200':
+          description: Product list retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /products/categories:
+    get:
+      operationId: getProductCategories
+      tags: [Products]
+      summary: Get all product categories (objects)
+      description: |
+        Returns the list of categories as `{ slug, name, url }` objects.
+        To get only the slugs as an array of strings, use `/products/category-list`.
+      responses:
+        '200':
+          description: Category list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /products/category-list:
+    get:
+      operationId: getProductCategoryList
+      tags: [Products]
+      summary: Get the list of category slugs
+      description: Returns a plain array of strings containing the category slugs.
+      responses:
+        '200':
+          description: Category slug list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - beauty
+                  - fragrances
+                  - furniture
+                  - groceries
+                  - home-decoration
+                  - kitchen-accessories
+                  - laptops
+                  - mens-shirts
+                  - mens-shoes
+                  - mens-watches
+                  - mobile-accessories
+                  - motorcycle
+                  - skin-care
+                  - smartphones
+                  - sports-accessories
+                  - sunglasses
+                  - tablets
+                  - tops
+                  - vehicle
+                  - womens-bags
+                  - womens-dresses
+                  - womens-jewellery
+                  - womens-shoes
+                  - womens-watches
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /products/category/{category}:
+    get:
+      operationId: getProductsByCategory
+      tags: [Products]
+      summary: Get products by category
+      description: |
+        Returns products filtered by category slug (case-insensitive match).
+        An unknown category is not an error: the API returns 200 with an empty list.
+        Supports the `modifiedAfter` / `modifiedBefore` filters.
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: Category slug (see /products/category-list)
+          schema:
+            type: string
+            example: smartphones
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Delay'
+        - $ref: '#/components/parameters/ModifiedAfter'
+        - $ref: '#/components/parameters/ModifiedBefore'
+      responses:
+        '200':
+          description: Products in the category (empty list if the category is unknown)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /products/search:
+    get:
+      operationId: searchProducts
+      tags: [Products]
+      summary: Search products
+      description: |
+        Searches products by title or description (substring match).
+
+        The search term is normalised server-side before matching: trimmed, lower-cased, and
+        hyphens replaced by spaces (`?q=Mens-Shirts` searches for `mens shirts`).
+        When `q` is absent the term is empty and **all products are returned** - the parameter
+        is therefore optional at the HTTP level. `?q[valueSearch]=phone` is also accepted;
+        any other non-string shape (e.g. `?q=a&q=b`) is rejected with 400.
+        Supports the `modifiedAfter` / `modifiedBefore` filters.
+      parameters:
+        - $ref: '#/components/parameters/SearchQuery'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Delay'
+        - $ref: '#/components/parameters/ModifiedAfter'
+        - $ref: '#/components/parameters/ModifiedBefore'
+      responses:
+        '200':
+          description: Search results (all products when `q` is absent)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /products/{id}:
+    get:
+      operationId: getProductById
+      tags: [Products]
+      summary: Get a single product by ID
+      description: Returns the full details of a specific product.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: integer
+            example: 1
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /carts:
+    get:
+      operationId: getAllCarts
+      tags: [Carts]
+      summary: Get all carts
+      description: Returns the paginated list of all carts (50 in total).
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Cart list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /carts/add:
+    post:
+      operationId: addCart
+      tags: [Carts]
+      summary: Create a cart (simulated)
+      description: |
+        Simulates cart creation and returns the created cart with a new id
+        (always `51`, i.e. current cart count + 1). No data is persisted server-side.
+
+        Rules enforced by the server:
+        - `userId` must reference an existing user (400 if missing or non-numeric, 404 if unknown).
+        - `products` must be a **non-empty** array (400 otherwise).
+        - Product ids that do not exist are silently dropped from the result.
+        - Duplicate product ids are merged and their quantities summed.
+        - Line items are returned with `discountedPrice` (rounded to an integer),
+          not `discountedTotal`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartInput'
+      responses:
+        '201':
+          description: Cart created (simulated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '400':
+          description: Missing or invalid `userId`, or `products` missing / empty / not an array
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emptyProducts:
+                  value:
+                    message: products can not be empty
+                notAnArray:
+                  value:
+                    message: products must be array of objects, containing product id and quantity
+                missingUser:
+                  value:
+                    message: User id is required
+        '404':
+          description: The `userId` does not match any user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: User with id '9999' not found
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /carts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Cart ID
+        schema:
+          type: integer
+          example: 1
+    get:
+      operationId: getCartById
+      tags: [Carts]
+      summary: Get a single cart by ID
+      parameters:
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Cart details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    put:
+      operationId: updateCart
+      tags: [Carts]
+      summary: Update a cart (simulated)
+      description: |
+        Simulates a cart update. Pass `merge: true` to keep the products already
+        in the cart instead of replacing them. Behaves exactly like PATCH.
+
+        Unlike `/carts/add`, an **empty `products` array is accepted**: with `merge: false`
+        (the default) the response is a cart with no lines and zero totals. Only a non-array
+        `products` value is rejected (400). Unknown product ids are silently dropped.
+        Line items are returned with `discountedPrice` (rounded to an integer).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartUpdateInput'
+      responses:
+        '200':
+          description: Cart updated (simulated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '400':
+          $ref: '#/components/responses/CartUpdateBadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    patch:
+      operationId: patchCart
+      tags: [Carts]
+      summary: Update a cart (simulated, PATCH alias)
+      description: Identical to PUT on the same path; both methods share the same server handler.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartUpdateInput'
+      responses:
+        '200':
+          description: Cart updated (simulated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '400':
+          $ref: '#/components/responses/CartUpdateBadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      operationId: deleteCart
+      tags: [Carts]
+      summary: Delete a cart (simulated)
+      description: Returns the deleted cart with the added `isDeleted` and `deletedOn` keys.
+      responses:
+        '200':
+          description: Cart deleted (simulated)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Cart'
+                  - $ref: '#/components/schemas/DeletionFlags'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /carts/user/{userId}:
+    get:
+      operationId: getCartsByUserId
+      tags: [Carts]
+      summary: Get the carts of a user
+      description: |
+        Documented equivalent of `/users/{id}/carts`. The user must exist.
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Carts belonging to the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartsList'
+        '400':
+          $ref: '#/components/responses/InvalidUserId'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/carts/user/{userId}:
+    get:
+      operationId: getCartsByUserIdAuthenticated
+      tags: [Carts, Auth]
+      summary: Get the carts of a user, as an authenticated client
+      description: |
+        Representative example of the `/auth/` prefix: identical to `/carts/user/{userId}`
+        but requires a valid access token. Note that the token owner is **not** checked against
+        `userId` - any authenticated client can read any user's carts. The same prefix works
+        for every other path in this document.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Carts belonging to the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartsList'
+        '400':
+          $ref: '#/components/responses/InvalidUserId'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /users:
+    get:
+      operationId: getAllUsers
+      tags: [Users]
+      summary: Get all users
+      description: Returns the paginated list of all users (208 in total).
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /users/search:
+    get:
+      operationId: searchUsers
+      tags: [Users]
+      summary: Search users
+      description: |
+        Searches users by first name, last name, email or username (substring match).
+        Same term normalisation as `/products/search`; when `q` is absent all users are returned.
+      parameters:
+        - $ref: '#/components/parameters/SearchQuery'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Search results (all users when `q` is absent)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /users/filter:
+    get:
+      operationId: filterUsers
+      tags: [Users]
+      summary: Filter users on a field
+      description: |
+        Filters users on a key and a value. Nested keys use dot notation (`hair.color`).
+        Both key and value are case-sensitive.
+      parameters:
+        - name: key
+          in: query
+          required: true
+          description: Field to filter on (dot notation for nested fields)
+          schema:
+            type: string
+            example: hair.color
+        - name: value
+          in: query
+          required: true
+          description: Value to match (case-sensitive)
+          schema:
+            type: string
+            example: Brown
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Filtered users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /users/{id}:
+    get:
+      operationId: getUserById
+      tags: [Users]
+      summary: Get a single user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            example: 1
+        - $ref: '#/components/parameters/Select'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /users/{id}/carts:
+    get:
+      operationId: getUserCarts
+      tags: [Users]
+      summary: Get the carts of a user
+      description: Same result as `/carts/user/{userId}`. The user must exist.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            example: 6
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Skip'
+        - $ref: '#/components/parameters/Delay'
+      responses:
+        '200':
+          description: Carts belonging to the user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartsList'
+        '400':
+          $ref: '#/components/responses/InvalidUserId'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [Auth]
+      summary: Authenticate a user (canonical path)
+      description: |
+        Returns an `accessToken` and a `refreshToken` (JWT), also set as `httpOnly`, `secure`
+        cookies. Credentials of any user from `/users` work (e.g. `emilys` / `emilyspass`);
+        the username match is case-insensitive, the password match is exact.
+
+        **Cookie lifetime trap:** both cookies are set with `maxAge = expiresInMins`
+        (60 minutes by default). The refresh JWT itself is valid for 30 days, but its cookie
+        expires together with the access token. A cookie-based session that relies on the
+        `refreshToken` cookie to renew an expired access token will therefore find the cookie
+        already gone; keep the refresh token in your own server-side session instead.
+
+        `/user/login` (Users section of the documentation) is a duplicate of this endpoint.
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginSuccess'
+        '400':
+          $ref: '#/components/responses/LoginBadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ExpiresInMinsOutOfRange'
+
+  /user/login:
+    post:
+      operationId: loginUser
+      tags: [Auth]
+      summary: Authenticate a user (documented duplicate of /auth/login)
+      description: |
+        Same handler, same request, same responses and same cookie behaviour as `/auth/login`.
+        Listed in the Users section of the documentation. Prefer `/auth/login`.
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginSuccess'
+        '400':
+          $ref: '#/components/responses/LoginBadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ExpiresInMinsOutOfRange'
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [Auth]
+      summary: Get the authenticated user (canonical path)
+      description: |
+        The token can be supplied through the `Authorization: Bearer <token>` header or through
+        the `accessToken` cookie; the header takes precedence when both are present.
+        On any authentication failure the server also clears the token cookies.
+
+        `/user/me` (Users section of the documentation) is a duplicate of this endpoint.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CurrentUser'
+        '400':
+          $ref: '#/components/responses/TokenUnknownUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InvalidSignature'
+
+  /user/me:
+    get:
+      operationId: getCurrentUserAlias
+      tags: [Auth]
+      summary: Get the authenticated user (documented duplicate of /auth/me)
+      description: Same handler and same responses as `/auth/me`. Prefer `/auth/me`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CurrentUser'
+        '400':
+          $ref: '#/components/responses/TokenUnknownUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InvalidSignature'
+
+  /auth/refresh:
+    post:
+      operationId: refreshTokens
+      tags: [Auth]
+      summary: Refresh the session tokens
+      description: |
+        Issues a new `accessToken` and a new `refreshToken` without username/password.
+        The refresh token is read from the request body, or from the `refreshToken` cookie
+        when the body does not provide one. Both new tokens are set as cookies with
+        `maxAge = expiresInMins` (same trap as on login: the refresh cookie expires with the
+        access token, while the refresh JWT itself stays valid for 30 days).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  description: Refresh JWT. Optional if the `refreshToken` cookie is present.
+                expiresInMins:
+                  type: integer
+                  description: |
+                    New access token lifetime in minutes (defaults to 60). Accepted range 1 to 43200;
+                    out-of-range values trigger an unhandled server error (500), as on login.
+                  default: 60
+                  minimum: 1
+                  maximum: 43200
+                  example: 30
+      responses:
+        '200':
+          description: New token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPair'
+        '401':
+          description: No refresh token in body or cookie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Refresh token required
+        '403':
+          description: Refresh token invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid:
+                  value:
+                    message: Invalid refresh token
+                expired:
+                  value:
+                    message: Refresh token expired
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/ExpiresInMinsOutOfRange'
+
+  /auth/logout:
+    post:
+      operationId: logoutUser
+      tags: [Auth]
+      summary: Log out the authenticated user
+      description: |
+        Not listed in the public documentation but present on the server.
+        Requires a valid access token (header or cookie) and clears the
+        `accessToken` and `refreshToken` cookies. Tokens themselves are stateless JWTs
+        and remain technically valid until they expire.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cookies cleared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: Logged out successfully
+        '400':
+          $ref: '#/components/responses/TokenUnknownUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /http/{code}:
+    get:
+      operationId: mockHttpResponse
+      tags: [HTTP Mocking]
+      summary: Mock an HTTP response
+      description: Returns a response with the given HTTP status code and its standard message.
+      parameters:
+        - $ref: '#/components/parameters/HttpCode'
+      responses:
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          description: Response carrying the requested HTTP status code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttpMockResponse'
+
+  /http/{code}/{message}:
+    get:
+      operationId: mockHttpResponseWithMessage
+      tags: [HTTP Mocking]
+      summary: Mock an HTTP response with a custom message
+      description: Returns the given HTTP status code along with the message supplied in the URL.
+      parameters:
+        - $ref: '#/components/parameters/HttpCode'
+        - name: message
+          in: path
+          required: true
+          description: Custom message (URL-encoded)
+          schema:
+            type: string
+            example: Hello_Peter
+      responses:
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          description: Response carrying the requested status code and message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttpMockResponse'
+              example:
+                status: "404"
+                message: Hello_Peter
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        `Authorization: Bearer <accessToken>`. The server also accepts the `accessToken`
+        cookie set by the login endpoint when no header is provided.
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      description: |
+        Number of items to return (defaults to 30). `limit=0` returns all items.
+        Must be numeric and >= 0 (400 otherwise). Note that the `limit` field echoed in the
+        response is the number of items actually returned.
+      schema:
+        type: integer
+        default: 30
+        minimum: 0
+    Skip:
+      name: skip
+      in: query
+      description: Number of items to skip (pagination). Must be numeric and >= 0 (400 otherwise).
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+    Select:
+      name: select
+      in: query
+      description: |
+        Fields to include in the response, comma-separated.
+        The parameter can also be repeated (`select=title&select=price`).
+        The `id` field is always included.
+      schema:
+        type: string
+        example: title,price
+    SortBy:
+      name: sortBy
+      in: query
+      description: Name of the field to sort on. Unknown fields do not raise an error.
+      schema:
+        type: string
+        example: title
+    Order:
+      name: order
+      in: query
+      description: |
+        Sort direction, case-insensitive (`ASC` works). Defaults to `asc`.
+        Only validated when `sortBy` is also supplied: `order=foo` alone is silently ignored,
+        `sortBy=title&order=foo` returns 400.
+      schema:
+        type: string
+        enum: [asc, desc]
+        example: asc
+    Delay:
+      name: delay
+      in: query
+      description: Artificial response delay, in milliseconds (0 to 5000; 400 outside that range)
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 5000
+        example: 1000
+    SearchQuery:
+      name: q
+      in: query
+      required: false
+      description: |
+        Search term. Trimmed, lower-cased and hyphens replaced by spaces before matching.
+        Optional at the HTTP level: when absent, every item matches. Must be a string
+        (or `q[valueSearch]=...`); any other shape returns 400.
+      schema:
+        type: string
+        example: phone
+    ModifiedAfter:
+      name: modifiedAfter
+      in: query
+      description: |
+        Only return products whose `meta.updatedAt` is on or after this ISO 8601 date.
+        400 if the value is not a parseable date, or if it is later than `modifiedBefore`.
+        Products whose `meta.updatedAt` cannot be parsed are excluded when this filter is active.
+      schema:
+        type: string
+        format: date-time
+        example: "2026-06-01T00:00:00Z"
+    ModifiedBefore:
+      name: modifiedBefore
+      in: query
+      description: |
+        Only return products whose `meta.updatedAt` is on or before this ISO 8601 date.
+        400 if the value is not a parseable date, or if it is earlier than `modifiedAfter`.
+        Products whose `meta.updatedAt` cannot be parsed are excluded when this filter is active.
+      schema:
+        type: string
+        format: date-time
+        example: "2026-08-01T00:00:00Z"
+    UserIdPath:
+      name: userId
+      in: path
+      required: true
+      description: User ID (must be numeric and reference an existing user)
+      schema:
+        type: integer
+        example: 5
+    HttpCode:
+      name: code
+      in: path
+      required: true
+      description: HTTP status code to return
+      schema:
+        type: integer
+        example: 200
+
+  requestBodies:
+    LoginRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [username, password]
+            properties:
+              username:
+                type: string
+                example: emilys
+              password:
+                type: string
+                format: password
+                example: emilyspass
+              expiresInMins:
+                type: integer
+                description: |
+                  Access token lifetime in minutes (defaults to 60). Accepted range 1 to 43200
+                  (30 days). Out-of-range values trigger an unhandled server error (500).
+                  Also drives the `maxAge` of **both** cookies.
+                default: 60
+                minimum: 1
+                maximum: 43200
+                example: 30
+
+  responses:
+    BadRequest:
+      description: Invalid query parameter
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalidLimit:
+              value:
+                message: "Invalid 'limit' - should be a positive number"
+            invalidSkip:
+              value:
+                message: "Invalid 'skip' - should be a positive number"
+            invalidOrder:
+              value:
+                message: "Invalid 'order' - should be either 'asc' or 'desc'"
+            invalidDelay:
+              value:
+                message: Delay should be less than 5 seconds (5000 milliseconds)
+            invalidQ:
+              value:
+                message: "Invalid 'q' - should be a valid string or object with 'valueSearch' string"
+            invalidDate:
+              value:
+                message: "Invalid 'modifiedAfter' - should be a valid ISO 8601 date, e.g. 2025-01-01T00:00:00Z"
+            invertedRange:
+              value:
+                message: "'modifiedAfter' must be earlier than 'modifiedBefore'"
+    CartUpdateBadRequest:
+      description: Invalid body (`products` not an array) or invalid `userId`, plus the usual query validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            notAnArray:
+              value:
+                message: products must be array of objects, containing product id and quantity
+            invalidUser:
+              value:
+                message: Invalid user id 'abc'
+    InvalidUserId:
+      description: The `userId` path parameter is not numeric, plus the usual query validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Invalid user id 'abc'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            product:
+              value:
+                message: Product with id '9999' not found
+            cart:
+              value:
+                message: Cart with id '9999' not found
+            user:
+              value:
+                message: User with id '9999' not found
+    Unauthorized:
+      description: Access token missing, expired or malformed (token cookies are cleared)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            missing:
+              value:
+                message: Access Token is required
+            expired:
+              value:
+                message: Token Expired!
+            malformed:
+              value:
+                message: Invalid/Expired Token!
+    TokenUnknownUser:
+      description: The token is well-formed and signed but does not map to an existing user
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Invalid access token
+    InvalidSignature:
+      description: |
+        Edge case: a well-formed token with an invalid signature falls through the server's
+        error mapping and is returned as 500.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: invalid signature
+    ExpiresInMinsOutOfRange:
+      description: |
+        `expiresInMins` outside 1..43200. The server raises this validation error without a
+        status code, so it surfaces as 500 rather than 400.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Maximum access token expire time can be 43200 minutes
+    TooManyRequests:
+      description: Rate limit exceeded (100 requests per 10 seconds per client IP)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: request limit exceeded, please wait a few seconds
+    LoginSuccess:
+      description: |
+        Authentication successful. Also sets `accessToken` and `refreshToken` cookies
+        (`httpOnly`, `secure`, `maxAge = expiresInMins`).
+      headers:
+        Set-Cookie:
+          description: "`accessToken=<jwt>; HttpOnly; Secure; Max-Age=<expiresInMins*60>` and the same for `refreshToken`"
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthResponse'
+    LoginBadRequest:
+      description: Invalid credentials, or missing / malformed `username` or `password`
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalidCredentials:
+              value:
+                message: Invalid credentials
+            missingFields:
+              value:
+                message: Username and password required
+            invalidUsername:
+              value:
+                message: Username is not valid
+    CurrentUser:
+      description: Authenticated user (full user record)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+
+  schemas:
+    Error:
+      type: object
+      description: Shape shared by every JSON error response (unknown routes return HTML instead)
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: Product with id '9999' not found
+        details:
+          description: Optional additional validation details (rarely present)
+          nullable: true
+
+    Category:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: beauty
+        name:
+          type: string
+          example: Beauty
+        url:
+          type: string
+          format: uri
+          example: https://dummyjson.com/products/category/beauty
+
+    Dimensions:
+      type: object
+      properties:
+        width:
+          type: number
+          format: double
+          example: 23.17
+        height:
+          type: number
+          format: double
+          example: 14.43
+        depth:
+          type: number
+          format: double
+          example: 28.01
+
+    Meta:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-05-23T08:56:21.618Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-05-23T08:56:21.618Z"
+        barcode:
+          type: string
+          example: "9164035109868"
+        qrCode:
+          type: string
+          format: uri
+          example: https://cdn.dummyjson.com/public/qr-code.png
+
+    Product:
+      type: object
+      required: [id, title, price, category]
+      properties:
+        id:
+          type: integer
+          description: Unique product ID
+          example: 1
+        title:
+          type: string
+          description: Product name
+          example: Essence Mascara Lash Princess
+        description:
+          type: string
+          description: Product description
+          example: The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects.
+        category:
+          type: string
+          description: Category slug of the product
+          example: beauty
+        price:
+          type: number
+          format: double
+          description: Product price
+          example: 9.99
+        discountPercentage:
+          type: number
+          format: double
+          description: Applied discount percentage
+          example: 7.17
+        rating:
+          type: number
+          format: double
+          description: Average product rating (0-5)
+          example: 4.94
+        stock:
+          type: integer
+          description: Quantity in stock
+          example: 5
+        tags:
+          type: array
+          description: Tags attached to the product
+          items:
+            type: string
+          example: [beauty, mascara]
+        brand:
+          type: string
+          description: Product brand. Missing on some products.
+          example: Essence
+        sku:
+          type: string
+          description: Stock keeping unit
+          example: RCH45Q1A
+        weight:
+          type: number
+          format: double
+          description: Product weight
+          example: 2
+        dimensions:
+          $ref: '#/components/schemas/Dimensions'
+        warrantyInformation:
+          type: string
+          example: 1 month warranty
+        shippingInformation:
+          type: string
+          example: Ships in 1 month
+        availabilityStatus:
+          type: string
+          description: Availability status
+          example: Low Stock
+        reviews:
+          type: array
+          description: Product reviews
+          items:
+            $ref: '#/components/schemas/Review'
+        returnPolicy:
+          type: string
+          example: 30 days return policy
+        minimumOrderQuantity:
+          type: integer
+          example: 24
+        meta:
+          $ref: '#/components/schemas/Meta'
+        thumbnail:
+          type: string
+          format: uri
+          description: Thumbnail image URL
+          example: https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/thumbnail.png
+        images:
+          type: array
+          description: Product image URLs
+          items:
+            type: string
+            format: uri
+          example:
+            - https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/1.png
+
+    Review:
+      type: object
+      properties:
+        rating:
+          type: integer
+          description: Rating (1-5)
+          example: 5
+        comment:
+          type: string
+          description: Review comment
+          example: Very satisfied!
+        date:
+          type: string
+          format: date-time
+          example: "2024-05-23T08:56:21.618Z"
+        reviewerName:
+          type: string
+          example: Scarlett Wright
+        reviewerEmail:
+          type: string
+          format: email
+          example: scarlett.wright@x.dummyjson.com
+
+    ProductsList:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        total:
+          type: integer
+          description: Total number of products matching the request (before pagination)
+          example: 194
+        skip:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          description: Number of items actually returned in `products` (not the requested limit)
+          example: 30
+
+    CartItem:
+      type: object
+      required: [id, title, price, quantity]
+      properties:
+        id:
+          type: integer
+          description: Product ID
+          example: 144
+        title:
+          type: string
+          description: Product name
+          example: Cricket Helmet
+        price:
+          type: number
+          format: double
+          description: Unit price
+          example: 44.99
+        quantity:
+          type: integer
+          description: Quantity in the cart
+          example: 4
+        total:
+          type: number
+          format: double
+          description: Line total (price x quantity)
+          example: 179.96
+        discountPercentage:
+          type: number
+          format: double
+          description: Discount percentage
+          example: 11.47
+        discountedTotal:
+          type: number
+          format: double
+          description: |
+            Line total after discount. Present on GET and DELETE responses only.
+            On POST /carts/add and PUT/PATCH /carts/{id} responses, the API returns the
+            discounted amount under `discountedPrice` instead.
+          example: 159.32
+        discountedPrice:
+          type: integer
+          description: |
+            Line total after discount, rounded to the nearest integer (`Math.round`).
+            Returned by POST /carts/add and PUT/PATCH /carts/{id} in place of `discountedTotal`.
+          example: 159
+        thumbnail:
+          type: string
+          format: uri
+          example: https://cdn.dummyjson.com/products/images/sports-accessories/Cricket%20Helmet/thumbnail.png
+
+    Cart:
+      type: object
+      required: [id, products, userId]
+      properties:
+        id:
+          type: integer
+          description: Unique cart ID
+          example: 1
+        products:
+          type: array
+          description: Products in the cart
+          items:
+            $ref: '#/components/schemas/CartItem'
+        total:
+          type: number
+          format: double
+          description: Cart total before discounts
+          example: 4794.8
+        discountedTotal:
+          type: number
+          format: double
+          description: Cart total after discounts (sum of line discounted amounts)
+          example: 4288.95
+        userId:
+          type: integer
+          description: ID of the user owning the cart
+          example: 142
+        totalProducts:
+          type: integer
+          description: Number of distinct product lines
+          example: 5
+        totalQuantity:
+          type: integer
+          description: Total quantity of items
+          example: 20
+
+    CartProductInput:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+          description: Product ID. Unknown ids are silently ignored by the server.
+          example: 144
+        quantity:
+          type: integer
+          description: Quantity (defaults to 1 when omitted or not numeric)
+          default: 1
+          minimum: 1
+          example: 4
+
+    CartInput:
+      type: object
+      required: [userId, products]
+      properties:
+        userId:
+          type: integer
+          description: Must reference an existing user
+          example: 1
+        products:
+          type: array
+          description: Non-empty list of products to add
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/CartProductInput'
+
+    CartUpdateInput:
+      type: object
+      required: [products]
+      properties:
+        merge:
+          type: boolean
+          description: |
+            When true, keeps the products already in the cart. Products supplied in
+            `products` override the quantity of an existing line with the same id.
+          default: false
+          example: true
+        userId:
+          type: integer
+          description: Optional. When supplied, must reference an existing user; otherwise the cart's current owner is kept.
+          example: 1
+        products:
+          type: array
+          description: "May be empty (unlike `/carts/add`); with `merge: false` this empties the cart."
+          items:
+            $ref: '#/components/schemas/CartProductInput'
+
+    CartsList:
+      type: object
+      properties:
+        carts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cart'
+        total:
+          type: integer
+          description: Total number of carts matching the request (before pagination)
+          example: 50
+        skip:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          description: Number of items actually returned in `carts` (not the requested limit)
+          example: 30
+
+    DeletionFlags:
+      type: object
+      properties:
+        isDeleted:
+          type: boolean
+          example: true
+        deletedOn:
+          type: string
+          format: date-time
+          example: "2026-09-11T10:30:00.000Z"
+
+    Coordinates:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+          example: -77.16213
+        lng:
+          type: number
+          format: double
+          example: -92.084824
+
+    Address:
+      type: object
+      properties:
+        address:
+          type: string
+          example: 626 Main Street
+        city:
+          type: string
+          example: Phoenix
+        state:
+          type: string
+          example: Mississippi
+        stateCode:
+          type: string
+          example: MS
+        postalCode:
+          type: string
+          example: "29112"
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        country:
+          type: string
+          example: United States
+
+    Company:
+      type: object
+      properties:
+        department:
+          type: string
+          example: Engineering
+        name:
+          type: string
+          example: Dooley, Kozey and Cronin
+        title:
+          type: string
+          example: Sales Manager
+        address:
+          $ref: '#/components/schemas/Address'
+
+    Bank:
+      type: object
+      properties:
+        cardExpire:
+          type: string
+          example: 03/26
+        cardNumber:
+          type: string
+          example: "9289760655481815"
+        cardType:
+          type: string
+          example: Elo
+        currency:
+          type: string
+          example: CNY
+        iban:
+          type: string
+          example: YPUXISOBI7TTHPK2BR3HAIXL
+
+    Crypto:
+      type: object
+      properties:
+        coin:
+          type: string
+          example: Bitcoin
+        wallet:
+          type: string
+          example: "0xb9fc2fe63b2a6c003f1c324c3bfa53259162181a"
+        network:
+          type: string
+          example: Ethereum (ERC20)
+
+    Hair:
+      type: object
+      properties:
+        color:
+          type: string
+          example: Brown
+        type:
+          type: string
+          example: Curly
+
+    User:
+      type: object
+      required: [id, username, email]
+      properties:
+        id:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          example: Emily
+        lastName:
+          type: string
+          example: Johnson
+        maidenName:
+          type: string
+          example: Smith
+        age:
+          type: integer
+          example: 28
+        gender:
+          type: string
+          enum: [male, female]
+          example: female
+        email:
+          type: string
+          format: email
+          example: emily.johnson@x.dummyjson.com
+        phone:
+          type: string
+          example: "+81 965-431-3024"
+        username:
+          type: string
+          example: emilys
+        password:
+          type: string
+          description: Plain-text password (dummy data)
+          example: emilyspass
+        birthDate:
+          type: string
+          description: Birth date in a non-normalized format (e.g. 1996-5-30)
+          example: 1996-5-30
+        image:
+          type: string
+          format: uri
+          example: https://dummyjson.com/icon/emilys/128
+        bloodGroup:
+          type: string
+          example: O-
+        height:
+          type: number
+          format: double
+          example: 193.24
+        weight:
+          type: number
+          format: double
+          example: 63.16
+        eyeColor:
+          type: string
+          example: Green
+        hair:
+          $ref: '#/components/schemas/Hair'
+        ip:
+          type: string
+          example: 42.48.100.32
+        address:
+          $ref: '#/components/schemas/Address'
+        macAddress:
+          type: string
+          example: "47:fa:41:18:ec:eb"
+        university:
+          type: string
+          example: University of Wisconsin--Madison
+        bank:
+          $ref: '#/components/schemas/Bank'
+        company:
+          $ref: '#/components/schemas/Company'
+        ein:
+          type: string
+          example: 977-175
+        ssn:
+          type: string
+          example: 900-590-289
+        userAgent:
+          type: string
+          example: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)
+        crypto:
+          $ref: '#/components/schemas/Crypto'
+        role:
+          type: string
+          enum: [admin, moderator, user]
+          example: admin
+
+    UsersList:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        total:
+          type: integer
+          description: Total number of users matching the request (before pagination)
+          example: 208
+        skip:
+          type: integer
+          example: 0
+        limit:
+          type: integer
+          description: Number of items actually returned in `users` (not the requested limit)
+          example: 30
+
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken]
+      properties:
+        accessToken:
+          type: string
+          description: Access JWT (lifetime = `expiresInMins`), also set as an httpOnly cookie with the same `maxAge`
+        refreshToken:
+          type: string
+          description: |
+            Refresh JWT, valid for 30 days. Also set as an httpOnly cookie, but that cookie's
+            `maxAge` equals `expiresInMins`, so it expires with the access token.
+
+    AuthResponse:
+      allOf:
+        - $ref: '#/components/schemas/TokenPair'
+        - type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            username:
+              type: string
+              example: emilys
+            email:
+              type: string
+              format: email
+              example: emily.johnson@x.dummyjson.com
+            firstName:
+              type: string
+              example: Emily
+            lastName:
+              type: string
+              example: Johnson
+            gender:
+              type: string
+              example: female
+            image:
+              type: string
+              format: uri
+              example: https://dummyjson.com/icon/emilys/128
+
+    HttpMockResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Returned HTTP status code, as a string
+          example: "200"
+        message:
+          type: string
+          description: Standard message for the status code, or the custom message supplied in the URL
+          example: OK
