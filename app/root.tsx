@@ -74,6 +74,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
         {rootData && <AlternateLinks origin={rootData.origin} />}
+        {/* Lets CSS hide no-JS fallbacks (e.g. Apply buttons) only when scripts run. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}
+        />
       </head>
       <body>
         {children}

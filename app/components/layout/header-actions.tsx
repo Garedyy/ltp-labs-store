@@ -5,14 +5,15 @@ import { Icon, type IconName } from "~/components/ui/icon";
 import { cx } from "~/lib/cx";
 import { useLocale } from "~/i18n/use-locale";
 
+// Display is left to the caller (default inline-flex) so "hidden sm:inline-flex" can win.
 const ICON_LINK =
-  "inline-flex size-11 items-center justify-center rounded-xl border border-border-strong text-primary no-underline hover:bg-surface-muted forced-colors:border";
+  "size-11 items-center justify-center rounded-xl border border-border-strong text-primary no-underline hover:bg-surface-muted forced-colors:border";
 
 function IconLink({
   to,
   icon,
   label,
-  className,
+  className = "inline-flex",
 }: {
   to: string;
   icon: IconName;
@@ -60,7 +61,7 @@ export function CartLink({ count }: { count: number }) {
     <Link
       to={href("/:lang/cart", { lang })}
       aria-label={t("common.cartLink", { count })}
-      className={cx(ICON_LINK, "relative")}
+      className={cx(ICON_LINK, "relative inline-flex")}
       prefetch="intent"
     >
       <Icon name="bag" />

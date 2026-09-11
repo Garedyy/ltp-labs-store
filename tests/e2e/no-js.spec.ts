@@ -15,3 +15,21 @@ test("the language switcher works without JavaScript", async ({ page }) => {
   await expect(page).toHaveURL(/\/pt\/nowhere\?x=1$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
 });
+
+test("sorting and filtering work without JavaScript through the GET forms", async ({ page }) => {
+  await page.goto("/en");
+  await page.getByRole("combobox", { name: "Sort by" }).selectOption("price-desc");
+  await page
+    .locator("form", { has: page.getByRole("combobox") })
+    .getByRole("button", { name: "Apply" })
+    .click();
+  await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+  await page.getByRole("checkbox", { name: "Beauty" }).check();
+  const applyFilter = page.locator("aside").getByRole("button", { name: "Apply" });
+  await expect(applyFilter).toBeVisible();
+  await applyFilter.click();
+  await expect(page).toHaveURL(/\/en\?category=beauty&sort=price-desc$/);
+  await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+  await page.getByRole("link", { name: "Clear filter" }).click();
+  await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+});

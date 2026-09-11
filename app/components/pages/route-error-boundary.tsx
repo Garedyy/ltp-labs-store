@@ -5,15 +5,19 @@ import { ButtonLink } from "~/components/ui/button";
 import { useLocale } from "~/i18n/use-locale";
 import { ErrorPage } from "./error-page";
 
-type MessageKey =
+export type ErrorMessageKey =
   "notFound" | "methodNotAllowed" | "badRequest" | "serviceUnavailable" | "unexpected";
 
-function messageKeyFor(status: number): MessageKey {
+function messageKeyFor(status: number): ErrorMessageKey {
   if (status === 404) return "notFound";
   if (status === 405) return "methodNotAllowed";
   if (status === 400) return "badRequest";
   if (status === 502 || status === 503) return "serviceUnavailable";
   return "unexpected";
+}
+
+export function statusOf(error: unknown): ErrorMessageKey {
+  return messageKeyFor(isRouteErrorResponse(error) ? error.status : 500);
 }
 
 export function RouteErrorBoundary({ error }: { error: unknown }) {
