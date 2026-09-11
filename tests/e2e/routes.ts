@@ -7,6 +7,8 @@ export const ROUTES: readonly string[] = [
   "/?page=2",
   "/products/1",
   "/products/117",
+  "/products/117?image=2",
+  "/products/16",
   "/products/9999",
   "/search",
   "/search?q=phone",

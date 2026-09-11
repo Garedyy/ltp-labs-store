@@ -18,6 +18,7 @@ import { responseHeadersMiddleware } from "~/middleware/response-headers";
 import type { Route } from "./+types/root";
 import manropeUrl from "./fonts/manrope-latin.woff2?url";
 import "./styles/app.css";
+import { revalidateOnPathnameOrSubmit } from "~/lib/revalidate";
 
 export const middleware: Route.MiddlewareFunction[] = [
   i18nextMiddleware,
@@ -28,6 +29,8 @@ export const links: Route.LinksFunction = () => [
   { rel: "preload", href: manropeUrl, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
   { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
 ];
+
+export const shouldRevalidate = revalidateOnPathnameOrSubmit;
 
 export function loader({ context, url }: Route.LoaderArgs) {
   const locale = getLocale(context);

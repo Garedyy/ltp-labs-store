@@ -1,3 +1,52 @@
 export default {
   description: "Product details, price, availability and reviews.",
+  gallery: {
+    imageAlt: "{{title}}, image {{index}} of {{total}}",
+    show: "Show image {{index}} of {{total}}",
+    shown: "Image {{index}} of {{total}} shown",
+    thumbnails: "Product images",
+  },
+  price: {
+    sale: "Sale price",
+    original: "Original price",
+  },
+  rating: {
+    label_one: "Rated {{value}} out of 5, {{count}} review",
+    label_many: "Rated {{value}} out of 5, {{count}} reviews",
+    label_other: "Rated {{value}} out of 5, {{count}} reviews",
+    label_zero: "Rated {{value}} out of 5, no reviews yet",
+  },
+  stock: {
+    inStock: "In stock",
+    low_one: "Only {{count}} in stock",
+    low_many: "Only {{count}} in stock",
+    low_other: "Only {{count}} in stock",
+    out: "Out of stock",
+  },
+  addToCart: "Add to cart",
+  adding: "Adding…",
+  details: {
+    heading: "Product details",
+  },
+  info: {
+    heading: "Practical information",
+    brand: "Brand",
+    sku: "SKU",
+    shipping: "Shipping",
+    warranty: "Warranty",
+    returns: "Return policy",
+    dimensions: "Dimensions",
+    dimensionsValue: "{{width}} × {{height}} × {{depth}} cm",
+    dimensionsBy: "by",
+    weight: "Weight",
+    weightValue: "{{value}} kg",
+    tags: "Tags",
+  },
+  reviews: {
+    item: "Review {{index}} of {{total}}",
+    heading_one: "{{count}} review",
+    heading_many: "{{count}} reviews",
+    heading_other: "{{count}} reviews",
+    rated: "Rated {{value}} out of 5",
+  },
 };

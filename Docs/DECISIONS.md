@@ -102,6 +102,19 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
 - **Consequences**: both forms have an explicit, discoverable submit for every user; the list
   summary guard also stops requiring `category`, which `select` never returns.
 
+## D-7 · Gallery index read from the URL; shell loaders skip search-param revalidation
+
+- **Date / branch**: 2026-09-11 · `feature/product-detail`
+- **Context**: the plan wanted thumbnail switches without a `.data` request. Skipping the leaf
+  loader's revalidation means its data cannot carry the current image; and the shell loaders
+  (`root`, `locale-layout`, `locale-errors`) revalidated on every navigation anyway, producing a
+  `.data` request for the parents.
+- **Decision**: `ProductGallery` derives the index from `useSearchParams` (`clampImageIndex`), the
+  product route's `shouldRevalidate` ignores `?image`, and the three shell routes use
+  `revalidateOnPathnameOrSubmit` (revalidate on pathname change or any submission).
+- **Consequences**: image switches are pure client navigations (asserted by `product.spec.ts`);
+  catalogue page/sort/filter changes no longer refetch the shell either.
+
 ## TO VERIFY resolutions
 
 | #   | Item                                                           | Status | Resolution |

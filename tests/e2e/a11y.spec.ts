@@ -8,7 +8,8 @@ for (const locale of LOCALES) {
     test(`${localised(route, locale)} has one h1, named landmarks and passes WCAG 2.2`, async ({
       page,
     }, testInfo) => {
-      await page.goto(localised(route, locale));
+      // Images come from the real DummyJSON CDN: do not wait for them.
+      await page.goto(localised(route, locale), { waitUntil: "domcontentloaded" });
       await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
       await expect(page.locator("html")).toHaveAttribute("lang", locale === "pt" ? "pt-PT" : "en");
       await expect(page.getByRole("banner")).toBeVisible();
