@@ -48,6 +48,31 @@ public/         static assets (favicon, robots.txt)
 Docs/           challenge brief, wireframes, API contract, plan, progress, architecture docs
 ```
 
+## Performance
+
+Measured on 2026-09-11 with the production build served by `react-router-serve` against the mock
+API (Lighthouse 13.4, mobile emulation, simulated throttling, `npx lighthouse … --form-factor=mobile`):
+
+| Page              | Performance | Accessibility | Best practices | SEO | LCP   | CLS | TBT  |
+| ----------------- | ----------- | ------------- | -------------- | --- | ----- | --- | ---- |
+| `/en` (catalogue) | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
+| `/en/products/1`  | 94          | 100           | 100            | 100 | 2.7 s | 0   | 0 ms |
+| `/en/cart`        | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
+
+Bundle (gzip, `gzip -c build/client/assets/<chunk>.js | wc -c`): the catalogue page preloads
+**≈ 138 KB** of JavaScript in total — `entry.client` 79 KB (React DOM, React Router, i18next,
+react-i18next), `jsx-runtime` 28 KB, React Router shared chunk 12 KB, react-i18next 8 KB, the
+current locale ≈ 3 KB (locales are split per language), route chunks 1–3 KB each. CSS: 6.7 KB gzip.
+The plan's < 90 KB target is below the floor of React 19 + React Router 8 + i18next
+(`Docs/DECISIONS.md` D-9); what the app adds on top of the framework is ≈ 20 KB.
+
+What keeps it fast: full SSR from loaders (no client fetching), server-side TTL cache in front of
+DummyJSON, one preloaded variable font, `preconnect` to the image CDN, `width`/`height` on every
+image (CLS 0), eager loading for the first three cards and the product image
+(`fetchPriority="high"` + render-time `preload()`), lazy loading elsewhere, `prefetch="intent"` on
+links, `shouldRevalidate` rules that avoid refetching on `?image` and shell data on search-param
+changes, no runtime dependency beyond the approved list.
+
 ## Licence policy and credits
 
 Every dependency, font, icon and snippet must carry a permissive licence (MIT, ISC, BSD, Apache-2.0,

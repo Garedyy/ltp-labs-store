@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Performance: per-locale client chunks, CDN preconnect, measured bundle sizes and Lighthouse
+  results recorded in the README.
 - Accessibility audit: reflow at 320 px with text spacing on every route, WCAG 2.2 scans of
   error, cart, disclosure and media-emulation states; visible quantity label, named cart forms,
   shrinking sort select.

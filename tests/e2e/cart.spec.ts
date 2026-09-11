@@ -6,12 +6,18 @@ const row = (page: Page, label: RegExp) =>
     .filter({ has: page.getByRole("term").filter({ hasText: label }) })
     .getByRole("definition");
 
-async function addProduct(page: Page, id: number, times = 1) {
+// Adds `times` units and waits for the header to reflect the expected total.
+async function addProduct(page: Page, id: number, times: number, expectedTotal: number) {
   await page.goto(`/en/products/${id}`);
   for (let i = 0; i < times; i += 1) {
+    const count = expectedTotal - times + i + 1;
     await page.getByRole("button", { name: "Add to cart" }).click();
-    await expect(page.getByRole("status").filter({ hasText: `You now have` })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Cart, \d+ item/ })).toBeVisible();
+    await expect(
+      page.getByRole("status").filter({ hasText: `You now have ${count} item` }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: `Cart, ${count} item${count === 1 ? "" : "s"}` }),
+    ).toBeVisible();
   }
 }
 
@@ -32,8 +38,8 @@ test.describe("cart page", () => {
   test("lists items with quantity, totals and shipping; the stepper clamps at stock", async ({
     page,
   }) => {
-    await addProduct(page, 1, 2);
-    await addProduct(page, 16, 1);
+    await addProduct(page, 1, 2, 2);
+    await addProduct(page, 16, 1, 3);
     await page.getByRole("link", { name: "Cart, 3 items" }).click();
     await expect(page).toHaveURL(/\/en\/cart$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart");
@@ -67,7 +73,7 @@ test.describe("cart page", () => {
   });
 
   test("an invalid quantity is refused and focus moves to the input", async ({ page }) => {
-    await addProduct(page, 2);
+    await addProduct(page, 2, 1, 1);
     await page.goto("/en/cart");
     const input = page.getByRole("textbox", { name: "Qty Eyeshadow Palette with Mirror" });
     await input.fill("abc");
@@ -80,8 +86,8 @@ test.describe("cart page", () => {
   test("removing a line moves focus to the next remove button, then to the heading", async ({
     page,
   }) => {
-    await addProduct(page, 1);
-    await addProduct(page, 2);
+    await addProduct(page, 1, 1, 1);
+    await addProduct(page, 2, 1, 2);
     await page.goto("/en/cart");
     await page.getByRole("button", { name: "Remove Essence Mascara Lash Princess" }).click();
     await expect(
@@ -100,7 +106,7 @@ test.describe("cart page", () => {
   test("LTP10 reduces the total, FREESHIP makes shipping free, invalid codes are refused", async ({
     page,
   }) => {
-    await addProduct(page, 1);
+    await addProduct(page, 1, 1, 1);
     await page.goto("/en/cart");
     const code = page.getByRole("textbox", { name: "Promo code" });
     await page.getByRole("button", { name: "Apply" }).click();
@@ -128,7 +134,7 @@ test.describe("cart page", () => {
   test("checkout leads to a confirmation that survives reload and language switch", async ({
     page,
   }) => {
-    await addProduct(page, 1);
+    await addProduct(page, 1, 1, 1);
     await page.goto("/en/cart");
     await page.getByRole("button", { name: "Or pay with PayPal" }).click();
     await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
@@ -145,7 +151,7 @@ test.describe("cart page", () => {
   });
 
   test("Portuguese cart", async ({ page }) => {
-    await addProduct(page, 1);
+    await addProduct(page, 1, 1, 1);
     await page.goto("/pt/cart");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("O seu carrinho");
     await expect(row(page, /^Envio$/)).toHaveText("20,00 US$");
