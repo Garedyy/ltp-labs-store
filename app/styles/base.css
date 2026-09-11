@@ -1,0 +1,64 @@
+@layer base {
+  html {
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    @apply bg-surface font-sans text-body text-fg antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-normal;
+  }
+
+  b,
+  strong {
+    @apply font-medium;
+  }
+
+  /* In-text links are underlined by default; navigation, cards and buttons opt out with no-underline. */
+  a {
+    @apply underline underline-offset-[0.15em];
+  }
+
+  /* Two-tone ring: orange alone is 2.9:1 against white, the inner medium-blue ring restores 3:1. */
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--color-focus-inner);
+  }
+
+  main:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Chromium keeps layout boxes for closed <details> content (content-visibility: hidden); hide it
+     for real so absolutely positioned panels never overlap other content while closed. */
+  details:not([open]) > :not(summary) {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline-color: Highlight;
+      box-shadow: none;
+    }
+  }
+}

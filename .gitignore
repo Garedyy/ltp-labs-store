@@ -1,3 +1,16 @@
+# Dependencies and build output
+node_modules
+build
+.react-router
+
+# Local environment
+.env
+
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Test artefacts
+playwright-report
+test-results
+coverage

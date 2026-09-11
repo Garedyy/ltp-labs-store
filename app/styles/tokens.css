@@ -1,0 +1,106 @@
+/* 1. Raw ltplabs.com palette. Never used directly by components: no utilities are generated. */
+:root {
+  --palette-white: #fff;
+  --palette-black: #121211;
+  --palette-dark-blue: #10131c;
+  --palette-dark-blue-lighter: #1c1f27;
+  --palette-medium-blue: #12173a;
+  --palette-medium-blue-lighter: #242b42;
+  --palette-blue: #16105f;
+  --palette-orange: #ff6a00;
+  --palette-light-green: #007474;
+  --palette-light-gray: #f4f7f9;
+  --palette-medium-gray: #eaecf0;
+  --palette-dark-gray: #6a6a68;
+  --palette-error: #e5484d;
+  --palette-error-text: #b42318; /* derived: #e5484d is 3.9:1, too low for text */
+}
+
+/* 2. Semantic roles (light theme). A future theme is one more :root[data-theme="…"] block. */
+:root {
+  --surface: var(--palette-white);
+  --surface-muted: var(--palette-light-gray);
+  --surface-placeholder: var(--palette-medium-gray);
+  --surface-inverse: var(--palette-dark-blue);
+  --fg: var(--palette-dark-blue);
+  --fg-muted: var(--palette-dark-gray);
+  --fg-inverse: var(--palette-white);
+  --primary: var(--palette-medium-blue);
+  --primary-hover: var(--palette-medium-blue-lighter);
+  --primary-fg: var(--palette-white);
+  --accent: var(--palette-orange);
+  --accent-fg: var(--palette-medium-blue);
+  --link: var(--palette-medium-blue);
+  --link-hover: var(--palette-blue);
+  --border: var(--palette-medium-gray);
+  --border-strong: var(--palette-dark-gray);
+  --focus: var(--palette-orange);
+  --focus-inner: var(--palette-medium-blue);
+  --success: var(--palette-light-green);
+  --error: var(--palette-error-text);
+  --error-border: var(--palette-error);
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: var(--palette-dark-gray);
+    --fg-muted: var(--fg);
+    --surface-muted: var(--surface);
+  }
+}
+
+/* 3. Tailwind theme: semantic colours only, ltplabs type scale, Manrope. */
+@theme {
+  --color-*: initial;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-weight-*: initial;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --text-h1: 3rem;
+  --text-h1--line-height: 1.3;
+  --text-h1--letter-spacing: -0.0625rem;
+  --text-h2: 2.25rem;
+  --text-h2--line-height: 1.3;
+  --text-h2--letter-spacing: -0.0625rem;
+  --text-h3: 1.75rem;
+  --text-h3--line-height: 1.4;
+  --text-h4: 1.375rem;
+  --text-h4--line-height: 1.4;
+  --text-h5: 1.125rem;
+  --text-h5--line-height: 1.4;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.6;
+  --text-tagline: 0.875rem;
+  --text-tagline--line-height: 1.2;
+  --shadow-header: 0 4px 7.5px rgb(8 10 25 / 0.05);
+  --radius-block: 1.5rem;
+  --spacing-header: 3.75rem;
+  --spacing-header-lg: 4rem;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-placeholder: var(--surface-placeholder);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-inverse: var(--fg-inverse);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-focus: var(--focus);
+  --color-focus-inner: var(--focus-inner);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-error-border: var(--error-border);
+}

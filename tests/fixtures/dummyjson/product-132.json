@@ -1,0 +1,55 @@
+{
+  "id": 132,
+  "title": "Samsung Galaxy S8",
+  "description": "The Samsung Galaxy S8 is a premium smartphone with an Infinity Display, offering a stunning visual experience. It boasts advanced camera capabilities and cutting-edge technology.",
+  "category": "smartphones",
+  "price": 499.99,
+  "discountPercentage": 19.45,
+  "rating": 4.4,
+  "stock": 0,
+  "tags": ["smartphones", "samsung galaxy"],
+  "brand": "Samsung",
+  "sku": "SMA-SAM-SAM-132",
+  "weight": 6,
+  "dimensions": { "width": 23.05, "height": 26.88, "depth": 15.73 },
+  "warrantyInformation": "2 year warranty",
+  "shippingInformation": "Ships in 1 week",
+  "availabilityStatus": "Out of Stock",
+  "reviews": [
+    {
+      "rating": 4,
+      "comment": "Highly impressed!",
+      "date": "2025-04-30T09:41:02.054Z",
+      "reviewerName": "Owen Fisher",
+      "reviewerEmail": "owen.fisher@x.dummyjson.com"
+    },
+    {
+      "rating": 4,
+      "comment": "Highly impressed!",
+      "date": "2025-04-30T09:41:02.054Z",
+      "reviewerName": "Clara Berry",
+      "reviewerEmail": "clara.berry@x.dummyjson.com"
+    },
+    {
+      "rating": 4,
+      "comment": "Highly recommended!",
+      "date": "2025-04-30T09:41:02.054Z",
+      "reviewerName": "Tyler Davis",
+      "reviewerEmail": "tyler.davis@x.dummyjson.com"
+    }
+  ],
+  "returnPolicy": "No return policy",
+  "minimumOrderQuantity": 4,
+  "meta": {
+    "createdAt": "2025-07-07T14:30:52.828Z",
+    "updatedAt": "2026-05-27T11:09:22.915Z",
+    "barcode": "5995499013336",
+    "qrCode": "https://cdn.dummyjson.com/public/qr-code.png"
+  },
+  "images": [
+    "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/1.webp",
+    "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/2.webp",
+    "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/3.webp"
+  ],
+  "thumbnail": "https://cdn.dummyjson.com/product-images/smartphones/samsung-galaxy-s8/thumbnail.webp"
+}
