@@ -19,7 +19,7 @@
 ## Resume here
 
 - **Current branch**: `feature/design-system` (PR open → `development`)
-- **Current step**: branch 3 complete; local criteria verified; waiting for CI, then squash-merge
+- **Current step**: branch 3 complete; CI green on PR #3 (quality 48 s, e2e 1 min); merging
 - **Next action**: after merge, `git checkout development && git pull`, branch
   `feature/i18n-foundation` (plan §4 branch 4): `i18n/*`, `locales/*`, middleware, entries,
   `routes.ts`, `locale-layout`, `locale-errors`, `set-language`, `I18N.md`
@@ -32,7 +32,7 @@
 | 0   | bootstrap (`development` from `main`) | merged  | 2026-09-11 | 2026-09-11 | —                                                      | tracker added on `main`; `development` pushed                 |
 | 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified                                      |
 | 2   | `feature/tooling`                     | merged  | 2026-09-11 | 2026-09-11 | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2) | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
-| 3   | `feature/design-system`               | pr-open | 2026-09-11 |            | #TBD                                                   | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
+| 3   | `feature/design-system`               | pr-open | 2026-09-11 |            | [#3](https://github.com/Garedyy/ltp-lab-store-/pull/3) | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
 | 4   | `feature/i18n-foundation`             | todo    |            |            |                                                        |                                                               |
 | 5   | `feature/app-shell`                   | todo    |            |            |                                                        |                                                               |
 | 6   | `feature/dummyjson-client`            | todo    |            |            |                                                        |                                                               |
