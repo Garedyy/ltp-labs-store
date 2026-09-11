@@ -38,7 +38,7 @@
 | 4   | `feature/i18n-foundation`             | merged  | 2026-09-11 | 2026-09-11 | [#4](https://github.com/Garedyy/ltp-lab-store-/pull/4) | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
 | 5   | `feature/app-shell`                   | merged  | 2026-09-11 | 2026-09-11 | [#5](https://github.com/Garedyy/ltp-lab-store-/pull/5) | TO VERIFY 2 resolved; D-3 addendum, D-5                       |
 | 6   | `feature/dummyjson-client`            | merged  | 2026-09-11 | 2026-09-11 | [#6](https://github.com/Garedyy/ltp-lab-store-/pull/6) | TO VERIFY 5 resolved                                          |
-| 7   | `feature/catalogue`                   | pr-open | 2026-09-11 |            | #TBD                                                   | D-6                                                           |
+| 7   | `feature/catalogue`                   | pr-open | 2026-09-11 |            | [#7](https://github.com/Garedyy/ltp-lab-store-/pull/7) | D-6                                                           |
 | 8   | `feature/search`                      | todo    |            |            |                                                        |                                                               |
 | 9   | `feature/product-detail`              | todo    |            |            |                                                        |                                                               |
 | 10  | `feature/cart-session`                | todo    |            |            |                                                        |                                                               |
