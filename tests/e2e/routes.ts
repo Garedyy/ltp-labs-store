@@ -14,6 +14,7 @@ export const ROUTES: readonly string[] = [
   "/search?q=phone",
   "/search?q=zzzzzz",
   "/cart",
+  "/checkout/confirmation",
   "/about",
   "/contact",
   "/blog",

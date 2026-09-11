@@ -8,6 +8,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Cart page: line items with stepper and removal, summary with totals, promo codes, mocked
+  checkout (card / PayPal) and confirmation page; everything works without JavaScript.
 - Cart session: signed cookie cart, sanitisation, integer-cent totals, promo codes, intents,
   `add` action with fetcher and no-JS Post/Redirect/Get, live header count.
 - Product page: gallery with URL-driven thumbnails, price with derived original price and

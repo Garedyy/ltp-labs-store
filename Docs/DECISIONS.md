@@ -115,6 +115,22 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
 - **Consequences**: image switches are pure client navigations (asserted by `product.spec.ts`);
   catalogue page/sort/filter changes no longer refetch the shell either.
 
+## D-8 · Cart results handled centrally through keyed fetchers
+
+- **Date / branch**: 2026-09-11 · `feature/cart-page`
+- **Context**: a removed line unmounts as soon as the loader revalidates, so a per-line effect
+  never sees its fetcher result — no announcement, no focus handoff. Two quick announcements also
+  wiped each other in the alternating regions.
+- **Decision**: every cart fetcher gets a key (`remove-<id>`, `quantity-<id>`, `promo-apply`,
+  `promo-remove`); the cart page reads all results once through `useFetchers()` (a `WeakSet` of
+  handled result objects), announces, plans the removal focus from the DOM order and applies it
+  after revalidation. `AnnouncerProvider` now keeps the other slot's text instead of clearing it.
+  The `+`/`−` submitters share the `quantity` name with the input, so the action takes the **last**
+  value (the submitter wins).
+- **Consequences**: announcements and focus survive unmounts; rapid `+` clicks stay idempotent per
+  request, but responses that race on the cookie are last-write-wins (documented limitation; the
+  e2e waits for each step).
+
 ## TO VERIFY resolutions
 
 | #   | Item                                                           | Status | Resolution |
