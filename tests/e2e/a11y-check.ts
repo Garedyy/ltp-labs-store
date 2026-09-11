@@ -3,7 +3,6 @@ import {
   getCompliance,
   type ICheckerReport,
   type ReportResult,
-  stringifyResults,
 } from "accessibility-checker";
 import { expect, type Page } from "@playwright/test";
 
@@ -19,28 +18,18 @@ function isReport(result: ReportResult): result is ICheckerReport {
   return "results" in result;
 }
 
-// The engine ignores the open state of <details>: content of a closed one is not rendered, so
-// nothing inside it is tabbable. Open panels are scanned as their own state.
-async function closedDetailsPaths(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
-    function xpath(element: Element): string {
-      const parts: string[] = [];
-      for (let node: Element | null = element; node; node = node.parentElement) {
-        const tag = node.tagName.toLowerCase();
-        const siblings = [...(node.parentElement?.children ?? [node])].filter(
-          (sibling) => sibling.tagName === node?.tagName,
-        );
-        parts.unshift(`${tag}[${siblings.indexOf(node) + 1}]`);
-      }
-      return `/${parts.join("/")}`;
-    }
-    return [...document.querySelectorAll("details:not([open])")].map(xpath);
-  });
-}
+type Options = {
+  // Extra rules to treat as manual review for this state only (justify each use in the spec).
+  manualReview?: string[];
+};
 
 // Labels must be unique per route x locale x state: they name the JSON report in test-results/a11y.
-export async function expectAccessible(page: Page, label: string): Promise<void> {
-  const hiddenPrefixes = await closedDetailsPaths(page);
+export async function expectAccessible(
+  page: Page,
+  label: string,
+  { manualReview = [] }: Options = {},
+): Promise<void> {
+  const ignored = new Set([...MANUAL_REVIEW_RULES, ...manualReview]);
   const { report } = await getCompliance(page, label);
   if (!isReport(report)) {
     throw new Error(
@@ -48,12 +37,12 @@ export async function expectAccessible(page: Page, label: string): Promise<void>
     );
   }
   const failures = report.results.filter(
-    (issue) =>
-      FAIL_LEVELS.has(issue.level) &&
-      !MANUAL_REVIEW_RULES.has(issue.ruleId) &&
-      !hiddenPrefixes.some((prefix) => issue.path.dom?.startsWith(`${prefix}/`)),
+    (issue) => FAIL_LEVELS.has(issue.level) && !ignored.has(issue.ruleId),
   );
-  expect(failures, stringifyResults(report)).toEqual([]);
+  const summary = failures
+    .map((issue) => `${issue.ruleId} [${issue.level}] ${issue.path.dom}\n    ${issue.message}`)
+    .join("\n");
+  expect(failures, `Accessibility scan "${label}" failed:\n${summary}`).toEqual([]);
 }
 
 export async function closeAccessibilityChecker(): Promise<void> {

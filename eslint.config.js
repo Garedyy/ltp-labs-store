@@ -45,6 +45,7 @@ export default defineConfig([
               "href",
               "name",
               "value",
+              "icon",
               "id",
               "type",
               "rel",

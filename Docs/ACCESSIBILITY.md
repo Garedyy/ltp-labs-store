@@ -1,47 +1,128 @@
 # Accessibility
 
-> Skeleton — v1 lands with `feature/app-shell`, completed by `feature/a11y-audit`.
-> Target: WCAG 2.2 AA, with and without JavaScript. Specification: `PROJECT_PLAN.md` §3.6.
+Target: **WCAG 2.2 level AA, with and without JavaScript**, for every visual impairment
+(blindness, low vision, colour-vision deficiency, motion sensitivity, high-contrast and forced-colour
+modes). Accessibility is architectural — every rule below is enforced by structure, lint or tests,
+not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
 
 ## Global rules
 
-_TO DO._
+- **Landmarks, all named**: `<header>` (banner) → `<nav aria-label="Main">`; `<main id="main" tabIndex={-1}>`;
+  `<footer>` (contentinfo) → `<nav aria-label="Footer">`; the language switcher is
+  `<nav aria-label="Language">`. Desktop and mobile copies of the navigation use `hidden lg:block` /
+  `lg:hidden` (removed from the accessibility tree), never `sr-only`.
+- **Headings**: exactly one visible `<h1>` per page (asserted for every route × locale in
+  `a11y.spec.ts`); levels never skipped.
+- **Skip link**: first element in `<body>`, targets `#main`; `html { scroll-padding-top: 6rem }`
+  keeps anchored targets clear of the sticky header.
+- **Links**: underlined by default in running text; navigation, cards, pagination and buttons opt
+  out with `no-underline`. Icon-only links carry `aria-label` (Search, Account, "Cart, 3 items").
+- **Focus ring**: two-tone `:focus-visible` (3 px orange outline + 2 px medium-blue inner ring,
+  ≥ 3:1 on every surface); `outline-none` is banned except on `main`; forced colours use
+  `Highlight`.
+- **Focus management and announcements**: `AnnouncerProvider` renders two alternating
+  `role="status" aria-live="polite" aria-atomic` regions and exposes `useAnnounce`.
+  `RouteAnnouncer` reacts to **pathname changes only**: closes open `<details>`, focuses `#main`
+  (or the element named by a route `handle.initialFocus`) with `preventScroll`, and announces
+  `document.title`. Search-param changes and fetcher results are announced by the owning route.
+  `NavigationStatus` shows a 2 px bar after 300 ms of pending navigation, sets `aria-busy` on
+  `main`, and announces "Loading" once.
+- **Disclosures**: native `<details>`/`<summary>` (Enter/Space and `aria-expanded` for free); JS
+  adds Escape (closes, focus back to the summary, does not bubble to a parent disclosure), outside
+  pointer-down, and **closing when focus leaves** so an open panel never covers the element that
+  receives focus (SC 2.4.11). `base.css` hides closed `<details>` content with `display: none`
+  (Chromium keeps layout boxes otherwise).
+- **Targets**: every control is at least 44 × 44 px (`min-h-11`, `size-11`).
+- **Forms**: `noValidate`; the server validates and returns codes; on error the invalid control gets
+  focus (`autoFocus` on no-JS renders); `Field` wires `aria-describedby` / `aria-invalid` and an
+  `role="alert"` message prefixed "Error:" for screen readers. Pending submit buttons keep focus
+  (`aria-busy`, never `disabled`).
+- **Never colour alone**: `aria-current` + underline on the current nav item; `<s>` + "Original
+  price" for discounts; icon + text for errors and stock; stars decorative + visible number.
+- **Reduced motion**: global kill switch; only `motion-safe:` transitions.
+- **Forced colours**: `forced-colors:border` on buttons, badges and cards; `forced-colors:underline`
+  on `aria-current` links; icons use `fill="currentColor"`.
+- **`prefers-contrast: more`**: stronger borders, muted text becomes full-contrast text.
+- **Reflow**: rem units, `min-h` never `h` on text containers, grids collapse to one column at
+  320 px, header `static` under `max-height: 30rem` so zoomed pages keep their content reachable.
+- **Language**: `<html lang>` from the route locale; `lang` on language names and on API-sourced
+  text when the locale is not `en`.
 
-## Component patterns
+## Component patterns (shell)
 
-_TO DO._
+| Component                               | Pattern                                                                                                                                                                                                                                                                                                                                                                |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SkipLink`                              | `sr-only` link, visible on focus, first in `<body>`                                                                                                                                                                                                                                                                                                                    |
+| `SiteHeader`                            | brand link with real text; desktop `<nav aria-label="Main">` → `<ul>` of `NavLink` (`end` on Home → `aria-current="page"`; Shop is a plain link to the same URL); icon links Search / Account / Cart (badge `aria-hidden`, count in the name); `LanguageSwitcher`; mobile `Disclosure` (`aria-label="Open menu"`) holding nav + Search/Account (below `sm`) + switcher |
+| `LanguageSwitcher`                      | `<nav aria-label="Language">` → `<details>` pill; summary text "EN, English. Change language" (visible label first, SC 2.5.3); panel = POST form, current locale `aria-current="true"`, buttons with `lang`                                                                                                                                                            |
+| `SiteFooter`                            | `<footer>` outside `<main>`; brand link, `<nav aria-label="Footer">` in header order, language links with `hrefLang`/`lang`/`aria-current`                                                                                                                                                                                                                             |
+| `ErrorPage` / `ComingSoon` / `NotFound` | static `<h1>`, description, `ButtonLink` home; rendered inside the shell by `locale-errors`                                                                                                                                                                                                                                                                            |
 
 ## Announcements and focus
 
-_TO DO: event → message key → focus target table._
+| Event                               | Message                 | Focus target                       |
+| ----------------------------------- | ----------------------- | ---------------------------------- |
+| pathname change (client navigation) | `document.title`        | `#main` (or `handle.initialFocus`) |
+| pending navigation > 300 ms         | `common.loading` (once) | unchanged                          |
+| Escape in an open disclosure        | —                       | its `<summary>`                    |
+| focus leaves an open disclosure     | —                       | wherever focus went (panel closes) |
+
+Catalogue, product and cart events are added by their branches.
 
 ## Automated coverage
 
 - **Engine**: IBM Equal Access `accessibility-checker` (Apache-2.0), policy `WCAG_2_2`, configured
-  in `.achecker.yml`; `tests/e2e/a11y-check.ts` exposes `expectAccessible(page, label)` and fails on
-  every `violation` / `potentialviolation` except the manual-review rules below (`DECISIONS.md` D-3).
-  Labels are unique per route × locale × state; JSON reports go to `test-results/a11y/`.
-- **Coverage**: every route in `tests/e2e/routes.ts` (grown by each feature PR) × `en`/`pt`, plus
-  open disclosures, error states, empty cart and media emulation (added by `feature/a11y-audit`).
+  in `.achecker.yml`; `tests/e2e/a11y-check.ts` exposes `expectAccessible(page, label, options)` and
+  fails on every `violation` / `potentialviolation` except the manual-review rules below
+  (`DECISIONS.md` D-3). Labels are unique per route × locale × state; JSON reports go to
+  `test-results/a11y/`.
+- **Coverage**: every route in `tests/e2e/routes.ts` × `en`/`pt` on desktop and mobile
+  (`a11y.spec.ts`), plus the open mobile menu. Error states, media emulation and the full state
+  matrix arrive with `feature/a11y-audit`.
+- **Keyboard** (`keyboard.spec.ts`): skip link first and functional; desktop tab order; Escape on
+  the language panel restores focus; mobile menu Escape restores focus; navigating from the menu
+  closes it and focuses `main`; client navigation announces the title.
 - **Static**: `eslint-plugin-jsx-a11y` strict with the design-system primitives mapped to their
-  native elements.
+  native elements; `eslint-plugin-i18next` keeps UI text out of components.
+- **Unit**: role/name tests for every primitive and shell component (`aria-current`, cart link
+  name, announcer regions, disclosure focus rules).
 
 ### Manual-review rules (excluded from the automated failure list)
 
-| Rule id              | Why the engine cannot decide                                                                                                                      | How it is verified                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `style_color_misuse` | fires on any stylesheet that sets colours (Tailwind preflight is enough); asks a human to confirm colour is never the only carrier of information | design rule "never colour alone" (plan §3.6) + Chrome vision-deficiency emulation in the audit log |
+| Rule id                       | Scope                     | Why the engine cannot decide                                                                                                            | How it is verified                                                                     |
+| ----------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `style_color_misuse`          | every scan                | fires on any stylesheet that sets colours; asks a human to confirm colour is never the only carrier of information                      | "never colour alone" rules above + Chrome vision-deficiency emulation in the audit log |
+| `element_tabbable_unobscured` | **open mobile menu only** | the overlay covers page content by user action; the engine cannot know it closes on Escape, outside click, focus leaving and navigation | `keyboard.spec.ts` + `disclosure.test.tsx`                                             |
 
-Results located inside a **closed** `<details>` are also dropped (`DECISIONS.md` D-3 addendum): the
-engine reports `element_tabbable_unobscured` for controls that are not rendered at all. Open
-disclosures are scanned as a separate state.
+## Manual protocol
+
+Run before each release and after any change to the shell or a page structure:
+
+1. **VoiceOver + Safari** (macOS): full flows on the three challenge pages — rotor landmarks and
+   headings, skip link, menu, language switch, catalogue sort/filter/pagination, product add to
+   cart, cart quantity/remove/promo/checkout.
+2. **NVDA + Firefox** when a Windows machine is available; otherwise logged as not run.
+3. **400 % zoom** (1280 px window) and **320 px** viewport: no horizontal scroll, header static
+   under 30 rem height.
+4. **Chrome vision-deficiency emulation**: protanopia, deuteranopia, tritanopia, achromatopsia.
+5. **Text-spacing bookmarklet** (WCAG 1.4.12) on every page.
+6. **Keyboard-only** run of every flow; **reduced motion** and **forced colours** (Windows High
+   Contrast or `emulateMedia`).
+7. **Lighthouse** accessibility score.
 
 ## Manual audit log
 
-| Date | Tool / AT | Scope | Result      |
-| ---- | --------- | ----- | ----------- |
-| —    | —         | —     | not run yet |
+| Date       | Tool / AT                                   | Scope                                                | Result                                           |
+| ---------- | ------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------ |
+| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus | pass (automated stand-in; VoiceOver run pending) |
+| —          | VoiceOver + Safari                          | —                                                    | not run yet (branch 12)                          |
+| —          | NVDA + Firefox                              | —                                                    | not run yet (no Windows machine)                 |
 
 ## Known limitations
 
-_TO DO._
+- `<details>`/`<summary>` is announced as "summary" or "details" by some screen readers; accepted
+  for its native keyboard behaviour and no-JS support.
+- The category filter (branch 7) renders a single-select as checkboxes to match the wireframe; an
+  advisory hint explains the behaviour.
+- ltplabs.com's own navigation (`<div>` of `<button aria-haspopup>`) is deliberately replaced by
+  `<nav><ul>` of links.

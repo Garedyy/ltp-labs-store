@@ -38,6 +38,12 @@
     box-shadow: none;
   }
 
+  /* Chromium keeps layout boxes for closed <details> content (content-visibility: hidden); hide it
+     for real so absolutely positioned panels never overlap other content while closed. */
+  details:not([open]) > :not(summary) {
+    display: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     ::before,

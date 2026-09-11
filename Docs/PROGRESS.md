@@ -18,11 +18,11 @@
 
 ## Resume here
 
-- **Current branch**: `feature/i18n-foundation` (PR open → `development`)
-- **Current step**: branch 4 complete; local criteria verified; waiting for CI, then squash-merge
-- **Next action**: after merge, `git checkout development && git pull`, branch `feature/app-shell`
-  (plan §4 branch 5): header (nav, icons, cart count, switcher), footer, announcer, route
-  announcer, navigation status, coming-soon pages, keyboard/a11y specs, `ACCESSIBILITY.md` v1
+- **Current branch**: `feature/app-shell` (PR open → `development`)
+- **Current step**: branch 5 complete; local criteria verified; waiting for CI, then squash-merge
+- **Next action**: after merge, `git checkout development && git pull`, branch
+  `feature/dummyjson-client` (plan §4 branch 6): client, types, guards, cache, product functions,
+  `lib/catalogue`, fixtures, mock API (+ Playwright `webServer` entry for it)
 - **Open questions for the user**: none
 
 ## Feature branches (plan §4)
@@ -33,8 +33,8 @@
 | 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified                                      |
 | 2   | `feature/tooling`                     | merged  | 2026-09-11 | 2026-09-11 | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2) | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
 | 3   | `feature/design-system`               | merged  | 2026-09-11 | 2026-09-11 | [#3](https://github.com/Garedyy/ltp-lab-store-/pull/3) | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
-| 4   | `feature/i18n-foundation`             | pr-open | 2026-09-11 |            | [#4](https://github.com/Garedyy/ltp-lab-store-/pull/4) | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
-| 5   | `feature/app-shell`                   | todo    |            |            |                                                        |                                                               |
+| 4   | `feature/i18n-foundation`             | merged  | 2026-09-11 | 2026-09-11 | [#4](https://github.com/Garedyy/ltp-lab-store-/pull/4) | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
+| 5   | `feature/app-shell`                   | pr-open | 2026-09-11 |            | #TBD                                                   | TO VERIFY 2 resolved; D-3 addendum, D-5                       |
 | 6   | `feature/dummyjson-client`            | todo    |            |            |                                                        |                                                               |
 | 7   | `feature/catalogue`                   | todo    |            |            |                                                        |                                                               |
 | 8   | `feature/search`                      | todo    |            |            |                                                        |                                                               |
@@ -79,9 +79,9 @@ Tick a box only once the criterion has been verified locally (command output see
 
 ### 5 · `feature/app-shell`
 
-- [ ] skip link, header, footer, announcer, navigation status, headers middleware, error boundaries, coming-soon, hreflang, a11y/keyboard/i18n specs, `ACCESSIBILITY.md` v1
-- [ ] a11y scan clean on `/en`, `/pt`, `/en/about`, `/en/nowhere`
-- [ ] skip link → main; menu Escape restores focus; open menu → About → focus on main
+- [x] skip link, header, footer, announcer, navigation status, headers middleware, error boundaries, coming-soon, hreflang, a11y/keyboard/i18n specs, `ACCESSIBILITY.md` v1
+- [x] a11y scan clean on `/en`, `/pt`, `/en/about`, `/en/nowhere` (and every route × locale on desktop + mobile, plus the open mobile menu — `a11y.spec.ts`, 2026-09-11)
+- [x] skip link → main; menu Escape restores focus; open menu → About → focus on main (`keyboard.spec.ts`, 76 e2e green, 2026-09-11)
 
 ### 6 · `feature/dummyjson-client`
 
@@ -175,6 +175,6 @@ Tick a box only once the criterion has been verified locally (command output see
 
 ## Session log
 
-| Date       | Session summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened and squash-merged; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). Branch 2 (tooling) built and verified locally: ESLint/Prettier/Vitest/Playwright/IBM checker/licence script/Husky/commitlint/CI; axe-core exception approved; TO VERIFY 8 resolved; PR #2 merged. Branch 3 (design-system): tokens, Manrope, 12 `ui/*` primitives + tests, contrast test, Remix Icon v4.8.0 (D-4), TO VERIFY 3 resolved; PR #3 merged. Branch 4 (i18n-foundation): config, typed EN/PT resources, detection, paths, formatting, middleware, entries, routes skeleton, locale layouts, set-language, switcher, 43 e2e green, TO VERIFY 1 + 4 resolved; PR opened. |
+| Date       | Session summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened and squash-merged; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). Branch 2 (tooling) built and verified locally: ESLint/Prettier/Vitest/Playwright/IBM checker/licence script/Husky/commitlint/CI; axe-core exception approved; TO VERIFY 8 resolved; PR #2 merged. Branch 3 (design-system): tokens, Manrope, 12 `ui/*` primitives + tests, contrast test, Remix Icon v4.8.0 (D-4), TO VERIFY 3 resolved; PR #3 merged. Branch 4 (i18n-foundation): config, typed EN/PT resources, detection, paths, formatting, middleware, entries, routes skeleton, locale layouts, set-language, switcher, 43 e2e green, TO VERIFY 1 + 4 resolved; PR #4 merged. Branch 5 (app-shell): header/nav/actions/footer/announcer/route announcer/navigation status, coming-soon pages, keyboard + a11y specs (76 e2e), ACCESSIBILITY.md v1, TO VERIFY 2 resolved, D-5; PR opened. |

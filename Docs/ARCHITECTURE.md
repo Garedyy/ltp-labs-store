@@ -23,11 +23,17 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
   set-language             set-language.tsx      action only (lng cookie), GET → 405
   (pathless)               locale-errors.tsx     shared ErrorBoundary inside the shell
     index                  catalogue.tsx
+    search                 search.tsx            placeholder until feature/search
+    cart                   cart.tsx              placeholder until feature/cart-page
+    about|contact|blog|account                   translated "coming soon" pages
     *                      not-found.tsx         404 inside the shell
 ```
 
-Further leaves (`search`, `products/:productId`, `cart`, `checkout/confirmation`, `about`,
-`contact`, `blog`, `account`) are added by their feature branches. Loaders, actions and middleware
+`products/:productId` and `checkout/confirmation` are added by their feature branches. The shell
+(`locale-layout.tsx`) renders `SkipLink`, `SiteHeader` (with `cartCount` from its loader),
+`<main id="main">`, `SiteFooter`, the announcer regions and `RouteAnnouncer`. Errors thrown by the
+layout's own middleware (asset deny-list) reach the shell-less root boundary; every leaf error
+renders inside the mounted shell through `locale-errors.tsx`. Loaders, actions and middleware
 read `url` from their arguments — never `request.url`, which may carry `.data` suffixes.
 Internal links use `href("/:lang/…", { lang })`.
 

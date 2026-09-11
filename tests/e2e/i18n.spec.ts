@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { openLanguagePanel } from "./helpers";
+
 test.describe("locale routing", () => {
   test("/ redirects to the Accept-Language locale", async ({ browser }) => {
     const context = await browser.newContext({ locale: "pt-PT" });
@@ -52,7 +54,8 @@ test.describe("locale routing", () => {
     const response = await page.goto("/pt/nowhere");
     expect(response?.status()).toBe(404);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Página não encontrada");
-    await expect(page.getByRole("navigation", { name: "Idioma" })).toBeVisible();
+    await expect(page.getByRole("banner")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Carrinho/ })).toBeVisible();
   });
 
   test("html lang and hreflang alternates follow the locale", async ({ page }) => {
@@ -79,7 +82,7 @@ test.describe("language switcher", () => {
     await page.goto("/pt");
     expect((await context.cookies()).find((c) => c.name === "lng")).toBeUndefined();
 
-    await page.getByRole("navigation", { name: "Idioma" }).locator("summary").click();
+    await openLanguagePanel(page, "Idioma");
     await page.getByRole("button", { name: "English" }).click();
     await expect(page).toHaveURL(/\/en$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
@@ -94,7 +97,7 @@ test.describe("language switcher", () => {
 
   test("switching keeps the current path and query", async ({ page }) => {
     await page.goto("/en/nowhere?x=1");
-    await page.getByRole("navigation", { name: "Language" }).locator("summary").click();
+    await openLanguagePanel(page, "Language");
     await page.getByRole("button", { name: "Português" }).click();
     await expect(page).toHaveURL(/\/pt\/nowhere\?x=1$/);
   });

@@ -51,11 +51,15 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   (fail on `violation` and `potentialviolation`) minus an explicit `MANUAL_REVIEW_RULES` set; every
   entry must be justified in `Docs/ACCESSIBILITY.md` and covered by the manual audit protocol.
   Initial set: `style_color_misuse`.
-- **Addendum (2026-09-11, `feature/i18n-foundation`)**: the engine also ignores the open state of
-  `<details>` and reports `element_tabbable_unobscured` for controls inside a **closed** panel,
-  although a closed `<details>` renders nothing and nothing inside it is tabbable. The wrapper
-  computes the XPaths of closed `<details>` elements before the scan and drops issues under them;
-  open panels are scanned as their own state (branch 12).
+- **Addendum (2026-09-11, `feature/app-shell`)**: Chromium keeps layout boxes for the content of
+  a closed `<details>` (`content-visibility: hidden`), so the engine reported
+  `element_tabbable_unobscured` both for controls inside closed panels and for page content
+  "covered" by an invisible absolutely-positioned panel. Fixed at the source in `base.css`
+  (`details:not([open]) > :not(summary) { display: none }`) rather than filtered in the wrapper.
+  For the **open** mobile-menu state, the overlay covers the page by user action; `expectAccessible`
+  accepts a per-call `manualReview` list and that spec passes `element_tabbable_unobscured` with a
+  justification (the panel closes on Escape, outside click, focus leaving and navigation —
+  `keyboard.spec.ts`).
 - **Consequences**: the scan stays strict for everything the engine can decide; manual-only rules
   are tracked in the audit log instead of being silently baselined.
 
@@ -72,6 +76,17 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   version. Attribution and the Apache-2.0 notice go in `icon.tsx` and the README.
 - **Consequences**: no exception needed; new icons must also come from v4.8.0 (or another
   allow-listed source). The custom licence is not evaluated for future use.
+
+## D-5 · Disclosures close when focus leaves them
+
+- **Date / branch**: 2026-09-11 · `feature/app-shell`
+- **Context**: the mobile menu and the language panel are absolutely positioned overlays. Tabbing
+  past the last item of an open panel would move focus to content covered by it — exactly what
+  SC 2.4.11 (Focus Not Obscured) forbids.
+- **Decision**: `Disclosure` listens to `focusout` and closes when `relatedTarget` is outside the
+  `<details>`; Escape stops propagating so nested disclosures close one level at a time;
+  `RouteAnnouncer` closes every open `<details>` on navigation.
+- **Consequences**: no overlay can hide the focused element; unit- and e2e-tested.
 
 ## TO VERIFY resolutions
 
