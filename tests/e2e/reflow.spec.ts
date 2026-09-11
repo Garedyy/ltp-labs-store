@@ -20,6 +20,7 @@ for (const locale of LOCALES) {
         "one viewport per locale",
       );
       await page.goto(localised(route, locale), { waitUntil: "domcontentloaded" });
+      await page.evaluate(() => document.fonts.ready);
       const width = () => page.evaluate(() => document.documentElement.scrollWidth);
       expect(await width()).toBeLessThanOrEqual(320);
       await page.addStyleTag({ content: TEXT_SPACING_CSS });
