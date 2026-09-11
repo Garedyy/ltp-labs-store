@@ -18,54 +18,60 @@
 
 ## Resume here
 
-- **Current branch**: `feature/project-scaffold` (PR open → `development`)
-- **Current step**: branch 1 complete and verified; Q1 resolved (D-1); merging PR 1
-- **Next action**: `git checkout development && git pull`, branch `feature/tooling`
-  (plan §4 branch 2); `check-licenses.mjs` must implement the D-1 named exceptions
+- **Current branch**: `feature/tooling` (PR open → `development`)
+- **Current step**: branch 2 complete; local criteria verified; waiting for CI on the PR, then
+  squash-merge
+- **Next action**: once PR 2 CI is green and merged, `git checkout development && git pull`, branch
+  `feature/design-system` (plan §4 branch 3): tokens, Manrope + OFL, `ui/*` + tests, `Icon`,
+  `DESIGN_SYSTEM.md`
 - **Open questions for the user**: none
 
 ## Feature branches (plan §4)
 
-| # | Branch | Status | Started | Merged | PR | Notes |
-|---|---|---|---|---|---|---|
-| 0 | bootstrap (`development` from `main`) | merged | 2026-09-11 | 2026-09-11 | — | tracker added on `main`; `development` pushed |
-| 1 | `feature/project-scaffold` | pr-open | 2026-09-11 | | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified |
-| 2 | `feature/tooling` | todo | | | | |
-| 3 | `feature/design-system` | todo | | | | |
-| 4 | `feature/i18n-foundation` | todo | | | | |
-| 5 | `feature/app-shell` | todo | | | | |
-| 6 | `feature/dummyjson-client` | todo | | | | |
-| 7 | `feature/catalogue` | todo | | | | |
-| 8 | `feature/search` | todo | | | | |
-| 9 | `feature/product-detail` | todo | | | | |
-| 10 | `feature/cart-session` | todo | | | | |
-| 11 | `feature/cart-page` | todo | | | | |
-| 12 | `feature/a11y-audit` | todo | | | | |
-| 13 | `feature/performance` | todo | | | | |
-| 14 | `feature/docs-release` | todo | | | | |
+| #   | Branch                                | Status  | Started    | Merged     | PR                                                     | Notes                                                         |
+| --- | ------------------------------------- | ------- | ---------- | ---------- | ------------------------------------------------------ | ------------------------------------------------------------- |
+| 0   | bootstrap (`development` from `main`) | merged  | 2026-09-11 | 2026-09-11 | —                                                      | tracker added on `main`; `development` pushed                 |
+| 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified                                      |
+| 2   | `feature/tooling`                     | pr-open | 2026-09-11 |            | #TBD                                                   | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
+| 3   | `feature/design-system`               | todo    |            |            |                                                        |                                                               |
+| 4   | `feature/i18n-foundation`             | todo    |            |            |                                                        |                                                               |
+| 5   | `feature/app-shell`                   | todo    |            |            |                                                        |                                                               |
+| 6   | `feature/dummyjson-client`            | todo    |            |            |                                                        |                                                               |
+| 7   | `feature/catalogue`                   | todo    |            |            |                                                        |                                                               |
+| 8   | `feature/search`                      | todo    |            |            |                                                        |                                                               |
+| 9   | `feature/product-detail`              | todo    |            |            |                                                        |                                                               |
+| 10  | `feature/cart-session`                | todo    |            |            |                                                        |                                                               |
+| 11  | `feature/cart-page`                   | todo    |            |            |                                                        |                                                               |
+| 12  | `feature/a11y-audit`                  | todo    |            |            |                                                        |                                                               |
+| 13  | `feature/performance`                 | todo    |            |            |                                                        |                                                               |
+| 14  | `feature/docs-release`                | todo    |            |            |                                                        |                                                               |
 
 ## "Done when" checklists (plan §4)
 
 Tick a box only once the criterion has been verified locally (command output seen), not assumed.
 
 ### 1 · `feature/project-scaffold`
+
 - [x] `npx create-react-router@latest` scaffold, `~` alias, dotfiles, `.env.example`, `Docs/` skeleton, README skeleton, `.gitignore`
 - [x] `npm run dev` serves (HTTP 200, `<html lang="en">`, 2026-09-11)
 - [x] `npm run typecheck` passes (2026-09-11)
 
 ### 2 · `feature/tooling`
-- [ ] ESLint 9 (+jsx-a11y, +i18next), Prettier, Vitest, Playwright + `accessibility-checker` skeleton, `scripts/check-licenses.mjs`, Husky, lint-staged, commitlint, CI, PR template, `CONTRIBUTING.md`, smoke tests
-- [ ] `npm run check` + `npm run test:e2e` green locally and on a PR
-- [ ] a bad commit message is rejected
-- [ ] `check:licenses` passes on the full tree and fails on a deliberately added MPL/GPL package (shown in PR, then reverted)
+
+- [x] ESLint 9 (+jsx-a11y, +i18next), Prettier, Vitest, Playwright + `accessibility-checker` skeleton, `scripts/check-licenses.mjs`, Husky, lint-staged, commitlint, CI, PR template, `CONTRIBUTING.md`, smoke tests
+- [x] `npm run check` + `npm run test:e2e` green locally (2026-09-11) — [ ] green on the PR (CI)
+- [x] a bad commit message is rejected (`commit-msg` hook refused "bad message without a type" and an unknown scope, 2026-09-11)
+- [x] `check:licenses` passes on the full tree (612 packages, 4 exceptions) and fails with exit 1 on a deliberately installed `@axe-core/playwright` (MPL-2.0), then restored with `npm ci` (2026-09-11; shown in PR)
 
 ### 3 · `feature/design-system`
+
 - [ ] styles, font + OFL, `ui/*` with tests, `cx`, `Icon` (Remix Icon paths + attribution), `DESIGN_SYSTEM.md`
 - [ ] every `ui/*` has a role/name test
 - [ ] contrast table reproduced with a tool
 - [ ] font appears once in `build/client/assets`
 
 ### 4 · `feature/i18n-foundation`
+
 - [ ] `i18n/*`, `locales/*` (common), middleware, entries, `routes.ts` skeleton, `locale-errors`, `set-language`, `I18N.md`
 - [ ] `/` → `/pt` with `Accept-Language: pt`
 - [ ] cookie set only by switcher
@@ -73,67 +79,82 @@ Tick a box only once the criterion has been verified locally (command output see
 - [ ] deleting a PT key fails `tsc` (shown in PR)
 
 ### 5 · `feature/app-shell`
+
 - [ ] skip link, header, footer, announcer, navigation status, headers middleware, error boundaries, coming-soon, hreflang, a11y/keyboard/i18n specs, `ACCESSIBILITY.md` v1
 - [ ] a11y scan clean on `/en`, `/pt`, `/en/about`, `/en/nowhere`
 - [ ] skip link → main; menu Escape restores focus; open menu → About → focus on main
 
 ### 6 · `feature/dummyjson-client`
+
 - [ ] client, types, guards, cache (TTL + in-flight dedupe), product functions, `lib/catalogue`, `format.server`, fixtures, mock API — against `Docs/dummyjson-openapi.yaml`
 - [ ] unit: URL mapping, 404 → null, 429/timeout/HTML body → 502, guard → 502, dedupe
 - [ ] mock API serves all fixtures + faults and mirrors the contract behaviours
 
 ### 7 · `feature/catalogue`
+
 - [ ] catalogue route + components
 - [ ] e2e: 9 cards; "Showing 1–9 of 194"; sort changes first title; category total; page 22 ok, 23 → 404; `?category=foo` → 302; no-JS Apply works; focus on results heading after page change
 
 ### 8 · `feature/search`
+
 - [ ] search route, header link
 - [ ] e2e: "phone" paginated; empty q focuses input; no-result state
 
 ### 9 · `feature/product-detail`
+
 - [ ] product route (no add button yet — stated in PR)
 - [ ] e2e: thumbnail switch without `.data` request; stock-0 product shows disabled button + text; id 9999 → 404 in shell
 
 ### 10 · `feature/cart-session`
+
 - [ ] session, `cart.ts`, `totals.ts`, `intents.ts`, `add` action, `AddToCartForm`, header count
 - [ ] no-JS: add twice → badge 2, refresh does not re-add
 - [ ] tampered cookie → empty cart, no 500
 - [ ] 50-line cookie < 4000 B; 51st line → `cart-full`
 
 ### 11 · `feature/cart-page`
+
 - [ ] cart route, line items, stepper, remove, summary, promo, checkout, confirmation
 - [ ] e2e: clamp at stock; remove → focus next line; `LTP10` reduces total; `FREESHIP` shows Free; checkout → confirmation → reload and language switch keep it
 
 ### 12 · `feature/a11y-audit`
+
 - [ ] reflow/emulateMedia tests, a11y scan on all states, manual audit fixes and log
 - [ ] reflow green on every route EN+PT; zero `accessibility-checker` violations across the matrix; VoiceOver log filled
 
 ### 13 · `feature/performance`
+
 - [ ] preload, preconnect, image priorities, header check, bundle review, Lighthouse
 - [ ] Lighthouse mobile ≥ 90 / a11y 100 recorded; catalogue JS < 90 KB gzipped recorded
 
 ### 14 · `feature/docs-release`
+
 - [ ] README final (challenge checklist), `ARCHITECTURE.md`, `DECISIONS.md` (TO VERIFY resolved), `CHANGELOG.md`
 - [ ] checklist complete; every TO VERIFY resolved; tag `v1.0.0` pushed
 
 ## TO VERIFY register (plan §8 → `Docs/DECISIONS.md`)
 
-| # | Item | Branch | Status | Resolution |
-|---|---|---|---|---|
-| 1 | remix-i18next 8 `findLocale` args carry `url` | 4 | open | |
-| 2 | `Route.ErrorBoundaryProps.loaderData` populated for the layout boundary | 5 | open | |
-| 3 | Font `?url` import hash parity with CSS `url()`; Manrope weight axis | 3 | open | |
-| 4 | `/en/` (trailing slash) matches the `:lang` index route | 4 | open | |
-| 5 | Node 24 type stripping runs `tests/e2e/mock-api.server.ts` directly | 6 | open | |
-| 6 | Forced-colors SVG `fill="currentColor"` for rating stars per browser | 12 | open | |
-| 7 | Unit-testing loaders with a hand-built `RouterContextProvider` | 2/6 | open | |
-| 8 | `accessibility-checker`: Puppeteer skip / telemetry env names, `.achecker.yml` `outputFolder`, `getCompliance` with a Playwright `Page`, `assertCompliance` codes | 2 | open | |
+| #   | Item                                                                                                                                                              | Branch | Status | Resolution |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- |
+| 1   | remix-i18next 8 `findLocale` args carry `url`                                                                                                                     | 4      | open   |            |
+| 2   | `Route.ErrorBoundaryProps.loaderData` populated for the layout boundary                                                                                           | 5      | open   |            |
+| 3   | Font `?url` import hash parity with CSS `url()`; Manrope weight axis                                                                                              | 3      | open   |            |
+| 4   | `/en/` (trailing slash) matches the `:lang` index route                                                                                                           | 4      | open   |            |
+| 5   | Node 24 type stripping runs `tests/e2e/mock-api.server.ts` directly                                                                                               | 6      | open   |            |
+| 6   | Forced-colors SVG `fill="currentColor"` for rating stars per browser                                                                                              | 12     | open   |            |
+| 7   | Unit-testing loaders with a hand-built `RouterContextProvider`                                                                                                    | 2/6    | open   |            |
+| 8   | `accessibility-checker`: Puppeteer skip / telemetry env names, `.achecker.yml` `outputFolder`, `getCompliance` with a Playwright `Page`, `assertCompliance` codes | 2      | open   |            |
 
 ## Deviations from the plan
 
-| Date | Deviation | Reason | Record |
-|---|---|---|---|
-| 2026-09-11 | Decision 30 amended: named exceptions `lightningcss` (MPL-2.0) and `caniuse-lite` (CC-BY-4.0) in `check-licenses.mjs` | unavoidable build-time transitive deps of Vite 8 / Tailwind 4 / Babel | `DECISIONS.md` D-1 |
+| Date       | Deviation                                                                                                                   | Reason                                                                                           | Record             |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------ |
+| 2026-09-11 | Decision 30 amended: named exceptions `lightningcss` (MPL-2.0) and `caniuse-lite` (CC-BY-4.0) in `check-licenses.mjs`       | unavoidable build-time transitive deps of Vite 8 / Tailwind 4 / Babel                            | `DECISIONS.md` D-1 |
+| 2026-09-11 | `axe-core` (MPL-2.0) added to the D-1 exceptions                                                                            | dependency of `eslint-plugin-jsx-a11y` (decision 12), lint-time only; user approved              | `DECISIONS.md` D-1 |
+| 2026-09-11 | `MIT-0`, `BlueOak-1.0.0`, `Python-2.0` added to the licence allow-list                                                      | permissive OSI licences present in the dev tree, absent from the plan's list                     | `DECISIONS.md` D-2 |
+| 2026-09-11 | a11y scan assertion re-implemented with a `MANUAL_REVIEW_RULES` filter (`style_color_misuse`) instead of `assertCompliance` | the engine flags every coloured stylesheet at `potentialviolation`; no per-rule exclusion exists | `DECISIONS.md` D-3 |
+| 2026-09-11 | commitlint `scope-enum` gains `release`                                                                                     | the plan's release commit is `chore(release): vX.Y.Z`                                            | —                  |
+| 2026-09-11 | Mock API webServer entry deferred to branch 6 (Playwright config lists the app only for now)                                | mock API does not exist yet                                                                      | —                  |
 
 ## Working agreements (added during implementation)
 
@@ -155,6 +176,6 @@ Tick a box only once the criterion has been verified locally (command output see
 
 ## Session log
 
-| Date | Session summary |
-|---|---|
-| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). |
+| Date       | Session summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-11 | Plan read in full; tracker created; tracking rule saved in project memory; bootstrap done (`development` from `main`); branch 1 scaffolded, verified, PR #1 opened and squash-merged; licence issue Q1 raised and resolved (D-1); merge policy agreed (Claude merges after green checks). Branch 2 (tooling) built and verified locally: ESLint/Prettier/Vitest/Playwright/IBM checker/licence script/Husky/commitlint/CI; axe-core exception approved; TO VERIFY 8 resolved; PR #2 opened. |

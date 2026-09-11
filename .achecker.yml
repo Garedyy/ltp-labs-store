@@ -1,0 +1,15 @@
+ruleArchive: latest
+policies:
+  - WCAG_2_2
+failLevels:
+  - violation
+  - potentialviolation
+reportLevels:
+  - violation
+  - potentialviolation
+outputFormat:
+  - json
+outputFolder: test-results/a11y
+outputFilenameTimestamp: false
+baselineFolder: tests/e2e/a11y-baselines
+cacheFolder: node_modules/.cache/accessibility-checker
