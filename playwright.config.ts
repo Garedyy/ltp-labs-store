@@ -17,6 +17,13 @@ export default defineConfig({
   },
   webServer: [
     {
+      command: "node tests/e2e/mock-api.server.ts",
+      url: `http://localhost:${mockApiPort}/products/categories`,
+      reuseExistingServer: !isCI,
+      timeout: 30_000,
+      env: { MOCK_API_PORT: String(mockApiPort) },
+    },
+    {
       command: "npm run build && npm run start",
       url: `http://localhost:${appPort}/`,
       reuseExistingServer: !isCI,

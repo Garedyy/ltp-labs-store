@@ -43,7 +43,59 @@ _TO DO (cart-session)._
 
 ## Data layer (DummyJSON)
 
-_TO DO (dummyjson-client): endpoints, params, rate-limit strategy, guards, TTLs, fixture refresh._
+Contract: [`dummyjson-openapi.yaml`](dummyjson-openapi.yaml). Code: `app/services/dummyjson/`
+(server-only). Base URL from `DUMMYJSON_BASE_URL` (the e2e suite points it at the mock API).
+
+| Function (`products.server.ts`)                 | Endpoint                                   | Cache TTL |
+| ----------------------------------------------- | ------------------------------------------ | --------- |
+| `getProducts({ limit, skip, sortBy?, order? })` | `GET /products`                            | 5 min     |
+| `getProductsByCategory(slug, params)`           | `GET /products/category/:slug`             | 5 min     |
+| `searchProducts(q, params)`                     | `GET /products/search?q=`                  | 5 min     |
+| `getProduct(id)` → `Product \| null`            | `GET /products/:id` (404 → `null`)         | 10 min    |
+| `getProductsByIds(ids)`                         | parallel `getProduct` (≤ 50, the cart cap) | —         |
+| `getCategories()`                               | `GET /products/categories`                 | 1 h       |
+
+- **Client** (`client.server.ts`): `fetchJson(path, params, parse)` builds the URL without a
+  trailing slash, skips `undefined` params, times out after 8 s and sends `accept: application/json`.
+  `404` → `ApiError(404)`; any other failure — `429` rate limit, `5xx`, timeout, network error,
+  HTML body, guard rejection — → `ApiError(502)`, rendered as "Product service unavailable".
+- **Cache** (`cache.server.ts`): `cached(key, ttlMs, load)` — module-scope `Map`, successes only,
+  cleared above 300 entries, **in-flight de-duplication** so concurrent SSR requests for the same
+  key share one upstream call. Required because DummyJSON allows 100 requests / 10 s per IP and every
+  visitor's SSR shares the server's budget.
+- **Guards** (`guards.ts`): hand-written parsers following the contract's
+  `required: [id, title, price, category]`; everything else is defaulted (`brand` is missing on 92
+  products, `stock: 0` on 4, `images` falls back to `thumbnail`). Lists use
+  `select=id,title,price,thumbnail,stock` (cards show title + price + stock only).
+- **Pagination** (`app/lib/catalogue/pagination.ts`): `PAGE_SIZE = 9`; the API echoes the number
+  of items returned as `limit`, so pages are always computed from `total`.
+- **Rate-limit strategy**: cache + de-duplication, `select` to shrink payloads, one list call per
+  page, categories cached for an hour, no fan-out beyond the cart's product lookups.
+
+### URL contract (`app/lib/catalogue/query.ts`)
+
+`?q`, `?category`, `?sort`, `?page` written in that fixed order; `page=1` never written; `page`
+dropped whenever `q`, `category` or `sort` change (`buildSearch`). `page` not a positive integer →
+1; `sort` not a `SortKey` → default order; `category` not `/^[a-z-]+$/` or unknown → the loader
+redirects to the same URL without it (`query.canonical`); `q` trimmed and truncated to 100 chars.
+
+### Fixtures and mock API
+
+`tests/fixtures/dummyjson/` holds `products-all.json` (194 summaries with
+`title, price, thumbnail, stock, category, rating, discountPercentage`), `categories.json` and
+ten full products (`1, 2, 3, 6, 16, 78, 117, 132, 153, 193` — the last four have `stock: 0`;
+16 and 153 have no `brand`). `tests/e2e/mock-api.server.ts` (Node only, run directly as
+TypeScript) serves them on port 4010 implementing `limit/skip/select/sortBy/order`, category and
+search listing with the contract's quirks (echoed `limit`, `q` normalisation, empty list for an
+unknown category, `{ message }` errors, HTML 404 for unknown paths, 301 on trailing slashes) and
+fault injection: `/products/999` → 500, `/products/998` → 10 s delay,
+`/products/categories?fail=1` → 500, `?rateLimit=1` → 429. `tests/e2e/mock-api.spec.ts` guards
+these behaviours.
+
+**Refreshing fixtures**: `curl "https://dummyjson.com/products?limit=0&select=title,price,thumbnail,stock,category,rating,discountPercentage" > tests/fixtures/dummyjson/products-all.json`,
+`curl https://dummyjson.com/products/categories > tests/fixtures/dummyjson/categories.json`, and
+`curl https://dummyjson.com/products/<id> > tests/fixtures/dummyjson/product-<id>.json` for each
+id above; then run `npm run test:e2e`.
 
 ## Cart session
 

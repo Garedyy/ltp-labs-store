@@ -8,6 +8,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- DummyJSON client: typed guards following the API contract, 8 s timeout, 404/502 mapping,
+  TTL cache with in-flight de-duplication, catalogue query/pagination helpers, fixtures and a
+  fixture-backed mock API with fault injection for e2e.
 - App shell: sticky floating header (nav, Search/Account/Cart icon links with badge, language
   switcher, mobile menu), footer, announcer + route announcer, navigation status bar, coming-soon
   pages, keyboard and WCAG 2.2 scans on every route, `Docs/ACCESSIBILITY.md` v1.
