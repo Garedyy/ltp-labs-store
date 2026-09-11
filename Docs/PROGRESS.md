@@ -33,7 +33,7 @@
 | 1   | `feature/project-scaffold`            | merged  | 2026-09-11 | 2026-09-11 | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified                                      |
 | 2   | `feature/tooling`                     | merged  | 2026-09-11 | 2026-09-11 | [#2](https://github.com/Garedyy/ltp-lab-store-/pull/2) | all local criteria verified; D-1 amended (axe-core), D-2, D-3 |
 | 3   | `feature/design-system`               | merged  | 2026-09-11 | 2026-09-11 | [#3](https://github.com/Garedyy/ltp-lab-store-/pull/3) | D-4 (Remix Icon v4.8.0), TO VERIFY 3 resolved                 |
-| 4   | `feature/i18n-foundation`             | pr-open | 2026-09-11 |            | #TBD                                                   | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
+| 4   | `feature/i18n-foundation`             | pr-open | 2026-09-11 |            | [#4](https://github.com/Garedyy/ltp-lab-store-/pull/4) | TO VERIFY 1 + 4 resolved; D-3 addendum                        |
 | 5   | `feature/app-shell`                   | todo    |            |            |                                                        |                                                               |
 | 6   | `feature/dummyjson-client`            | todo    |            |            |                                                        |                                                               |
 | 7   | `feature/catalogue`                   | todo    |            |            |                                                        |                                                               |
