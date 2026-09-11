@@ -33,3 +33,11 @@ test("sorting and filtering work without JavaScript through the GET forms", asyn
   await page.getByRole("link", { name: "Clear filter" }).click();
   await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
 });
+
+test("searching works without JavaScript", async ({ page }) => {
+  await page.goto("/en/search");
+  await page.getByRole("searchbox", { name: "Search products" }).fill("laptop");
+  await page.getByRole("button", { name: "Search" }).click();
+  await expect(page).toHaveURL(/\/en\/search\?q=laptop$/);
+  await expect(page.getByText(/Showing 1–\d+ of \d+/)).toBeVisible();
+});

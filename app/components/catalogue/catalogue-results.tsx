@@ -20,6 +20,9 @@ type CatalogueResultsProps = {
   // Search pages pass their own heading and empty state; the catalogue uses the view title.
   heading?: React.ReactNode;
   emptyTitle?: React.ReactNode;
+  emptyBody?: React.ReactNode;
+  // Announcement key with plural suffixes; the catalogue default is catalogue.results.announce.
+  announce?: { key: "catalogue.search.announce"; values: Record<string, string> };
   showJumpLink?: boolean;
   toolbarStart?: React.ReactNode;
 };
@@ -34,7 +37,7 @@ function onlyPageChanged(previous: CatalogueQuery, current: CatalogueQuery): boo
 }
 
 // Search-param changes keep the pathname, so this component owns their announcements and focus.
-function useResultsAnnouncements(view: CatalogueView) {
+function useResultsAnnouncements(view: CatalogueView, custom?: CatalogueResultsProps["announce"]) {
   const { t } = useTranslation();
   const announce = useAnnounce();
   const navigation = useNavigation();
@@ -45,29 +48,33 @@ function useResultsAnnouncements(view: CatalogueView) {
     const before = previous.current;
     previous.current = view;
     announce(
-      t("catalogue.results.announce", {
-        count: view.total,
-        from: view.showing.from,
-        to: view.showing.to,
-        total: view.total,
-      }),
+      custom
+        ? t(custom.key, { count: view.total, ...custom.values })
+        : t("catalogue.results.announce", {
+            count: view.total,
+            from: view.showing.from,
+            to: view.showing.to,
+            total: view.total,
+          }),
     );
     if (onlyPageChanged(before.query, view.query)) {
       document.getElementById("results-heading")?.focus({ preventScroll: false });
     }
-  }, [view, navigation.state, announce, t]);
+  }, [view, navigation.state, announce, t, custom]);
 }
 
 export function CatalogueResults({
   view,
   heading,
   emptyTitle,
+  emptyBody,
+  announce,
   showJumpLink,
   toolbarStart,
 }: CatalogueResultsProps) {
   const { t } = useTranslation();
   const lang = useLocale();
-  useResultsAnnouncements(view);
+  useResultsAnnouncements(view, announce);
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -92,6 +99,7 @@ export function CatalogueResults({
       ) : (
         <EmptyState
           title={emptyTitle ?? t("catalogue.empty.title")}
+          body={emptyBody}
           action={
             <ButtonLink to={href("/:lang", { lang })}>{t("catalogue.empty.action")}</ButtonLink>
           }

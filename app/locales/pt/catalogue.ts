@@ -7,6 +7,17 @@ export default {
   search: {
     title: "Pesquisar",
     description: "Pesquise no catálogo por palavra-chave.",
+    label: "Pesquisar produtos",
+    placeholder: "Pesquisar produtos",
+    button: "Pesquisar",
+    prompt: "Escreva uma palavra para pesquisar no catálogo.",
+    resultsTitle: "Pesquisa: «{{q}}» ({{count}} resultados)",
+    noResults: "Sem resultados para «{{q}}»",
+    hint: "Os produtos são pesquisados em inglês.",
+    announce_one: "{{count}} resultado para «{{q}}»",
+    announce_many: "{{count}} resultados para «{{q}}»",
+    announce_other: "{{count}} resultados para «{{q}}»",
+    announce_zero: "Sem resultados para «{{q}}»",
   },
   sort: {
     label: "Ordenar por",

@@ -5,6 +5,17 @@ export default {
   search: {
     title: "Search",
     description: "Search the catalogue by keyword.",
+    label: "Search products",
+    placeholder: "Search products",
+    button: "Search",
+    prompt: "Type a word to search the catalogue.",
+    resultsTitle: "Search: “{{q}}” ({{count}} results)",
+    noResults: "No results for “{{q}}”",
+    hint: "Products are searched in English.",
+    announce_one: "{{count}} result for “{{q}}”",
+    announce_many: "{{count}} results for “{{q}}”",
+    announce_other: "{{count}} results for “{{q}}”",
+    announce_zero: "No results for “{{q}}”",
   },
   sort: {
     label: "Sort by",
