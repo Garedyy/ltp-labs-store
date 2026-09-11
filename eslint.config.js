@@ -20,6 +20,13 @@ export default defineConfig([
   {
     ...jsxA11y.flatConfigs.strict,
     settings: { "jsx-a11y": { components: componentMap } },
+    rules: {
+      ...jsxA11y.flatConfigs.strict.rules,
+      "jsx-a11y/anchor-is-valid": [
+        "error",
+        { components: ["Link", "ButtonLink"], specialLink: ["to"] },
+      ],
+    },
   },
   {
     files: ["app/**/*.{ts,tsx}"],

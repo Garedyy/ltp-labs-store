@@ -54,6 +54,20 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
 - **Consequences**: the scan stays strict for everything the engine can decide; manual-only rules
   are tracked in the audit log instead of being silently baselined.
 
+## D-4 · Remix Icon pinned to v4.8.0 (Apache-2.0)
+
+- **Date / branch**: 2026-09-11 · `feature/design-system`
+- **Context**: decision 20 relies on Remix Icon being Apache-2.0. Since v4.9.0 (2026-01-27) the
+  project ships a custom "Remix Icon License v1.0" — permissive in practice (commercial use,
+  modification and redistribution inside a larger work allowed; attribution optional) but with
+  restrictions (no standalone icon packs, no competing libraries, no logo use) and **not** an
+  SPDX licence on the allow-list.
+- **Decision**: copy the 16 needed paths from the tagged release **v4.8.0** (2025-12-29), the last
+  one published under the Apache License 2.0 — a grant that is perpetual and irrevocable for that
+  version. Attribution and the Apache-2.0 notice go in `icon.tsx` and the README.
+- **Consequences**: no exception needed; new icons must also come from v4.8.0 (or another
+  allow-listed source). The custom licence is not evaluated for future use.
+
 ## TO VERIFY resolutions
 
 | #   | Item                                                           | Status | Resolution |

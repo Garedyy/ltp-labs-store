@@ -1,23 +1,109 @@
 # Design system
 
-> Skeleton — completed by `feature/design-system`. Specification: `PROJECT_PLAN.md` §3.7–3.8.
+Visual language of ltplabs.com applied to the challenge wireframes, implemented with Tailwind CSS v4
+only. Specification: `PROJECT_PLAN.md` §1.4, §3.7 and §3.8.
 
-## Tokens
+## Tokens (`app/styles/tokens.css`)
 
-_TO DO: three layers, contrast table._
+Three layers, so that components only ever use **semantic** colour utilities:
 
-## Typography
+1. **Raw palette** — `--palette-*` custom properties copied from ltplabs.com (plus one derived value,
+   `--palette-error-text`). No Tailwind utility is generated from them.
+2. **Semantic roles** — `--surface`, `--fg`, `--primary`, `--accent`, `--focus`… mapped to the
+   palette for the light theme. `@media (prefers-contrast: more)` remaps `--border`, `--fg-muted`
+   and `--surface-muted`. A dark or high-contrast theme is one extra `:root[data-theme="…"]` block.
+3. **Tailwind theme** — `@theme { --color-*: initial; … }` removes the default palette and declares
+   the type scale, weights, shadows and radii; `@theme inline` exposes the semantic roles as
+   `bg-surface`, `text-fg`, `border-border`, `text-primary`, `bg-accent`, `outline-focus`…
 
-_TO DO: Manrope, type scale, weights._
+### Contrast (computed by `app/styles/contrast.test.ts` from the palette, WCAG 2.2 AA)
 
-## Layout
+| Palette token | Value     | vs white | Semantic roles                                               |
+| ------------- | --------- | -------- | ------------------------------------------------------------ |
+| `dark-blue`   | `#10131c` | 18.6:1   | `fg`, `surface-inverse`                                      |
+| `medium-blue` | `#12173a` | 17.4:1   | `primary`, `link`, `focus-inner`, `accent-fg`                |
+| `blue`        | `#16105f` | 16.5:1   | `link-hover`                                                 |
+| `dark-gray`   | `#6a6a68` | 5.4:1    | `fg-muted`, `border-strong` — never on `surface-placeholder` |
+| `medium-gray` | `#eaecf0` | 1.2:1    | `border`, `surface-placeholder` (decorative only)            |
+| `orange`      | `#ff6a00` | 2.9:1    | `accent`, `focus` — **never text**                           |
+| `light-green` | `#007474` | 5.6:1    | `success`                                                    |
+| `error`       | `#e5484d` | 3.9:1    | `error-border` (non-text)                                    |
+| `error-text`  | `#b42318` | 6.6:1    | `error` (text; derived because `#e5484d` fails AA)           |
 
-_TO DO: breakpoints, per-screen layouts, header/footer anatomy._
+Other pairs: `accent-fg` on `accent` (discount badge) 6.0:1; `fg` on `surface-muted` 17.2:1.
+The test fails the build if any pairing drops under 4.5:1 (text) or 3:1 (UI components).
 
-## Components
+### Focus ring
 
-_TO DO: inventory._
+`:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-focus-inner) }`
+— orange alone is 2.9:1 on white, the inner medium-blue ring restores ≥ 3:1 (SC 1.4.11) and the
+outline survives forced colours (`Highlight`). `outline-none` is banned except on `main`.
+
+## Typography (`app/styles/fonts.css`, `app/fonts/`)
+
+- **Manrope** variable, weights 400–600, latin subset, one 24 KB woff2 self-hosted from Google
+  Fonts (SIL OFL 1.1, `app/fonts/OFL.txt`). `font-display: swap`; preloaded once from `root.tsx`
+  through a `?url` import that resolves to the same hashed file as the CSS `url()` (verified:
+  a single `manrope-latin-*.woff2` in `build/client/assets`).
+- Bw Modelica (commercial) is replaced by Manrope on purpose (decision 3).
+- Scale (ltplabs.com): `text-h1` 48/1.3/-1px · `text-h2` 36/1.3/-1px · `text-h3` 28/1.4 ·
+  `text-h4` 22/1.4 · `text-h5` 18/1.4 · `text-body` 16/1.6 · `text-body-sm` 14/1.6 ·
+  `text-tagline` 14/1.2. Headings are weight 400; **bold = `font-medium` (500), never 700**.
+- Body: `bg-surface font-sans text-body text-fg antialiased`; in-text links underlined with
+  `underline-offset-[0.15em]`; nav, cards, pagination and buttons opt out with `no-underline`.
+
+## Radii, shadows, spacing, breakpoints
+
+Tailwind defaults (identical to ltplabs.com) plus `rounded-block` (1.5 rem), `shadow-header`
+(`0 4px 7.5px rgb(8 10 25 / 0.05)`), `min-h-header` (60 px) and `min-h-header-lg` (64 px).
+Breakpoints: Tailwind defaults; every grid collapses to one column at 320 px. `html`
+`scroll-padding-top: 6rem` keeps anchored targets under the sticky header.
+
+## Motion and media
+
+- Reduced motion: global kill switch in `base.css` (`animation/transition-duration: 0.01ms`,
+  `scroll-behavior: auto`); components only use `motion-safe:` transitions.
+- Forced colours: `forced-colors:border` on buttons, badges and cards; focus outline uses
+  `Highlight`.
+- `prefers-contrast: more`: stronger borders, muted text becomes full-contrast text.
+
+## Components (`app/components/ui/`)
+
+Primitives take every label as a prop — no text lives inside them — so they stay free of i18n
+and pass `eslint-plugin-i18next/no-literal-string`. Each has a role/name test next to it.
+
+| Component        | Props                                                                                           | Notes                                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `Button`         | `variant: primary \| secondary \| ghost \| icon`, `size: md \| sm`, `pending`, `pendingLabel`   | `type="button"` by default; pending keeps the button enabled with `aria-busy`; `disabled` only for out-of-stock |
+| `ButtonLink`     | same variants, React Router `Link` props                                                        | never `aria-disabled` — blocked states omit the control                                                         |
+| `Icon`           | `name: IconName`, SVG props                                                                     | `aria-hidden focusable="false" fill="currentColor"`, 16 Remix Icon paths                                        |
+| `VisuallyHidden` | `as?`, `children`                                                                               | `sr-only`                                                                                                       |
+| `Field`          | `name`, `label`, `hideLabel?`, `hint?`, `error?`, `errorPrefix`, `children: (ids) => ReactNode` | render-prop instead of `cloneElement`; error is `role="alert"` with icon + sr prefix                            |
+| `useFieldIds`    | `name`, `{ hint, error }`                                                                       | `{ inputId, hintId, errorId, describedBy }`                                                                     |
+| `Checkbox`       | `label`, input props                                                                            | 20 px box in a 44 px label row                                                                                  |
+| `Select`         | `id`, `label`, `hideLabel?`, `options`                                                          | native `<select>` with chevron icon, 44 px                                                                      |
+| `Alert`          | `prefix`, `children`                                                                            | `role="alert"`, icon, sr prefix                                                                                 |
+| `Disclosure`     | `summary`, `summaryLabel?`, `children`                                                          | native `<details class="group">`; JS adds Escape (focus back to summary) and outside pointer-down               |
+| `Price`          | `priceFormatted`, `originalPriceFormatted?`, `labels`                                           | sr "Price"/"Original price", `<s aria-hidden>`                                                                  |
+| `DiscountBadge`  | `percentFormatted`                                                                              | `aria-hidden`, `bg-accent text-accent-fg`                                                                       |
+| `Rating`         | `value`, `valueFormatted`, `label`                                                              | decorative stars, visible number, sr label                                                                      |
+| `DefinitionList` | `items: { key, term, description, lang? }[]`                                                    | `<dl>` with `<div class="contents">` rows                                                                       |
+
+### Icons
+
+16 paths from **Remix Icon v4.8.0** — the last release published under the Apache License 2.0
+(later releases use the custom "Remix Icon License v1.0", which is not on the licence allow-list;
+see `DECISIONS.md` D-4). Path data is copied verbatim into `icon.tsx`; attribution in the README.
+Icons never carry meaning alone: every icon-only control has an accessible name and every status
+icon sits next to text.
+
+## Layout per screen
+
+See `PROJECT_PLAN.md` §3.8 — filled in with the real class recipes as each screen lands
+(`feature/app-shell`, `feature/catalogue`, `feature/product-detail`, `feature/cart-page`).
 
 ## Deviations from ltplabs.com and the wireframes
 
-_TO DO._
+Recorded as they are implemented (header `sticky` instead of `fixed`, outlined icon buttons instead
+of orange squares, `<nav><ul>` instead of `<div>` of `<button aria-haspopup>`, Manrope logo, visible
+`<h1>` and minimal footer absent from the wireframes).
