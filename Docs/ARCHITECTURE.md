@@ -24,7 +24,7 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
   (pathless)               locale-errors.tsx     shared ErrorBoundary inside the shell
     index                  catalogue.tsx         loader: categories → query → products → CatalogueView
     products/:productId    product.tsx           placeholder (title + description) until feature/product-detail
-    search                 search.tsx            placeholder until feature/search
+    search                 search.tsx            ?q → searchProducts; empty q renders the prompt without fetching
     cart                   cart.tsx              placeholder until feature/cart-page
     about|contact|blog|account                   translated "coming soon" pages
     *                      not-found.tsx         404 inside the shell
@@ -87,6 +87,14 @@ Client-side behaviour is owned by `CatalogueResults`: on every search-param chan
 `CategoryFilter` keeps an optimistic selection while the navigation is pending and focuses its
 fieldset after "Clear filter". `SortForm` and the category form are plain GET forms (hidden inputs
 ordered so native submits also produce `q, category, sort`).
+
+### Search (`app/routes/search.tsx`)
+
+Same query parsing and view builder as the catalogue, without categories. An empty or
+whitespace-only `q` renders the form and a prompt with no API call; otherwise
+`searchProducts(q, params)` with the same sort and pagination. `handle.initialFocus = "#search-q"`
+makes `RouteAnnouncer` focus the search box on client navigation; results announce
+`catalogue.search.announce{q,count}`. Search titles quote `q` in the locale's quotation marks.
 
 ### URL contract (`app/lib/catalogue/query.ts`)
 
