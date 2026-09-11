@@ -26,6 +26,6 @@ describe("AnnouncerProvider", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Announce" }));
     expect(regions[0]).toHaveTextContent("Added to your cart");
-    expect(regions[1]).toBeEmptyDOMElement();
+    expect(regions[1]).toHaveTextContent("Added to your cart");
   });
 });

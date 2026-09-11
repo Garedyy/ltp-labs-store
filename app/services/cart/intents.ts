@@ -20,7 +20,8 @@ export function parseCartIntent(form: FormData): CartIntent {
   switch (intent) {
     case "set-quantity": {
       if (productId === null) return { type: "invalid" };
-      const raw = String(form.get("quantity") ?? "").trim();
+      // The text input and the +/- submitter share the name: the submitter (last) wins.
+      const raw = String(form.getAll("quantity").at(-1) ?? "").trim();
       const quantity = /^-?\d+$/.test(raw) ? Number(raw) : null;
       return { type: "set-quantity", productId, quantity };
     }

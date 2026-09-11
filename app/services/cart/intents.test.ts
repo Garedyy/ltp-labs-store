@@ -43,6 +43,15 @@ describe("parseCartIntent", () => {
     });
   });
 
+  it("takes the last quantity value (the +/- submitter) when the input is also sent", () => {
+    const data = new FormData();
+    data.set("intent", "set-quantity");
+    data.set("productId", "3");
+    data.append("quantity", "1");
+    data.append("quantity", "2");
+    expect(parseCartIntent(data)).toEqual({ type: "set-quantity", productId: 3, quantity: 2 });
+  });
+
   it("rejects unknown intents and missing product ids", () => {
     expect(parseCartIntent(form({ intent: "increment" }))).toEqual({ type: "invalid" });
     expect(parseCartIntent(form({ intent: "remove", productId: "abc" }))).toEqual({

@@ -112,11 +112,12 @@ Run before each release and after any change to the shell or a page structure:
 
 ## Manual audit log
 
-| Date       | Tool / AT                                   | Scope                                                | Result                                           |
-| ---------- | ------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------ |
-| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus | pass (automated stand-in; VoiceOver run pending) |
-| —          | VoiceOver + Safari                          | —                                                    | not run yet (branch 12)                          |
-| —          | NVDA + Firefox                              | —                                                    | not run yet (no Windows machine)                 |
+| Date       | Tool / AT                                   | Scope                                                             | Result                                           |
+| ---------- | ------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |
+| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus              | pass (automated stand-in; VoiceOver run pending) |
+| 2026-09-11 | Playwright specs                            | catalogue, search, product, cart focus handoffs and announcements | pass                                             |
+| —          | VoiceOver + Safari                          | —                                                                 | not run yet (branch 12)                          |
+| —          | NVDA + Firefox                              | —                                                                 | not run yet (no Windows machine)                 |
 
 ## Known limitations
 

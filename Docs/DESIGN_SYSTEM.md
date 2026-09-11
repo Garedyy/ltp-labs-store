@@ -128,7 +128,12 @@ icon sits next to text.
   `flex gap-2 overflow-x-auto size-16 rounded-lg border-2`; title `text-h3 md:text-h2 font-medium`,
   rating, price `text-h4` + badge, stock line, full-width Add to cart, "Product details" uppercase
   label + `text-body-sm` description, practical `<dl>`, tags; reviews `lg:col-span-2`.
-- **Cart**: filled in by `feature/cart-page`. Coming-soon, 404 and error
+- **Cart**: `grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12`; `<ul class="divide-y divide-border">`,
+  line `grid grid-cols-[5rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr_auto]`, thumbnail `size-20 sm:size-28`,
+  stepper `inline-flex rounded-lg border` with 44 px buttons; summary card
+  `rounded-2xl border border-border p-6 lg:sticky lg:top-28` (static under 30 rem height) with the
+  `<dl>`, Check out / PayPal buttons, demo note and promo form. Empty cart and confirmation use the
+  centred `max-w-prose` recipe. Coming-soon, 404 and error
   pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
 
 ## Deviations from ltplabs.com and the wireframes

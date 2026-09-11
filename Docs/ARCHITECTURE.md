@@ -25,12 +25,13 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
     index                  catalogue.tsx         loader: categories → query → products → CatalogueView
     products/:productId    product.tsx           loader: getProduct → ProductView; ?image read client-side
     search                 search.tsx            ?q → searchProducts; empty q renders the prompt without fetching
-    cart                   cart.tsx              placeholder until feature/cart-page
+    cart                   cart.tsx              loader: loadCartView; action: set-quantity | remove | apply-promo | remove-promo | checkout
+    checkout/confirmation  order-confirmation.tsx lastOrder from the session; never revalidates
     about|contact|blog|account                   translated "coming soon" pages
     *                      not-found.tsx         404 inside the shell
 ```
 
-`checkout/confirmation` is added by `feature/cart-page`. The shell
+Every route of the plan is in place. The shell
 (`locale-layout.tsx`) renders `SkipLink`, `SiteHeader` (with `cartCount` from its loader),
 `<main id="main">`, `SiteFooter`, the announcer regions and `RouteAnnouncer`. Errors thrown by the
 layout's own middleware (asset deny-list) reach the shell-less root boundary; every leaf error
@@ -166,9 +167,21 @@ id above; then run `npm run test:e2e`.
   commit) and revalidates after every submission.
 - **Concurrency**: `AddToCartForm` ignores submits while its fetcher is pending; the cookie is
   last-write-wins across tabs (documented limitation).
-- `loadCartView` (used by the cart page) reconciles the cookie with the catalogue: vanished or
-  sold-out products are dropped (`items-removed`), quantities above stock clamped
-  (`quantities-adjusted`), totals formatted per locale.
+- **Cart page** (`routes/cart.tsx`): the loader runs `loadCartView` — vanished or sold-out
+  products dropped (`items-removed`), quantities above stock clamped (`quantities-adjusted`),
+  totals per locale — reads a flashed result from a no-JS submission and commits the session when
+  anything changed. The action parses the intent, unsets `lastOrder`, then: `set-quantity`
+  (non-integer → `invalid-quantity` 400; clamped to `1..min(99, stock)` → `quantity-clamped`;
+  product vanished → line removed + `items-removed`), `remove` (→ `removed{title}`), `apply-promo`
+  (`promo-required` / `promo-invalid` / `promo-applied{code}`; a new code replaces the old one),
+  `remove-promo`, `checkout` (`empty-cart` 400, else `lastOrder = { number: "LTP-" + base36 time,
+method, totalCents, itemCount, totalFormatted }`, cart and promo cleared, 303 to the
+  confirmation). With JavaScript every form is a keyed `fetcher.Form` and the page handles results
+  centrally through `useFetchers` (announcements, removal focus handoff); without JavaScript the
+  result is flashed and the action redirects back (303).
+- **Confirmation** (`routes/order-confirmation.tsx`): `lastOrder` persists until the next cart
+  mutation, so reloads and language switches keep it; missing → redirect to the cart;
+  `shouldRevalidate: () => false`.
 
 ## Progressive enhancement
 
