@@ -31,7 +31,7 @@
 | # | Branch | Status | Started | Merged | PR | Notes |
 |---|---|---|---|---|---|---|
 | 0 | bootstrap (`development` from `main`) | merged | 2026-09-11 | 2026-09-11 | — | tracker added on `main`; `development` pushed |
-| 1 | `feature/project-scaffold` | pr-open | 2026-09-11 | | #TBD | dev + typecheck verified |
+| 1 | `feature/project-scaffold` | pr-open | 2026-09-11 | | [#1](https://github.com/Garedyy/ltp-lab-store-/pull/1) | dev + typecheck verified |
 | 2 | `feature/tooling` | todo | | | | |
 | 3 | `feature/design-system` | todo | | | | |
 | 4 | `feature/i18n-foundation` | todo | | | | |
