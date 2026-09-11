@@ -4,7 +4,12 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.0.0] - 2026-09-11
+
+First release: the complete challenge, delivered through fourteen squash-merged feature pull
+requests (#1 scaffold, #2 tooling, #3 design system, #4 i18n foundation, #5 app shell,
+#6 DummyJSON client, #7 catalogue, #8 search, #9 product detail, #10 cart session, #11 cart page,
+#12 accessibility audit, #13 performance, #14 docs and release).
 
 ### Added
 

@@ -185,7 +185,18 @@ method, totalCents, itemCount, totalFormatted }`, cart and promo cleared, 303 to
 
 ## Progressive enhancement
 
-_TO DO (app-shell)._
+JavaScript is additive. Every flow is verified with it disabled (Playwright `no-js` project).
+
+| Interaction                         | Without JavaScript                                                                              | With JavaScript                                                           |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Sort                                | GET form, visible Apply                                                                         | same form, client navigation (push)                                       |
+| Category                            | checkbox + Apply button                                                                         | `onChange` navigates in place, optimistic selection, Apply shown on focus |
+| Page / search                       | links and GET form → full document                                                              | client navigation; page change focuses the results summary                |
+| Gallery thumbnail                   | link `?image=n`                                                                                 | client navigation with `replace`, no refetch                              |
+| Add to cart, stepper, remove, promo | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice | `fetcher.Form`, stay in place, announcements, focus handoff               |
+| Checkout / PayPal                   | POST → 303 to the confirmation                                                                  | same (full navigation)                                                    |
+| Language switch                     | POST form → 303 + cookie                                                                        | same                                                                      |
+| Mobile menu / language panel        | native `<details>`                                                                              | Escape, outside click, focus leaving, close on navigation                 |
 
 ## Security
 
@@ -200,4 +211,22 @@ _TO DO (app-shell)._
 
 ## Conventions and recipes
 
-_TO DO (docs-release): file conventions, "add a page" recipe._
+- `*.server.ts` files never reach the client bundle; `Intl`, cookies and the API client live
+  there. Components receive preformatted strings.
+- Route modules import `type { Route } from "./+types/<name>"`; loaders read `url` from their
+  arguments; links use `href("/:lang/…", { lang })`.
+- UI text lives in `app/locales/<lang>/<domain>.ts`; primitives take labels as props;
+  `eslint-plugin-i18next` blocks literals in JSX.
+- Error and notice codes are unions in `app/lib/error-codes.ts`, mapped to translation keys with
+  `satisfies` so a missing translation fails `tsc`.
+- Tests: `*.test.ts(x)` next to the code for pure logic and components; `tests/e2e/*.spec.ts`
+  for routes, with `tests/e2e/routes.ts` feeding the accessibility and reflow matrices.
+
+### Adding a page
+
+1. Create `app/routes/<name>.tsx` with a `loader` that reads `getLocale(context)` /
+   `getInstance(context).t`, a `meta` built with `pageMeta`, and a component with one `<h1>`.
+2. Register it in `app/routes.ts` inside the `locale-errors` layout.
+3. Add its strings to `app/locales/en/pages.ts` and `pt/pages.ts` (`tsc` checks parity).
+4. Link it from `SiteNav` / `SiteFooter` if it belongs to the navigation.
+5. Append its path to `tests/e2e/routes.ts` — the WCAG scan and the reflow test pick it up.
