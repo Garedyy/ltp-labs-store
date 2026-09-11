@@ -19,8 +19,28 @@ function isReport(result: ReportResult): result is ICheckerReport {
   return "results" in result;
 }
 
+// The engine ignores the open state of <details>: content of a closed one is not rendered, so
+// nothing inside it is tabbable. Open panels are scanned as their own state.
+async function closedDetailsPaths(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    function xpath(element: Element): string {
+      const parts: string[] = [];
+      for (let node: Element | null = element; node; node = node.parentElement) {
+        const tag = node.tagName.toLowerCase();
+        const siblings = [...(node.parentElement?.children ?? [node])].filter(
+          (sibling) => sibling.tagName === node?.tagName,
+        );
+        parts.unshift(`${tag}[${siblings.indexOf(node) + 1}]`);
+      }
+      return `/${parts.join("/")}`;
+    }
+    return [...document.querySelectorAll("details:not([open])")].map(xpath);
+  });
+}
+
 // Labels must be unique per route x locale x state: they name the JSON report in test-results/a11y.
 export async function expectAccessible(page: Page, label: string): Promise<void> {
+  const hiddenPrefixes = await closedDetailsPaths(page);
   const { report } = await getCompliance(page, label);
   if (!isReport(report)) {
     throw new Error(
@@ -28,7 +48,10 @@ export async function expectAccessible(page: Page, label: string): Promise<void>
     );
   }
   const failures = report.results.filter(
-    (issue) => FAIL_LEVELS.has(issue.level) && !MANUAL_REVIEW_RULES.has(issue.ruleId),
+    (issue) =>
+      FAIL_LEVELS.has(issue.level) &&
+      !MANUAL_REVIEW_RULES.has(issue.ruleId) &&
+      !hiddenPrefixes.some((prefix) => issue.path.dom?.startsWith(`${prefix}/`)),
   );
   expect(failures, stringifyResults(report)).toEqual([]);
 }

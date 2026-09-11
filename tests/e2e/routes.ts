@@ -1,2 +1,10 @@
-// Every feature PR appends the routes it adds; the a11y and reflow suites scan each of them per locale.
-export const ROUTES: readonly string[] = ["/"];
+import { localeCodes } from "../../app/i18n/config";
+
+// Locale-relative paths; every feature PR appends the routes it adds. Scans run per locale.
+export const ROUTES: readonly string[] = ["/", "/nowhere"];
+
+export const LOCALES = localeCodes;
+
+export function localised(route: string, locale: string): string {
+  return `/${locale}${route === "/" ? "" : route}`;
+}

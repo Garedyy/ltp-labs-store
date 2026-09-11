@@ -40,6 +40,7 @@ export default defineConfig([
           "jsx-attributes": {
             exclude: [
               "className",
+              ".*ClassName",
               "to",
               "href",
               "name",
@@ -106,7 +107,7 @@ export default defineConfig([
     },
   },
   {
-    files: ["scripts/**/*.mjs", "tests/e2e/**/*.ts"],
+    files: ["scripts/**/*.mjs", "tests/e2e/**/*.ts", "app/entry.server.tsx"],
     rules: { "no-console": "off" },
   },
   prettier,
