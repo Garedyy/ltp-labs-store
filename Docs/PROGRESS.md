@@ -59,7 +59,7 @@ Tick a box only once the criterion has been verified locally (command output see
 ### 2 · `feature/tooling`
 
 - [x] ESLint 9 (+jsx-a11y, +i18next), Prettier, Vitest, Playwright + `accessibility-checker` skeleton, `scripts/check-licenses.mjs`, Husky, lint-staged, commitlint, CI, PR template, `CONTRIBUTING.md`, smoke tests
-- [x] `npm run check` + `npm run test:e2e` green locally (2026-09-11) — [ ] green on the PR (CI)
+- [x] `npm run check` + `npm run test:e2e` green locally and on PR #2 (CI quality 32 s + e2e 55 s, 2026-09-11)
 - [x] a bad commit message is rejected (`commit-msg` hook refused "bad message without a type" and an unknown scope, 2026-09-11)
 - [x] `check:licenses` passes on the full tree (612 packages, 4 exceptions) and fails with exit 1 on a deliberately installed `@axe-core/playwright` (MPL-2.0), then restored with `npm ci` (2026-09-11; shown in PR)
 
