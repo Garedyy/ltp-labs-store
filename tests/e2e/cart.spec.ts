@@ -63,6 +63,10 @@ test.describe("cart page", () => {
       await expect(apple.getByRole("textbox", { name: "Qty Apple" })).toHaveValue(String(i));
     }
     await expect(plus).toHaveAttribute("aria-disabled", "true");
+    const minus = apple.getByRole("button", { name: "Decrease quantity of Apple" });
+    await minus.click();
+    await expect(apple.getByRole("textbox", { name: "Qty Apple" })).toHaveValue("7");
+    await expect(page.getByRole("link", { name: "Cart, 9 items" })).toBeVisible();
     await apple.getByRole("textbox", { name: "Qty Apple" }).fill("50");
     await apple.getByRole("textbox", { name: "Qty Apple" }).press("Tab");
     await expect(

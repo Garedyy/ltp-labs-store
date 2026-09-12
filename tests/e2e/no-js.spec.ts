@@ -66,6 +66,11 @@ test("the cart works without JavaScript: stepper, promo, remove, checkout", asyn
   await expect(page).toHaveURL(/\/en\/cart$/);
   await expect(page.getByRole("status").filter({ hasText: "updated to 2" })).toBeFocused();
   await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("2");
+  await page
+    .getByRole("button", { name: "Decrease quantity of Essence Mascara Lash Princess" })
+    .click();
+  await expect(page.getByRole("status").filter({ hasText: "updated to 1" })).toBeFocused();
+  await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("1");
   await page.getByRole("textbox", { name: "Promo code" }).fill("LTP10");
   await page.getByRole("button", { name: "Apply" }).click();
   await expect(page.getByText("Code LTP10 applied", { exact: true })).toBeVisible();

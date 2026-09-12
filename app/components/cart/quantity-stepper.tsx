@@ -34,7 +34,9 @@ export function QuantityStepper({
   const input = useRef<HTMLInputElement>(null);
   // The value shown while a submission is pending; an invalid value never changes it (and never
   // remounts the input through its key, so focus stays where it is).
-  const inFlight = String(fetcher.formData?.get("quantity") ?? "");
+  const inFlight = String(
+    fetcher.formData?.get("setQuantity") ?? fetcher.formData?.get("quantity") ?? "",
+  );
   const shown = /^\d+$/.test(inFlight) ? Number(inFlight) : quantity;
   const result = fetcher.data ?? flash;
   const error = result && !result.ok ? result.error : null;
@@ -70,7 +72,7 @@ export function QuantityStepper({
         <div className="inline-flex items-center rounded-lg border border-border-strong">
           <button
             type="submit"
-            name="quantity"
+            name="setQuantity"
             value={shown - 1}
             aria-label={t("cart.items.decrease", { title })}
             aria-disabled={shown <= 1 || undefined}
@@ -107,7 +109,7 @@ export function QuantityStepper({
           />
           <button
             type="submit"
-            name="quantity"
+            name="setQuantity"
             value={shown + 1}
             aria-label={t("cart.items.increase", { title })}
             aria-disabled={shown >= maxQuantity || undefined}

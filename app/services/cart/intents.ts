@@ -20,8 +20,9 @@ export function parseCartIntent(form: FormData): CartIntent {
   switch (intent) {
     case "set-quantity": {
       if (productId === null) return { type: "invalid" };
-      // The text input and the +/- submitter share the name: the submitter (last) wins.
-      const raw = String(form.getAll("quantity").at(-1) ?? "").trim();
+      // A clicked +/- button (`setQuantity`) overrides the typed value. They need distinct names:
+      // the browser serialises the submitter at its DOM position, not last.
+      const raw = String(form.get("setQuantity") ?? form.get("quantity") ?? "").trim();
       const quantity = /^-?\d+$/.test(raw) ? Number(raw) : null;
       return { type: "set-quantity", productId, quantity };
     }

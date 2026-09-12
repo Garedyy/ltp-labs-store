@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Cart page: the quantity stepper's minus button did nothing, with and without JavaScript
+  (#15). The +/- buttons shared the text input's `quantity` name and the server kept the last
+  value, but browsers serialise the clicked button at its DOM position, so the minus button
+  (before the input) was overridden by the unchanged typed value. The buttons now submit
+  `setQuantity`, which takes precedence over the typed `quantity`.
+
 ## [1.0.0] - 2026-09-11
 
 First release: the complete challenge, delivered through fourteen squash-merged feature pull
