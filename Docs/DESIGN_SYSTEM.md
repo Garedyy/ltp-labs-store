@@ -99,6 +99,10 @@ icon sits next to text.
 
 ## Header and footer anatomy
 
+- Shell: `<body class="flex min-h-svh flex-col">` with `grow` on `<main>`, so the footer sits on the
+  bottom edge of short pages and ends with the document on long ones (#26). No wrapper element:
+  the skip link stays the first child of `<body>`; `svh` rather than `dvh` so the mobile browser
+  bar never resizes the shell while scrolling.
 - Header wrapper: `sticky top-0 z-40 px-4 pt-4 lg:px-6 lg:pt-6 [@media(max-height:30rem)]:static`.
 - Card: `relative mx-auto flex min-h-header max-w-[87rem] items-center justify-between gap-3 rounded-2xl bg-surface ps-4 pe-3 shadow-header sm:ps-6 lg:grid lg:min-h-header-lg lg:grid-cols-[1fr_auto_1fr]`
   — brand · centred nav · actions.
@@ -112,7 +116,8 @@ icon sits next to text.
   Search and Account icons; `lg+` three-column card with the nav and the switcher inline.
 - Loading bar: `h-0.5 bg-accent` under the card, revealed by a 300 ms CSS delay.
 - Footer: `mt-16 rounded-t-3xl bg-surface-inverse px-4 py-8 text-fg-inverse lg:px-6 lg:py-12`;
-  brand link, footer nav in header order, language links.
+  brand link, footer nav in header order, language links. The 4 rem gap above it is a margin, not
+  `mt-auto`, so long pages keep the same spacing as short ones.
 
 ## Layout per screen
 

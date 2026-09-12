@@ -19,6 +19,10 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Shell: on short pages (coming soon, 404, empty cart, order confirmation) the footer stopped
+  right after the content and left the page background visible below it (#26). `<body>` is now a
+  `min-h-svh` flex column and `<main>` grows, so the footer sits on the bottom edge of the viewport
+  and long pages are unchanged; `tests/e2e/layout.spec.ts` checks both cases.
 - Cart page: pressing Enter in the quantity field dropped the focus to the document (#18). The
   input was keyed on the in-flight value, so React remounted it mid-submission; it is now
   uncontrolled and never remounted, the shown value is written back when a submission or a

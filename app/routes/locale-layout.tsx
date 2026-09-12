@@ -58,7 +58,7 @@ function Shell({ cartCount, children }: { cartCount: number; children: React.Rea
     <AnnouncerProvider>
       <SkipLink>{t("common.skipToContent")}</SkipLink>
       <SiteHeader cartCount={cartCount} />
-      <main id="main" tabIndex={-1} aria-busy={pending || undefined} className="py-8">
+      <main id="main" tabIndex={-1} aria-busy={pending || undefined} className="grow py-8">
         <PageContainer>{children}</PageContainer>
       </main>
       <SiteFooter />
