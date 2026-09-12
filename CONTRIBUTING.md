@@ -57,6 +57,8 @@ profile; CI sets it). Its Puppeteer and chromedriver binaries are skipped throug
 The repository ships its workflow as Claude Code skills in `.claude/skills/` (the user drives
 them; every one stops for approval before writing, branching or pushing):
 
+- `/issue <description>` — checks for duplicates, locates the affected code, drafts an English
+  ASCII-only issue with the repository labels and creates it once the draft is approved.
 - `/fix-issue <N>` — reads the issue, syncs `development`, proposes a plan, then branches
   `fix/<N>-<slug>`, implements, tests, commits and hands over to `/pull-request`.
 - `/commit-push` — stages, commits (Conventional Commit, English, ASCII, no trailers) and pushes.
