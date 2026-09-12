@@ -16,13 +16,16 @@ import { ResultsSummary } from "./results-summary";
 import { SortForm } from "./sort-form";
 
 type CatalogueResultsProps = {
-  view: CatalogueView;
+  // Null is the search prompt: heading and toolbar only, and the component stays mounted so the
+  // first search and the way back are announced like any other search-param change.
+  view: CatalogueView | null;
   // Search pages pass their own heading and empty state; the catalogue uses the view title.
   heading?: React.ReactNode;
   emptyTitle?: React.ReactNode;
   emptyBody?: React.ReactNode;
   // Announcement key with plural suffixes; the catalogue default is catalogue.results.announce.
   announce?: { key: "catalogue.search.announce"; values: Record<string, string> };
+  emptyAnnouncement?: string;
   showJumpLink?: boolean;
   toolbarStart?: React.ReactNode;
 };
@@ -37,7 +40,11 @@ function onlyPageChanged(previous: CatalogueQuery, current: CatalogueQuery): boo
 }
 
 // Search-param changes keep the pathname, so this component owns their announcements and focus.
-function useResultsAnnouncements(view: CatalogueView, custom?: CatalogueResultsProps["announce"]) {
+function useResultsAnnouncements(
+  view: CatalogueView | null,
+  custom?: CatalogueResultsProps["announce"],
+  emptyAnnouncement?: string,
+) {
   const { t } = useTranslation();
   const announce = useAnnounce();
   const navigation = useNavigation();
@@ -47,6 +54,10 @@ function useResultsAnnouncements(view: CatalogueView, custom?: CatalogueResultsP
     if (navigation.state !== "idle" || previous.current === view) return;
     const before = previous.current;
     previous.current = view;
+    if (!view) {
+      if (emptyAnnouncement) announce(emptyAnnouncement);
+      return;
+    }
     announce(
       custom
         ? t(custom.key, { count: view.total, ...custom.values })
@@ -57,10 +68,10 @@ function useResultsAnnouncements(view: CatalogueView, custom?: CatalogueResultsP
             total: view.total,
           }),
     );
-    if (onlyPageChanged(before.query, view.query)) {
+    if (before && onlyPageChanged(before.query, view.query)) {
       document.getElementById("results-heading")?.focus({ preventScroll: false });
     }
-  }, [view, navigation.state, announce, t, custom]);
+  }, [view, navigation.state, announce, t, custom, emptyAnnouncement]);
 }
 
 export function CatalogueResults({
@@ -69,12 +80,22 @@ export function CatalogueResults({
   emptyTitle,
   emptyBody,
   announce,
+  emptyAnnouncement,
   showJumpLink,
   toolbarStart,
 }: CatalogueResultsProps) {
   const { t } = useTranslation();
   const lang = useLocale();
-  useResultsAnnouncements(view, announce);
+  useResultsAnnouncements(view, announce, emptyAnnouncement);
+
+  if (!view) {
+    return (
+      <div className="flex min-w-0 flex-col gap-6">
+        <h1 className="text-h4 font-medium">{heading}</h1>
+        {toolbarStart}
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-6">

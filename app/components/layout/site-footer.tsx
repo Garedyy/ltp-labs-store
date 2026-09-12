@@ -5,7 +5,7 @@ import { LOCALES, localeCodes } from "~/i18n/config";
 import { switchLocale } from "~/i18n/paths";
 import { useLocale } from "~/i18n/use-locale";
 
-const LINK = "text-fg-inverse no-underline hover:underline";
+const LINK = "inline-flex min-h-11 items-center text-fg-inverse no-underline hover:underline";
 
 export function SiteFooter() {
   const { t } = useTranslation();
@@ -26,14 +26,14 @@ export function SiteFooter() {
         <div>
           <Link
             to={home}
-            className="text-h5 font-semibold tracking-tight text-fg-inverse uppercase no-underline hover:underline"
+            className="inline-flex min-h-11 items-center text-h5 font-semibold tracking-tight text-fg-inverse uppercase no-underline hover:underline"
           >
             {t("common.brand")}
           </Link>
-          <p className="mt-2 text-body-sm">{t("common.tagline")}</p>
+          <p className="text-body-sm">{t("common.tagline")}</p>
         </div>
         <nav aria-label={t("common.nav.footerLabel")}>
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+          <ul className="flex flex-wrap gap-x-6">
             {links.map(([key, to]) => (
               <li key={key}>
                 <Link to={to} className={LINK}>

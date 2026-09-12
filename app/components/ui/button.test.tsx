@@ -30,6 +30,17 @@ describe("Button", () => {
     render(<Button disabled>Add to cart</Button>);
     expect(screen.getByRole("button", { name: "Add to cart" })).toBeDisabled();
   });
+
+  it("keeps the 44 px target in both sizes", () => {
+    render(
+      <>
+        <Button>Medium</Button>
+        <Button size="sm">Small</Button>
+      </>,
+    );
+    expect(screen.getByRole("button", { name: "Medium" })).toHaveClass("min-h-11");
+    expect(screen.getByRole("button", { name: "Small" })).toHaveClass("min-h-11");
+  });
 });
 
 describe("ButtonLink", () => {
