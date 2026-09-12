@@ -43,13 +43,11 @@ describe("parseCartIntent", () => {
     });
   });
 
-  it("takes the last quantity value (the +/- submitter) when the input is also sent", () => {
-    const data = new FormData();
-    data.set("intent", "set-quantity");
-    data.set("productId", "3");
-    data.append("quantity", "1");
-    data.append("quantity", "2");
-    expect(parseCartIntent(data)).toEqual({ type: "set-quantity", productId: 3, quantity: 2 });
+  it("lets a +/- submitter override the typed quantity wherever it sits in the payload", () => {
+    const minus = form({ intent: "set-quantity", productId: "3", setQuantity: "2", quantity: "3" });
+    expect(parseCartIntent(minus)).toEqual({ type: "set-quantity", productId: 3, quantity: 2 });
+    const plus = form({ intent: "set-quantity", productId: "3", quantity: "3", setQuantity: "4" });
+    expect(parseCartIntent(plus)).toEqual({ type: "set-quantity", productId: 3, quantity: 4 });
   });
 
   it("rejects unknown intents and missing product ids", () => {
