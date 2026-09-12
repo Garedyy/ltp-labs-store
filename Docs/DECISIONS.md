@@ -125,8 +125,15 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   `promo-remove`); the cart page reads all results once through `useFetchers()` (a `WeakSet` of
   handled result objects), announces, plans the removal focus from the DOM order and applies it
   after revalidation. `AnnouncerProvider` now keeps the other slot's text instead of clearing it.
-  The `+`/`−` submitters share the `quantity` name with the input, so the action takes the **last**
-  value (the submitter wins).
+  The `+`/`−` submitters shared the `quantity` name with the input, so the action took the **last**
+  value (the submitter was expected to win) — superseded by the addendum below.
+- **Addendum (2026-09-12, `fix/cart-minus-button`, #15 / #16)**: the shared name was wrong.
+  Browsers serialise the clicked submitter at its **DOM position**, not last: the `−` button sits
+  before the input, so its value was overridden by the unchanged typed one and the button did
+  nothing (with and without JavaScript). New field contract: the buttons submit **`setQuantity`**
+  (`quantity-stepper.tsx`), the input keeps `quantity`, and `parseCartIntent` (`intents.ts`)
+  prefers `setQuantity` when present. A no-JS submit of the typed value alone still works through
+  `quantity`. Unit- and e2e-tested in both projects.
 - **Consequences**: announcements and focus survive unmounts; rapid `+` clicks stay idempotent per
   request, but responses that race on the cookie are last-write-wins (documented limitation; the
   e2e waits for each step).
@@ -144,6 +151,21 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   the plan's ≥ 90 / 100 targets.
 - **Consequences**: a future reduction would require replacing i18next (decision 4) or React
   Router's client runtime — out of scope for this challenge.
+
+## D-10 · Conventions that supersede the plan's git section
+
+- **Date / branch**: 2026-09-11 · `feature/tooling` (scope) and `feature/project-scaffold`
+  (trailers); recorded here on 2026-09-12 (#17)
+- **Context**: `PROJECT_PLAN.md` §3 (tooling) fixes the commitlint `scope-enum` to twelve scopes
+  and §4 states that Claude-authored commits end with the session's attribution trailer. The
+  release commit §4 prescribes, `chore(release): vX.Y.Z`, needs a scope the list did not contain;
+  and the user's global instructions forbid any `Co-Authored-By` or tool attribution in commits
+  and pull requests.
+- **Decision**: `release` is added to the `scope-enum` (`commitlint.config.js`, `CONTRIBUTING.md`).
+  No attribution trailer of any kind is written; commits and PRs are authored by the user only.
+- **Consequences**: the plan's two sentences are superseded by this entry; every other rule of its
+  git section stands. Issue fixes follow `fix/<N>-<slug>` from `development` (the `fix-issue`
+  skill), hotfixes keep `fix/<slug>` from `main`.
 
 ## TO VERIFY resolutions
 

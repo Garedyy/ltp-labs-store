@@ -8,6 +8,8 @@
 - One pull request per feature, **squash-merged** into `development`. The PR title must be a
   Conventional Commit: it becomes the squash commit message and is linted in CI.
 - `development -> main` is a merge commit per release (`chore(release): vX.Y.Z`), tagged.
+- Issue fixes: `fix/<N>-<slug>` from `development` (`N` = the issue number), one PR squash-merged
+  into `development` like a feature; they ship with the next release.
 - Hotfixes: `fix/<slug>` from `main`, merged into both `main` and `development`.
 - Merge methods are enforced with GitHub rulesets (squash for `development`, merge commit for `main`).
 
@@ -49,6 +51,20 @@ profile; CI sets it). Its Puppeteer and chromedriver binaries are skipped throug
 | i18n                    | Every string in EN and PT, glossary respected, no literal strings in JSX                                            |
 | Docs                    | `README.md`, `CHANGELOG.md`, the relevant `Docs/*.md` and `Docs/PROGRESS.md` updated in the same PR                 |
 | Routes                  | `tests/e2e/routes.ts` lists every new route                                                                         |
+
+## Claude Code skills
+
+The repository ships its workflow as Claude Code skills in `.claude/skills/` (the user drives
+them; every one stops for approval before writing, branching or pushing):
+
+- `/fix-issue <N>` — reads the issue, syncs `development`, proposes a plan, then branches
+  `fix/<N>-<slug>`, implements, tests, commits and hands over to `/pull-request`.
+- `/commit-push` — stages, commits (Conventional Commit, English, ASCII, no trailers) and pushes.
+- `/pull-request [#N]` — opens the PR as a draft, runs `/project-review pr <n> --post`, marks it
+  ready when nothing blocks.
+- `/merge-pr <n>` — waits for a green CI, merges with the method the base requires, deletes the
+  head branch, closes the linked issue, fast-forwards the local base.
+- `/project-review` — see below.
 
 ## Automated review
 

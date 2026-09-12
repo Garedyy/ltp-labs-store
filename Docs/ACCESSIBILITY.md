@@ -60,16 +60,29 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
 
 ## Announcements and focus
 
-| Event                                                                                                                           | Message                     | Focus target                                              |
-| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------------------------------------------- |
-| pathname change (client navigation)                                                                                             | `document.title`            | `#main` (or `handle.initialFocus`)                        |
-| pending navigation > 300 ms                                                                                                     | `common.loading` (once)     | unchanged                                                 |
-| Escape in an open disclosure                                                                                                    | —                           | its `<summary>`                                           |
-| focus leaves an open disclosure                                                                                                 | —                           | wherever focus went (panel closes)                        |
-| search-param change on `/search` (first search included; `CatalogueResults` stays mounted across the prompt and results states) | `catalogue.search.announce` | unchanged (`#results-heading` when only the page changed) |
-| query cleared on `/search`                                                                                                      | `catalogue.search.prompt`   | unchanged                                                 |
-
-Catalogue, product and cart events are added by their branches.
+| Event                                                                                                                                 | Message                                                               | Focus target                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| pathname change (client navigation)                                                                                                   | `document.title`                                                      | `#main` (or `handle.initialFocus`)                                     |
+| pending navigation > 300 ms                                                                                                           | `common.loading` (once)                                               | unchanged                                                              |
+| Escape in an open disclosure                                                                                                          | —                                                                     | its `<summary>`                                                        |
+| focus leaves an open disclosure                                                                                                       | —                                                                     | wherever focus went (panel closes)                                     |
+| search-param change on `/search` (first search included; `CatalogueResults` stays mounted across the prompt and results states)       | `catalogue.search.announce`                                           | unchanged (`#results-heading` when only the page changed)              |
+| query cleared on `/search`                                                                                                            | `catalogue.search.prompt`                                             | unchanged                                                              |
+| arrival on `/search` (pathname change)                                                                                                | `document.title`                                                      | `#search-q` (`handle.initialFocus`)                                    |
+| search-param change on `/` (sort, category, page; `CatalogueResults`, once `navigation.state` is idle)                                | `catalogue.results.announce`                                          | unchanged (`#results-heading` when only the page changed)              |
+| "Clear filter" in the category fieldset                                                                                               | `catalogue.results.announce`                                          | the category `<fieldset>`                                              |
+| gallery image change (`?image`, `ProductGallery`)                                                                                     | `product.gallery.shown`                                               | unchanged                                                              |
+| add to cart, with JS (`AddToCartForm` fetcher settles)                                                                                | `cart.notice.added` / `addedCapped` via the `role="status"` paragraph | the Add to cart button                                                 |
+| add to cart, without JS (303 back to the product, flash)                                                                              | same paragraph                                                        | the status paragraph (`autoFocus`)                                     |
+| cart action result, with JS (`useFetchers` in `routes/cart.tsx`, every fetcher keyed)                                                 | `noticeText(result)` (`cart.notice.*`)                                | see the rows below                                                     |
+| cart action result, without JS (303 back to the cart, flash) and cart reconciliation on load (`items-removed`, `quantities-adjusted`) | `CartNotice` (`role="status"`)                                        | the notice (`autoFocus`)                                               |
+| invalid quantity (`invalid-quantity`, 400)                                                                                            | `role="alert"` message                                                | the quantity input (`aria-invalid`, `autoFocus` without JS)            |
+| line removed                                                                                                                          | `cart.notice.removed`                                                 | next line's Remove button, else the previous one, else `#cart-heading` |
+| promo code refused (`promo-required` / `promo-invalid`)                                                                               | `role="alert"` message                                                | the promo input (`autoFocus` without JS)                               |
+| promo code applied                                                                                                                    | `cart.notice.promoApplied`                                            | the "Remove code" button (the Apply form unmounts)                     |
+| promo code removed                                                                                                                    | `cart.notice.promoRemoved`                                            | the promo input                                                        |
+| cart total changed (`CartSummary`)                                                                                                    | `cart.summary.totalUpdated`                                           | unchanged                                                              |
+| checkout refused (`empty-cart`, 400; navigation form)                                                                                 | `role="alert"` message                                                | the alert (`autoFocus` without JS, effect with it)                     |
 
 ## Automated coverage
 
@@ -82,7 +95,8 @@ Catalogue, product and cart events are added by their branches.
   (`a11y.spec.ts`), plus the open mobile menu. `a11y-states.spec.ts` scans the states the route
   list cannot express: the 502 page (fault injection `/products/999`), the catalogue with a failing
   category service, the filled cart, the cart with an invalid quantity and an invalid promo code,
-  the cart with a promo applied, the product page after "Add to cart", the order confirmation, the
+  the cart with a promo applied, the cart after a refused checkout, the product page after "Add to
+  cart", the order confirmation, the
   open language panel, and `/` + product under `prefers-reduced-motion: reduce` and
   `forced-colors: active`.
 - **Reflow** (`reflow.spec.ts`): every route × locale at 320 × 256 px asserts
@@ -101,10 +115,11 @@ Catalogue, product and cart events are added by their branches.
 
 ### Manual-review rules (excluded from the automated failure list)
 
-| Rule id                       | Scope                     | Why the engine cannot decide                                                                                                            | How it is verified                                                                     |
-| ----------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `style_color_misuse`          | every scan                | fires on any stylesheet that sets colours; asks a human to confirm colour is never the only carrier of information                      | "never colour alone" rules above + Chrome vision-deficiency emulation in the audit log |
-| `element_tabbable_unobscured` | **open mobile menu only** | the overlay covers page content by user action; the engine cannot know it closes on Escape, outside click, focus leaving and navigation | `keyboard.spec.ts` + `disclosure.test.tsx`                                             |
+| Rule id                       | Scope                                                                                                | Why the engine cannot decide                                                                                                                                                                                           | How it is verified                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `style_color_misuse`          | every scan                                                                                           | fires on any stylesheet that sets colours; asks a human to confirm colour is never the only carrier of information                                                                                                     | "never colour alone" rules above + Chrome vision-deficiency emulation in the audit log |
+| `element_tabbable_unobscured` | **open mobile menu** (`a11y.spec.ts`) and **open language panel** (`a11y-states.spec.ts`) only       | the overlay covers page content by user action; the engine cannot know it closes on Escape, outside click, focus leaving and navigation (D-5)                                                                          | `keyboard.spec.ts` + `disclosure.test.tsx`                                             |
+| `input_label_visible`         | **cart scans only** (filled cart, invalid quantity and promo, promo applied — `a11y-states.spec.ts`) | the stepper `+`/`−` and Remove buttons are icon-only with `aria-label` names ("Decrease quantity of X", "Remove X"); their visible label is the icon, which SC 2.5.3 allows, and the engine asks a human to confirm it | keyboard and VoiceOver protocol (cart flow) + `cart.spec.ts` role/name queries         |
 
 ## Manual protocol
 

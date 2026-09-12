@@ -33,14 +33,18 @@ npm run dev        # http://localhost:5173
 
 ## Scripts
 
-| Script              | Purpose                                                                                  |
-| ------------------- | ---------------------------------------------------------------------------------------- |
-| `npm run dev`       | Development server with HMR                                                              |
-| `npm run build`     | Production build into `build/`                                                           |
-| `npm start`         | Serve the production build (`SESSION_SECRET` etc. must be exported — `.env` is not read) |
-| `npm run typecheck` | `react-router typegen && tsc`                                                            |
-
-More scripts (lint, format, unit, e2e, licence check) arrive with the tooling branch.
+| Script                   | Purpose                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `npm run dev`            | Development server with HMR                                                              |
+| `npm run build`          | Production build into `build/`                                                           |
+| `npm start`              | Serve the production build (`SESSION_SECRET` etc. must be exported — `.env` is not read) |
+| `npm run typecheck`      | `react-router typegen && tsc`                                                            |
+| `npm run lint`           | ESLint (`lint:fix` applies the fixes)                                                    |
+| `npm run format`         | Prettier (`format:check` only verifies)                                                  |
+| `npm run test`           | Vitest unit tests (`test:watch` for watch mode)                                          |
+| `npm run test:e2e`       | Playwright: boots the mock API and the built app, four Chromium projects (`test:e2e:ui`) |
+| `npm run check:licenses` | `scripts/check-licenses.mjs` — fails on any non-permissive package                       |
+| `npm run check`          | `typecheck && lint && format:check && check:licenses && test`                            |
 
 ## Challenge checklist
 
@@ -102,12 +106,14 @@ API (Lighthouse 13.4, mobile emulation, simulated throttling, `npx lighthouse �
 | `/en/products/1`  | 94          | 100           | 100            | 100 | 2.7 s | 0   | 0 ms |
 | `/en/cart`        | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
 
-Bundle (gzip, `gzip -c build/client/assets/<chunk>.js | wc -c`): the catalogue page preloads
-**≈ 138 KB** of JavaScript in total — `entry.client` 79 KB (React DOM, React Router, i18next,
-react-i18next), `jsx-runtime` 28 KB, React Router shared chunk 12 KB, react-i18next 8 KB, the
-current locale ≈ 3 KB (locales are split per language), route chunks 1–3 KB each. CSS: 6.7 KB gzip.
-The plan's < 90 KB target is below the floor of React 19 + React Router 8 + i18next
-(`Docs/DECISIONS.md` D-9); what the app adds on top of the framework is ≈ 20 KB.
+Bundle (gzip, `gzip -c build/client/assets/<chunk>.js | wc -c`, re-measured on 2026-09-12): the
+catalogue page downloads **≈ 146 KB** of JavaScript in total — `entry.client` 79 KB (React DOM,
+React Router, i18next, react-i18next), `jsx-runtime` 28 KB, React Router shared chunk 12 KB,
+react-i18next 8 KB, the current locale ≈ 3 KB (locales are split per language, fetched by
+`load-locale.client`), the catalogue route 1.4 KB and ≈ 14 KB of small shared chunks (layout,
+results list, primitives, error codes). Other route chunks: product 2.9 KB, cart 3.9 KB. CSS:
+6.7 KB gzip. The plan's < 90 KB target is below the floor of React 19 + React Router 8 + i18next
+(`Docs/DECISIONS.md` D-9); what the app adds on top of the framework is ≈ 18 KB.
 
 What keeps it fast: full SSR from loaders (no client fetching), server-side TTL cache in front of
 DummyJSON, one preloaded variable font, `preconnect` to the image CDN, `width`/`height` on every
