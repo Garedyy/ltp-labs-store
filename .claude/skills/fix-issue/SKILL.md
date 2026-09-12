@@ -60,10 +60,11 @@ Phase 3 until the user approves. If they ask for adjustments, revise the plan an
    ```
    git switch <base>
    git pull --ff-only origin <base>
-   git switch -c fix/<slug>
+   git switch -c fix/<N>-<slug>
    ```
-   `<slug>` is a short kebab-case description of the fix (not the issue number alone), e.g.
-   `fix/cart-quantity-overflow`. Stop and ask if the working tree is dirty.
+   The branch name always starts with the issue number, followed by a short kebab-case
+   description of the fix, e.g. `fix/42-cart-quantity-overflow`. Never the number alone, never
+   the slug alone. Stop and ask if the working tree is dirty.
 2. Implement the approved plan and nothing more. Follow the repo's conventions (`CLAUDE.md`,
    lint and format config). No new dependency without asking.
 3. Add or update tests so the bug is covered: a failing test before the fix, green after.
@@ -77,7 +78,7 @@ Phase 3 until the user approves. If they ask for adjustments, revise the plan an
    subject <= 72 chars, `fix(<scope>)` with a scope from the commitlint `scope-enum` when one is
    configured, body with one bullet per intent. Reference the issue in the body (`Fixes #<N>`).
    No `Co-Authored-By`, no Claude / Anthropic mention.
-7. Push: `git push -u origin fix/<slug>`.
+7. Push: `git push -u origin fix/<N>-<slug>`.
 
 ## Phase 4 - Pull request
 
@@ -86,7 +87,7 @@ Phase 3 until the user approves. If they ask for adjustments, revise the plan an
    exists; otherwise Summary / Scope / Tests. Always include `Fixes #<N>` so the issue closes on
    merge.
    ```
-   gh pr create --base <base> --head fix/<slug> --title "<header>" --body-file <tmpfile>
+   gh pr create --base <base> --head fix/<N>-<slug> --title "<header>" --body-file <tmpfile>
    ```
    Write the body to a file in the scratchpad directory, never inline with escaped newlines.
 2. Fill in the checklist honestly: tick only what was actually done; leave the rest unticked

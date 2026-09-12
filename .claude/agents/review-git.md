@@ -39,10 +39,11 @@ the template is followed is yours.
 5. One intent per commit where practical; no "wip", "fix typo" chains that should be squashed
    before review; no merge commits from the base inside a feature branch (rebase or fast-forward
    only); no commit that only reverts a previous commit of the same branch.
-6. Branch naming and base: `feature/<slug>` branched from `development`; `fix/<slug>` from
-   `main` (hotfix) with the intent to merge into both; slug is kebab-case and descriptive, not
-   an issue number alone. `git merge-base` confirms the base; the branch is not behind it by
-   commits that would conflict.
+6. Branch naming and base: `feature/<slug>` branched from `development`; `fix/<N>-<slug>`
+   branched from `development` for a GitHub issue fix (`/fix-issue`, `<N>` is the issue number);
+   `fix/<slug>` from `main` (hotfix) with the intent to merge into both; slug is kebab-case and
+   descriptive, not an issue number alone. `git merge-base` confirms the base; the branch is not
+   behind it by commits that would conflict.
 7. Never a direct commit on `main` or `development` in scope, except the documented
    `chore(release): vX.Y.Z` merge commit and `chore(tooling)` / `docs` commits the user made
    deliberately on `development` (report these as `info`).
