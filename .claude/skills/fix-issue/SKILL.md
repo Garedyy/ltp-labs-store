@@ -1,6 +1,6 @@
 ---
 name: fix-issue
-description: Fix a GitHub issue end to end - read the issue and its comments with the gh CLI, analyse the code, propose a plan, and once the user approves create a fix branch from development, implement, test, commit and open a pull request. Use when the user says "fix issue #N", "/fix-issue N" or asks to resolve a GitHub issue.
+description: Fix a GitHub issue end to end - read the issue and its comments with the gh CLI, analyse the code, propose a plan, and once the user approves create a fix branch from development, implement, test, commit, then hand over to the pull-request skill (draft PR, /project-review, ready when nothing blocks). Use when the user says "fix issue #N", "/fix-issue N" or asks to resolve a GitHub issue.
 ---
 
 # Fix a GitHub issue
@@ -10,7 +10,9 @@ Argument: an issue number (`$ARGUMENTS`, e.g. `42` or `#42`). If missing, ask fo
 The flow has two halves separated by a **mandatory approval gate**: nothing is written to the
 working tree, no branch is created and nothing is pushed before the user has approved the plan.
 The only pre-approval git operation is the fast-forward of the base branch (Phase 1, step 4), so
-the analysis is done on up-to-date code.
+the analysis is done on up-to-date code. The pull request itself is not opened here: Phase 4
+delegates to the `pull-request` skill so every fix goes through the same draft -> review ->
+ready flow as any other branch.
 
 ## Phase 1 - Understand
 
@@ -82,23 +84,23 @@ Phase 3 until the user approves. If they ask for adjustments, revise the plan an
 
 ## Phase 4 - Pull request
 
-1. Open the PR against the base branch with the gh CLI. Title = the Conventional Commit header
-   (it becomes the squash message). Body follows `.github/PULL_REQUEST_TEMPLATE.md` when it
-   exists; otherwise Summary / Scope / Tests. Always include `Fixes #<N>` so the issue closes on
-   merge.
-   ```
-   gh pr create --base <base> --head fix/<N>-<slug> --title "<header>" --body-file <tmpfile>
-   ```
-   Write the body to a file in the scratchpad directory, never inline with escaped newlines.
-2. Fill in the checklist honestly: tick only what was actually done; leave the rest unticked
-   with a short reason (e.g. "VoiceOver: N/A, no UI change").
-3. Report to the user: PR URL, branch, commits, which checks ran and their result. Do not merge;
-   merging is a separate decision.
+1. Invoke the `pull-request` skill with the argument `#<N>`. It verifies the preconditions
+   (clean tree, branch pushed), detects the base from the `fix/<N>-<slug>` branch name, writes
+   the PR title and body from the whole branch with `Fixes #<N>`, creates the PR **as a draft**,
+   runs `/project-review pr <n> --post` and marks the PR ready only when no finding blocks. Do
+   not run `gh pr create` yourself and do not skip the review.
+2. When the review blocks, the `pull-request` skill asks whether to fix now; a fix stays within
+   the approved plan plus the blocking findings, nothing more.
+3. Report to the user: PR URL, branch, commits, which checks ran and their result, the review
+   verdict and the report comment URL. Do not merge; merging is a separate decision
+   (`merge-pr` skill).
 
 ## Rules
 
 - Never modify files, create branches or push before plan approval.
 - Never commit on `main` / `master` / the base branch.
 - Never force-push, never amend a pushed commit, never close or edit the issue itself.
+- Never open the PR directly with `gh pr create`: the `pull-request` skill owns the draft,
+  the review and the ready flag.
 - If the analysis shows the issue is invalid, already fixed or not a bug, say so in the plan and
   propose the appropriate outcome instead of forcing a change.
