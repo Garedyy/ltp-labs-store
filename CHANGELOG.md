@@ -8,6 +8,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Search page: the first search from `/search` was never announced to screen readers, and
+  neither was the way back to the empty prompt (#19). The prompt rendered a different tree, so
+  the results component mounted fresh and its announcer hook only reacted to later changes.
+  `CatalogueResults` now accepts a null view and stays mounted across both states.
+- Target size: `Button size="sm"` (sort Apply, "Remove code") rendered 36 px, and the footer
+  brand, navigation and language links and the header brand were ~26 px text lines (#19). They
+  all meet the 44 px target the project commits to; `tests/e2e/targets.spec.ts` measures them.
 - Search page: the results title had no plural forms, so a single hit rendered "(1 results)" /
   "(1 resultados)" in the document title, the tab and the route announcement (#20).
   `catalogue.search.resultsTitle` now carries `_zero`/`_one`/`_many`/`_other` in both locales;

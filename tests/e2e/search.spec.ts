@@ -23,12 +23,26 @@ test.describe("search", () => {
     await expect(page).toHaveTitle(/Search: “phone” \(\d+ results\) — The Online Store/);
     await expect(page.getByRole("searchbox", { name: "Search products" })).toHaveValue("phone");
     await expect(page.getByText(/Showing 1–9 of \d+/)).toBeVisible();
+    const announcement = page.getByRole("status").filter({ hasText: /\d+ results for “phone”/ });
+    await expect(announcement).toHaveCount(1);
     await page.getByRole("link", { name: "Page 2" }).click();
     await expect(page).toHaveURL(/\/en\/search\?q=phone&page=2$/);
     await expect(page.locator("#results-heading")).toBeFocused();
-    await expect(
-      page.getByRole("status").filter({ hasText: /\d+ results for “phone”/ }),
-    ).toHaveCount(1);
+    // Two alternating status regions: the first search and the page change each keep theirs.
+    await expect(announcement).toHaveCount(2);
+  });
+
+  test("clearing the query announces the prompt again", async ({ page }) => {
+    await page.goto("/en/search?q=phone");
+    const prompt = page
+      .getByRole("status")
+      .filter({ hasText: "Type a word to search the catalogue." });
+    await expect(prompt).toHaveCount(0);
+    await page.getByRole("searchbox", { name: "Search products" }).fill("");
+    await page.getByRole("button", { name: "Search" }).click();
+    await expect(page).toHaveURL(/\/en\/search\?q=$/);
+    await expect(page.getByRole("list", { name: /Showing/ })).toHaveCount(0);
+    await expect(prompt).toHaveCount(1);
   });
 
   test("a single hit uses the singular title", async ({ page }) => {

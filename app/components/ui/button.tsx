@@ -17,9 +17,10 @@ const VARIANTS: Record<ButtonVariant, string> = {
   icon: "size-11 rounded-xl border border-border-strong bg-surface text-primary hover:bg-surface-muted",
 };
 
+// Both sizes keep the 44 px target; sm only tightens the horizontal padding.
 const SIZES: Record<ButtonSize, string> = {
   md: "min-h-11 px-5 py-2",
-  sm: "min-h-9 px-3 py-1",
+  sm: "min-h-11 px-3 py-1",
 };
 
 function buttonClasses(variant: ButtonVariant, size: ButtonSize, className?: string) {

@@ -60,12 +60,14 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
 
 ## Announcements and focus
 
-| Event                               | Message                 | Focus target                       |
-| ----------------------------------- | ----------------------- | ---------------------------------- |
-| pathname change (client navigation) | `document.title`        | `#main` (or `handle.initialFocus`) |
-| pending navigation > 300 ms         | `common.loading` (once) | unchanged                          |
-| Escape in an open disclosure        | —                       | its `<summary>`                    |
-| focus leaves an open disclosure     | —                       | wherever focus went (panel closes) |
+| Event                                                                                                                           | Message                     | Focus target                                              |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------------------------------------------- |
+| pathname change (client navigation)                                                                                             | `document.title`            | `#main` (or `handle.initialFocus`)                        |
+| pending navigation > 300 ms                                                                                                     | `common.loading` (once)     | unchanged                                                 |
+| Escape in an open disclosure                                                                                                    | —                           | its `<summary>`                                           |
+| focus leaves an open disclosure                                                                                                 | —                           | wherever focus went (panel closes)                        |
+| search-param change on `/search` (first search included; `CatalogueResults` stays mounted across the prompt and results states) | `catalogue.search.announce` | unchanged (`#results-heading` when only the page changed) |
+| query cleared on `/search`                                                                                                      | `catalogue.search.prompt`   | unchanged                                                 |
 
 Catalogue, product and cart events are added by their branches.
 
@@ -89,6 +91,9 @@ Catalogue, product and cart events are added by their branches.
 - **Keyboard** (`keyboard.spec.ts`): skip link first and functional; desktop tab order; Escape on
   the language panel restores focus; mobile menu Escape restores focus; navigating from the menu
   closes it and focuses `main`; client navigation announces the title.
+- **Targets** (`targets.spec.ts`): every visible link, button and summary in the header and the
+  footer, the sort Apply button and the promo "Remove code" button measure at least 44 px tall
+  (desktop and mobile). Stretched card links and links inside sentences are the exceptions.
 - **Static**: `eslint-plugin-jsx-a11y` strict with the design-system primitives mapped to their
   native elements; `eslint-plugin-i18next` keeps UI text out of components.
 - **Unit**: role/name tests for every primitive and shell component (`aria-current`, cart link
@@ -128,14 +133,22 @@ Run before each release and after any change to the shell or a page structure:
 | Low-stock text "Only n left"                                                                                  | "Only n in stock" (sensory wording)                                                                    |
 | Duplicate review labels                                                                                       | "Review n of N" + reviewer name                                                                        |
 
+## Findings fixed after the 2026-09-12 project review (#19)
+
+| Finding                                                                                                                                                                                                           | Fix                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| First search from `/search` never announced: the prompt state rendered another tree, so the results mounted fresh and the announcer hook only reacted to later changes; the way back to the prompt was silent too | `CatalogueResults` accepts `view: null` and stays mounted; the hook announces prompt → results and results → prompt (`emptyAnnouncement`) |
+| `Button size="sm"` rendered 36 px (sort Apply, "Remove code"); footer brand, nav and language links and the header brand were text lines of ~26 px                                                                | `sm` keeps `min-h-11` with tighter horizontal padding; the links are `inline-flex min-h-11 items-center`                                  |
+
 ## Manual audit log
 
-| Date       | Tool / AT                                   | Scope                                                             | Result                                           |
-| ---------- | ------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |
-| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus              | pass (automated stand-in; VoiceOver run pending) |
-| 2026-09-11 | Playwright specs                            | catalogue, search, product, cart focus handoffs and announcements | pass                                             |
-| —          | VoiceOver + Safari                          | —                                                                 | not run yet (branch 12)                          |
-| —          | NVDA + Firefox                              | —                                                                 | not run yet (no Windows machine)                 |
+| Date       | Tool / AT                                   | Scope                                                                                              | Result                                           |
+| ---------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus                                               | pass (automated stand-in; VoiceOver run pending) |
+| 2026-09-11 | Playwright specs                            | catalogue, search, product, cart focus handoffs and announcements                                  | pass                                             |
+| 2026-09-12 | Playwright specs (desktop, mobile)          | first search and cleared query announced; 44 px targets in the shell, sort Apply and "Remove code" | pass                                             |
+| —          | VoiceOver + Safari                          | —                                                                                                  | not run yet (branch 12)                          |
+| —          | NVDA + Firefox                              | —                                                                                                  | not run yet (no Windows machine)                 |
 
 ## Known limitations
 
