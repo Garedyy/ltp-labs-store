@@ -50,6 +50,18 @@ profile; CI sets it). Its Puppeteer and chromedriver binaries are skipped throug
 | Docs                    | `README.md`, `CHANGELOG.md`, the relevant `Docs/*.md` and `Docs/PROGRESS.md` updated in the same PR                 |
 | Routes                  | `tests/e2e/routes.ts` lists every new route                                                                         |
 
+## Automated review
+
+`/project-review [all | pr <n> | diff | branch | <path>] [--no-verify] [--post]` (Claude Code
+skill in `.claude/skills/project-review/`) runs one read-only reviewer agent per perspective -
+correctness, conventions, security, accessibility, i18n, architecture, data layer, design
+system, dependencies, testing, performance, docs and git (branch and PR scopes only) - each
+armed with the rules of `CLAUDE.md`, `Docs/PROJECT_PLAN.md`, `Docs/DECISIONS.md` and this file.
+Critical and major findings are challenged by a verifier agent before the synthesis table;
+`--post` comments the table on the PR. Verdicts: `PASS` (nothing above info), `WARN` (minor
+findings only), `FAIL` (a critical or major finding survived verification). It complements
+CI and the PR checklist; it never replaces the keyboard, VoiceOver and 320 px walkthroughs.
+
 ## Dependency and licence policy
 
 Only permissive licences are allowed, for direct **and transitive** dependencies, fonts, icons and
