@@ -31,8 +31,15 @@ test.describe("search", () => {
     ).toHaveCount(1);
   });
 
+  test("a single hit uses the singular title", async ({ page }) => {
+    await page.goto("/en/search?q=mascara");
+    await expect(page).toHaveTitle("Search: “mascara” (1 result) — The Online Store");
+    await expect(page.getByText("Showing 1–1 of 1")).toBeVisible();
+  });
+
   test("no results shows the empty state with the English hint", async ({ page }) => {
     await page.goto("/en/search?q=zzzzzz");
+    await expect(page).toHaveTitle("Search: “zzzzzz” (no results) — The Online Store");
     await expect(page.getByRole("heading", { level: 2 })).toHaveText("No results for “zzzzzz”");
     await expect(page.getByText("Products are searched in English.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Show all products" })).toHaveAttribute(
@@ -52,5 +59,9 @@ test.describe("search", () => {
     await page.goto("/pt/search?q=phone");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pesquisar");
     await expect(page).toHaveTitle(/Pesquisa: «phone» \(\d+ resultados\)/);
+    await page.goto("/pt/search?q=mascara");
+    await expect(page).toHaveTitle(/Pesquisa: «mascara» \(1 resultado\)/);
+    await page.goto("/pt/search?q=zzzzzz");
+    await expect(page).toHaveTitle(/Pesquisa: «zzzzzz» \(sem resultados\)/);
   });
 });
