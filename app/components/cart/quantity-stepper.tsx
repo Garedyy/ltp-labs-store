@@ -32,14 +32,19 @@ export function QuantityStepper({
   const { t } = useTranslation();
   const fetcher = useFetcher<CartActionResult>({ key: `quantity-${productId}` });
   const input = useRef<HTMLInputElement>(null);
-  // The value shown while a submission is pending; an invalid value never changes it (and never
-  // remounts the input through its key, so focus stays where it is).
+  // The value shown while a submission is pending; an invalid value never changes it.
   const inFlight = String(
     fetcher.formData?.get("setQuantity") ?? fetcher.formData?.get("quantity") ?? "",
   );
   const shown = /^\d+$/.test(inFlight) ? Number(inFlight) : quantity;
   const result = fetcher.data ?? flash;
   const error = result && !result.ok ? result.error : null;
+
+  // The input is uncontrolled and never remounted (a remount drops the focus Enter leaves in
+  // it): the shown value is written back when a submission or a clamp changes it.
+  useEffect(() => {
+    if (input.current) input.current.value = String(shown);
+  }, [shown]);
 
   // Focus once the revalidation settled, so no re-render can steal it back.
   useEffect(() => {
@@ -90,7 +95,6 @@ export function QuantityStepper({
             pattern="[0-9]*"
             name="quantity"
             id={`quantity-${productId}`}
-            key={shown}
             defaultValue={shown}
             aria-labelledby={`quantity-label-${productId} line-title-${productId}`}
             aria-invalid={error ? true : undefined}

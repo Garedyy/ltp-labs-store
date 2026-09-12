@@ -164,7 +164,9 @@ id above; then run `npm run test:e2e`.
   (Post/Redirect/Get), where the loader reads and clears the flash and the status paragraph
   receives focus.
 - **Header count**: the locale layout loader counts the sanitised cookie (no API call, no
-  commit) and revalidates after every submission.
+  commit) and revalidates after every submission. On the cart page `SiteHeader` prefers the
+  reconciled `useRouteLoaderData("routes/cart")?.view.cartCount`, so dropped or clamped lines
+  never leave a stale badge.
 - **Concurrency**: `AddToCartForm` ignores submits while its fetcher is pending; the cookie is
   last-write-wins across tabs (documented limitation).
 - **Cart page** (`routes/cart.tsx`): the loader runs `loadCartView` — vanished or sold-out
@@ -176,9 +178,12 @@ id above; then run `npm run test:e2e`.
   (`promo-required` / `promo-invalid` / `promo-applied{code}`; a new code replaces the old one),
   `remove-promo`, `checkout` (`empty-cart` 400, else `lastOrder = { number: "LTP-" + base36 time,
 method, totalCents, itemCount, totalFormatted }`, cart and promo cleared, 303 to the
-  confirmation). With JavaScript every form is a keyed `fetcher.Form` and the page handles results
-  centrally through `useFetchers` (announcements, removal focus handoff); without JavaScript the
-  result is flashed and the action redirects back (303).
+  confirmation). With JavaScript every form but checkout is a keyed `fetcher.Form` and the page
+  handles results centrally through `useFetchers` (announcements, removal focus handoff);
+  checkout is a navigation `<Form>`, so its refusal arrives as `actionData`, the route's
+  `shouldRevalidate` reloads the cart (React Router skips the reload after a 4xx by default) and
+  the `empty-cart` alert takes the focus the vanished Checkout button held. Without JavaScript
+  the result is flashed and the action redirects back (303).
 - **Confirmation** (`routes/order-confirmation.tsx`): `lastOrder` persists until the next cart
   mutation, so reloads and language switches keep it; missing → redirect to the cart;
   `shouldRevalidate: () => false`.
@@ -194,7 +199,7 @@ JavaScript is additive. Every flow is verified with it disabled (Playwright `no-
 | Page / search                       | links and GET form → full document                                                              | client navigation; page change focuses the results summary                |
 | Gallery thumbnail                   | link `?image=n`                                                                                 | client navigation with `replace`, no refetch                              |
 | Add to cart, stepper, remove, promo | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice | `fetcher.Form`, stay in place, announcements, focus handoff               |
-| Checkout / PayPal                   | POST → 303 to the confirmation                                                                  | same (full navigation)                                                    |
+| Checkout / PayPal                   | POST → 303 to the confirmation; `empty-cart` → 303 back with a flashed, focused alert           | same (full navigation); `empty-cart` → `actionData`, cart reloaded        |
 | Language switch                     | POST form → 303 + cookie                                                                        | same                                                                      |
 | Mobile menu / language panel        | native `<details>`                                                                              | Escape, outside click, focus leaving, close on navigation                 |
 

@@ -14,12 +14,18 @@ export function PromoCodeForm({ promoCode, flash }: PromoCodeFormProps) {
   const apply = useFetcher<CartActionResult>({ key: "promo-apply" });
   const remove = useFetcher<CartActionResult>({ key: "promo-remove" });
   const input = useRef<HTMLInputElement>(null);
+  const removeButton = useRef<HTMLButtonElement>(null);
   const result = apply.data ?? flash;
   const error = result && !result.ok ? result.error : null;
 
   useEffect(() => {
     if (apply.state === "idle" && apply.data && !apply.data.ok) input.current?.focus();
   }, [apply.state, apply.data]);
+
+  // The Apply button unmounts with its form once the code is applied: hand focus to Remove code.
+  useEffect(() => {
+    if (apply.state === "idle" && apply.data?.ok && promoCode) removeButton.current?.focus();
+  }, [apply.state, apply.data, promoCode]);
 
   // After "Remove code" the input is rendered again: give it focus once it exists.
   useEffect(() => {
@@ -38,7 +44,13 @@ export function PromoCodeForm({ promoCode, flash }: PromoCodeFormProps) {
           <input type="hidden" name="noJs" value="1" />
         </noscript>
         <p className="font-medium">{t("cart.promo.applied", { code: promoCode })}</p>
-        <Button type="submit" variant="ghost" size="sm" pending={remove.state !== "idle"}>
+        <Button
+          ref={removeButton}
+          type="submit"
+          variant="ghost"
+          size="sm"
+          pending={remove.state !== "idle"}
+        >
           {t("cart.promo.remove")}
         </Button>
       </remove.Form>
