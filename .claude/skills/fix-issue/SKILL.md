@@ -9,6 +9,8 @@ Argument: an issue number (`$ARGUMENTS`, e.g. `42` or `#42`). If missing, ask fo
 
 The flow has two halves separated by a **mandatory approval gate**: nothing is written to the
 working tree, no branch is created and nothing is pushed before the user has approved the plan.
+The only pre-approval git operation is the fast-forward of the base branch (Phase 1, step 4), so
+the analysis is done on up-to-date code.
 
 ## Phase 1 - Understand
 
@@ -23,7 +25,17 @@ working tree, no branch is created and nothing is pushed before the user has app
 3. Check nothing is already in flight: `gh pr list --search "<N>" --state all` and
    `git branch -a | grep -i "<N>\|<slug>"`. If a PR or branch already exists, report it and ask
    before going further.
-4. Analyse the code. Reproduce the bug when possible (a failing unit test, a curl, a dev-server
+4. Bring the base branch up to date before reading any code. The base is `development` if it
+   exists on the remote, else `develop`, else the default branch. Stop and ask if the working
+   tree is dirty. Fast-forward only, never merge or rebase:
+   ```
+   git fetch origin
+   git switch <base>
+   git pull --ff-only origin <base>
+   ```
+   If the fast-forward fails (the local base has diverged), stop and report it; never force
+   anything.
+5. Analyse the code. Reproduce the bug when possible (a failing unit test, a curl, a dev-server
    check). Search for the affected symbols, read the surrounding modules, and read the project
    docs that constrain the fix (`CLAUDE.md`, `Docs/PROJECT_PLAN.md`, `Docs/DECISIONS.md` when
    they exist). Identify the root cause, not only the symptom.
@@ -43,11 +55,12 @@ Phase 3 until the user approves. If they ask for adjustments, revise the plan an
 
 ## Phase 3 - Implement
 
-1. Determine the base branch: `development` if it exists on the remote, else `develop`, else the
-   default branch. Sync it and branch from it:
+1. Branch from the base synced in Phase 1 (re-run the fast-forward if the approval took a
+   while, so the fix never starts behind the remote):
    ```
-   git fetch origin
-   git switch -c fix/<slug> origin/<base>
+   git switch <base>
+   git pull --ff-only origin <base>
+   git switch -c fix/<slug>
    ```
    `<slug>` is a short kebab-case description of the fix (not the issue number alone), e.g.
    `fix/cart-quantity-overflow`. Stop and ask if the working tree is dirty.
