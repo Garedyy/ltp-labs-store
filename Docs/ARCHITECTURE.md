@@ -1,8 +1,8 @@
 # Architecture
 
-> Skeleton — filled in as the feature branches land. The reference specification is
-> [`PROJECT_PLAN.md`](PROJECT_PLAN.md) §3; the API contract is
-> [`dummyjson-openapi.yaml`](dummyjson-openapi.yaml).
+> The reference specification is [`PROJECT_PLAN.md`](PROJECT_PLAN.md) §3; the API contract is
+> [`dummyjson-openapi.yaml`](dummyjson-openapi.yaml); deviations are recorded in
+> [`DECISIONS.md`](DECISIONS.md).
 
 ## Request lifecycle
 
@@ -173,7 +173,9 @@ id above; then run `npm run test:e2e`.
   products dropped (`items-removed`), quantities above stock clamped (`quantities-adjusted`),
   totals per locale — reads a flashed result from a no-JS submission and commits the session when
   anything changed. The action parses the intent, unsets `lastOrder`, then: `set-quantity`
-  (non-integer → `invalid-quantity` 400; clamped to `1..min(99, stock)` → `quantity-clamped`;
+  (the stepper's `+`/`−` buttons submit `setQuantity`, which overrides the input's `quantity` —
+  browsers serialise the submitter at its DOM position, so the two need distinct names, D-8;
+  non-integer → `invalid-quantity` 400; clamped to `1..min(99, stock)` → `quantity-clamped`;
   product vanished → line removed + `items-removed`), `remove` (→ `removed{title}`), `apply-promo`
   (`promo-required` / `promo-invalid` / `promo-applied{code}`; a new code replaces the old one),
   `remove-promo`, `checkout` (`empty-cart` 400, else `lastOrder = { number: "LTP-" + base36 time,

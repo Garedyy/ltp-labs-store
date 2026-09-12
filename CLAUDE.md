@@ -4,11 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state of the repository
 
-The repo is **pre-scaffold**: only `Docs/` and `.gitignore` exist on `main` (one commit). No app
-code, no `package.json`, no `development` branch yet. Everything below describes the architecture
-that has already been decided and must be implemented — read `Docs/PROJECT_PLAN.md` before doing
-any work; it is the single source of truth (≈1200 lines, fully specified: routes, data layer, i18n,
-a11y, tokens, tooling, git flow, 14 feature branches in order).
+The plan in `Docs/PROJECT_PLAN.md` is **fully executed**: `v1.0.0` was released on `main` on
+2026-09-11 (14 feature PRs squash-merged into `development`, then one release merge commit,
+tagged). `development` now carries unreleased fixes and tooling on top of it. **Read
+`Docs/PROGRESS.md` first** in every session — its "Resume here" block names the current branch,
+the next action and the open questions — then this file and the docs below. The plan remains the
+specification the code must match (routes, data layer, i18n, a11y, tokens, tooling, git flow);
+where implementation diverged, `Docs/DECISIONS.md` records why.
 
 Sources, by authority:
 - `Docs/PROJECT_PLAN.md` — the architecture and execution plan. §2 lists 31 decisions already taken
@@ -40,21 +42,22 @@ Sources, by authority:
 
 ## Git workflow
 
-`main` ← `development` ← `feature/<slug>`. Before branch 1, create `development` from `main`;
+`main` ← `development` ← `feature/<slug>`. `development` was created from `main` before branch 1;
 every feature branches from `development`. One PR per feature, **squash-merged** into `development`
 (PR title must be a Conventional Commit — it becomes the squash message); `development → main` via
-merge commit per release, tagged. Hotfixes `fix/<slug>` from `main`, merged into both.
+merge commit per release, tagged. Issue fixes: `fix/<N>-<slug>` from `development` (the
+`fix-issue` skill), same PR flow as a feature. Hotfixes `fix/<slug>` from `main`, merged into both.
 
 Commits: Conventional Commits, English, imperative, ≤ 72-char subject, body says why. Scopes
 (commitlint `scope-enum`, optional): `scaffold, tooling, ui, i18n, shell, api, catalogue, product,
-cart, a11y, docs, ci`.
+cart, a11y, docs, ci, release`. No `Co-Authored-By` or tool attribution trailers (D-10).
 
-The 14 feature branches, in order (plan §4 has the "done when" criteria per branch):
+The 14 feature branches, all merged (plan §4 has the "done when" criteria per branch):
 `project-scaffold` → `tooling` → `design-system` → `i18n-foundation` → `app-shell` →
 `dummyjson-client` → `catalogue` → `search` → `product-detail` → `cart-session` → `cart-page` →
 `a11y-audit` → `performance` → `docs-release`.
 
-## Commands (as specified in the plan; exist once `feature/project-scaffold` and `feature/tooling` land)
+## Commands
 
 Node 24 / npm only (no pnpm/yarn/bun). `.env` is loaded by `react-router dev`/`build` but **not**
 by `react-router-serve` — export `SESSION_SECRET` etc. explicitly for `npm start`, CI and Playwright.
@@ -156,6 +159,9 @@ route-aware ones); loaders/actions are covered by Playwright e2e, not unit tests
 ## Documentation set to maintain
 
 `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `.github/PULL_REQUEST_TEMPLATE.md`, and in `Docs/`:
+`PROGRESS.md` (resume point, session log, TO VERIFY register — updated at every milestone),
 `ARCHITECTURE.md`, `I18N.md` (with the EN↔target-language glossary), `ACCESSIBILITY.md` (with the
-manual audit log), `DESIGN_SYSTEM.md`, `DECISIONS.md` (ADR-lite; every TO VERIFY resolved here).
-Plan §5 gives the outline of each. Update the relevant doc in the same PR as the change.
+announcements/focus table, the manual-review rules and the manual audit log), `DESIGN_SYSTEM.md`,
+`DECISIONS.md` (ADR-lite; every TO VERIFY resolved here). Plan §5 gives the outline of each.
+Update the relevant doc in the same PR as the change — the Definition of Done in
+`CONTRIBUTING.md` requires it.

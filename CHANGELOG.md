@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Documentation brought back in line with `v1.0.0` and the fixes merged since (#17): `CLAUDE.md`
+  no longer describes a pre-scaffold repository; `Docs/PROGRESS.md` marks every TO VERIFY item
+  resolved, records the merged fix PRs and names the `v1.0.1` release as the next action;
+  `Docs/DECISIONS.md` D-8 gains the `setQuantity` addendum and D-10 records the `release` scope
+  and the no-attribution rule; `Docs/ACCESSIBILITY.md` lists every route-owned announcement and
+  focus rule and justifies the `input_label_visible` and open-language-panel scan exclusions;
+  `Docs/ARCHITECTURE.md`, `README.md` (scripts table, bundle figures) and `CONTRIBUTING.md`
+  (issue-fix branches, Claude Code skills) updated accordingly.
+
 ### Fixed
 
 - Cart page: pressing Enter in the quantity field dropped the focus to the document (#18). The
