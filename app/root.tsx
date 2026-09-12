@@ -84,7 +84,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }}
         />
       </head>
-      <body>
+      <body className="flex min-h-svh flex-col">
         {children}
         <ScrollRestoration />
         <Scripts />
