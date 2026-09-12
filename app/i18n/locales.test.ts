@@ -40,6 +40,15 @@ describe("locale resources", () => {
     },
   );
 
+  it.each(localeCodes)("%s pluralises every key interpolating count", (locale) => {
+    for (const { path, value } of byLocale[locale]) {
+      if (!placeholders(value).includes("count")) continue;
+      expect(path, `${path} interpolates count without a plural suffix`).toMatch(
+        /_(zero|one|two|few|many|other)$/,
+      );
+    }
+  });
+
   it.each(localeCodes)("%s declares every required plural suffix", (locale) => {
     const paths = new Set(byLocale[locale].map((leaf) => leaf.path));
     const bases = new Set(

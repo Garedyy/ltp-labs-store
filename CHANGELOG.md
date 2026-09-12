@@ -8,6 +8,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Search page: the results title had no plural forms, so a single hit rendered "(1 results)" /
+  "(1 resultados)" in the document title, the tab and the route announcement (#20).
+  `catalogue.search.resultsTitle` now carries `_zero`/`_one`/`_many`/`_other` in both locales;
+  the `_zero` form also avoids "(0 resultado)", since the `pt` plural rules put 0 in the `one`
+  category. The locales test now rejects any key that interpolates `count` without a plural
+  suffix.
 - Cart page: the quantity stepper's minus button did nothing, with and without JavaScript
   (#15). The +/- buttons shared the text input's `quantity` name and the server kept the last
   value, but browsers serialise the clicked button at its DOM position, so the minus button
