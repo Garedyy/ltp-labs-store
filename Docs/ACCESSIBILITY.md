@@ -139,16 +139,20 @@ Run before each release and after any change to the shell or a page structure:
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | First search from `/search` never announced: the prompt state rendered another tree, so the results mounted fresh and the announcer hook only reacted to later changes; the way back to the prompt was silent too | `CatalogueResults` accepts `view: null` and stays mounted; the hook announces prompt → results and results → prompt (`emptyAnnouncement`) |
 | `Button size="sm"` rendered 36 px (sort Apply, "Remove code"); footer brand, nav and language links and the header brand were text lines of ~26 px                                                                | `sm` keeps `min-h-11` with tighter horizontal padding; the links are `inline-flex min-h-11 items-center`                                  |
+| Enter in the cart quantity field dropped the focus: the input was keyed on the in-flight value and remounted mid-submission (#18)                                                                                 | uncontrolled input, never remounted; the shown value is written back by an effect                                                         |
+| Applying a promo code dropped the focus: the Apply form was swapped for the Remove form (#18)                                                                                                                     | "Remove code" receives the focus once the code is applied                                                                                 |
+| A refused checkout (`empty-cart`) left the focus on `<body>` with JavaScript and answered a bare 400 without it (#18)                                                                                             | checkout form honours `noJs`; the alert is rendered in both cart states and takes the focus (`autoFocus` without JS, effect with it)      |
 
 ## Manual audit log
 
-| Date       | Tool / AT                                   | Scope                                                                                              | Result                                           |
-| ---------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus                                               | pass (automated stand-in; VoiceOver run pending) |
-| 2026-09-11 | Playwright specs                            | catalogue, search, product, cart focus handoffs and announcements                                  | pass                                             |
-| 2026-09-12 | Playwright specs (desktop, mobile)          | first search and cleared query announced; 44 px targets in the shell, sort Apply and "Remove code" | pass                                             |
-| —          | VoiceOver + Safari                          | —                                                                                                  | not run yet (branch 12)                          |
-| —          | NVDA + Firefox                              | —                                                                                                  | not run yet (no Windows machine)                 |
+| Date       | Tool / AT                                   | Scope                                                                                                         | Result                                           |
+| ---------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus                                                          | pass (automated stand-in; VoiceOver run pending) |
+| 2026-09-11 | Playwright specs                            | catalogue, search, product, cart focus handoffs and announcements                                             | pass                                             |
+| 2026-09-12 | Playwright specs (desktop, mobile)          | first search and cleared query announced; 44 px targets in the shell, sort Apply and "Remove code"            | pass                                             |
+| 2026-09-12 | Playwright specs (4 projects) + IBM checker | cart focus after Enter, Apply and a refused checkout, with and without JavaScript; `empty-cart` state scanned | pass                                             |
+| —          | VoiceOver + Safari                          | —                                                                                                             | not run yet (branch 12)                          |
+| —          | NVDA + Firefox                              | —                                                                                                             | not run yet (no Windows machine)                 |
 
 ## Known limitations
 

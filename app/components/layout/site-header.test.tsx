@@ -31,6 +31,15 @@ describe("SiteHeader", () => {
     expect(screen.getByRole("link", { name: "Cart, 120 items" })).toHaveTextContent("99+");
   });
 
+  it("prefers the reconciled count of the cart page over the layout's cookie count", () => {
+    renderWithProviders(<SiteHeader cartCount={3} />, {
+      path: "/en/cart",
+      routeId: "routes/cart",
+      loaderData: { view: { cartCount: 1 } },
+    });
+    expect(screen.getByRole("link", { name: "Cart, 1 item" })).toHaveTextContent("1");
+  });
+
   it("translates the shell in Portuguese", () => {
     renderWithProviders(<SiteHeader cartCount={1} />, { locale: "pt" });
     expect(screen.getByRole("link", { name: "Carrinho, 1 artigo" })).toBeInTheDocument();

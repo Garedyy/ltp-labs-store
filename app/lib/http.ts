@@ -32,6 +32,8 @@ export function toRouteError(error: unknown): unknown {
 export function redirectBack(request: Request, url: URL, headers: HeadersInit): Response {
   const referer = request.headers.get("Referer");
   const target =
-    referer && new URL(referer).origin === url.origin ? referer : url.pathname + url.search;
+    referer && URL.canParse(referer) && new URL(referer).origin === url.origin
+      ? referer
+      : url.pathname + url.search;
   return redirect(target, { status: 303, headers });
 }

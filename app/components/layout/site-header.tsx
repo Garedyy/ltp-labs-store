@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { href, Link } from "react-router";
+import { href, Link, useRouteLoaderData } from "react-router";
 
 import { Disclosure } from "~/components/ui/disclosure";
 import { Icon } from "~/components/ui/icon";
 import { useLocale } from "~/i18n/use-locale";
+import type { loader as cartLoader } from "~/routes/cart";
 import { AccountLink, CartLink, SearchLink } from "./header-actions";
 import { LanguageSwitcher } from "./language-switcher";
 import { NavigationStatus } from "./navigation-status";
@@ -13,6 +14,9 @@ import { SiteNav } from "./site-nav";
 export function SiteHeader({ cartCount }: { cartCount: number }) {
   const { t } = useTranslation();
   const lang = useLocale();
+  // The layout counts the raw cookie; the cart page counts the reconciled cart, which wins.
+  const cart = useRouteLoaderData<typeof cartLoader>("routes/cart");
+  const count = cart?.view.cartCount ?? cartCount;
 
   return (
     <header className="sticky top-0 z-40 px-4 pt-4 lg:px-6 lg:pt-6 [@media(max-height:30rem)]:static">
@@ -32,7 +36,7 @@ export function SiteHeader({ cartCount }: { cartCount: number }) {
         <div className="flex items-center gap-2 lg:justify-self-end">
           <SearchLink className="hidden sm:inline-flex" />
           <AccountLink className="hidden sm:inline-flex" />
-          <CartLink count={cartCount} />
+          <CartLink count={count} />
           <div className="hidden lg:block">
             <LanguageSwitcher />
           </div>

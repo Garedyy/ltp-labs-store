@@ -56,6 +56,16 @@ test.describe("accessibility of states", () => {
     await expectAccessible(page, `state-cart-promo-${testInfo.project.name}`, cartReview);
   });
 
+  test("checkout refused on an emptied cart", async ({ page, context }, testInfo) => {
+    await fillCart(page);
+    await page.goto("/en/cart");
+    await context.clearCookies();
+    await page.getByRole("button", { name: "Check out" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart is empty");
+    await expect(page.getByRole("alert").filter({ hasText: "Your cart is empty" })).toBeFocused();
+    await expectAccessible(page, `state-cart-empty-error-${testInfo.project.name}`);
+  });
+
   test("add-to-cart status and the order confirmation", async ({ page }, testInfo) => {
     await fillCart(page);
     await expectAccessible(page, `state-product-added-${testInfo.project.name}`);

@@ -14,6 +14,9 @@ export function CheckoutActions() {
       className="flex flex-col gap-3"
     >
       <input type="hidden" name="intent" value="checkout" />
+      <noscript>
+        <input type="hidden" name="noJs" value="1" />
+      </noscript>
       <Button
         type="submit"
         name="payment"

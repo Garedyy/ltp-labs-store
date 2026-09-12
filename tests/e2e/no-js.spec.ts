@@ -59,26 +59,52 @@ test("adding to the cart twice without JavaScript redirects back and a refresh d
 test("the cart works without JavaScript: stepper, promo, remove, checkout", async ({ page }) => {
   await page.goto("/en/products/1");
   await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/products/2");
+  await page.getByRole("button", { name: "Add to cart" }).click();
   await page.goto("/en/cart");
+  const mascara = page.getByRole("textbox", { name: "Qty Essence Mascara Lash Princess" });
   await page
     .getByRole("button", { name: "Increase quantity of Essence Mascara Lash Princess" })
     .click();
   await expect(page).toHaveURL(/\/en\/cart$/);
   await expect(page.getByRole("status").filter({ hasText: "updated to 2" })).toBeFocused();
-  await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("2");
+  await expect(mascara).toHaveValue("2");
   await page
     .getByRole("button", { name: "Decrease quantity of Essence Mascara Lash Princess" })
     .click();
   await expect(page.getByRole("status").filter({ hasText: "updated to 1" })).toBeFocused();
-  await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("1");
+  await expect(mascara).toHaveValue("1");
   await page.getByRole("textbox", { name: "Promo code" }).fill("LTP10");
   await page.getByRole("button", { name: "Apply" }).click();
   await expect(page.getByText("Code LTP10 applied", { exact: true })).toBeVisible();
-  await page.getByRole("textbox", { name: /^Qty / }).fill("x");
-  await page.getByRole("textbox", { name: /^Qty / }).press("Enter");
+  await expect(page.getByRole("status").filter({ hasText: "Code LTP10 applied" })).toBeFocused();
+  await page.getByRole("button", { name: "Remove code" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Promo code removed" })).toBeFocused();
+  await expect(page.getByRole("textbox", { name: "Promo code" })).toBeVisible();
+  await page.getByRole("button", { name: "Remove Eyeshadow Palette with Mirror" }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Eyeshadow Palette with Mirror removed" }),
+  ).toBeFocused();
+  await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveCount(1);
+  await mascara.fill("x");
+  await mascara.press("Enter");
   await expect(page.getByRole("alert")).toContainText("Enter a whole number");
-  await expect(page.getByRole("textbox", { name: /^Qty / })).toBeFocused();
+  await expect(mascara).toBeFocused();
   await page.getByRole("button", { name: "Check out" }).click();
   await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+});
+
+test("checking out a cart emptied elsewhere without JavaScript redirects back with the error", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/cart");
+  await context.clearCookies();
+  await page.getByRole("button", { name: "Check out" }).click();
+  await expect(page).toHaveURL(/\/en\/cart$/);
+  await expect(page.getByRole("alert").filter({ hasText: "Your cart is empty" })).toBeFocused();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart is empty");
 });

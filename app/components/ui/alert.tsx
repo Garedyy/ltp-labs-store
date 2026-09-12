@@ -1,12 +1,16 @@
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode, Ref } from "react";
 
 import { cx } from "~/lib/cx";
 import { Icon } from "./icon";
 import { VisuallyHidden } from "./visually-hidden";
 
-type AlertProps = { prefix: ReactNode; children: ReactNode; className?: string };
+type AlertProps = HTMLAttributes<HTMLDivElement> & {
+  ref?: Ref<HTMLDivElement>;
+  prefix: ReactNode;
+  children: ReactNode;
+};
 
-export function Alert({ prefix, children, className }: AlertProps) {
+export function Alert({ prefix, children, className, ...props }: AlertProps) {
   return (
     <div
       role="alert"
@@ -14,6 +18,7 @@ export function Alert({ prefix, children, className }: AlertProps) {
         "flex items-start gap-2 rounded-lg border border-error-border bg-surface p-3 text-body-sm text-error forced-colors:border",
         className,
       )}
+      {...props}
     >
       <Icon name="error" className="mt-0.5 size-5 shrink-0" />
       <div>

@@ -53,15 +53,7 @@ export async function loadCartView(request: Request, locale: Locale): Promise<Lo
   });
 
   const promoCode = session.get("promoCode");
-  const totals = computeTotals(
-    views.map((line, index) => ({
-      unitCents: toCents(
-        products[stored.findIndex((s) => s.productId === line.productId)]?.price ?? 0,
-      ),
-      quantity: lines[index]?.quantity ?? 0,
-    })),
-    promoCode,
-  );
+  const totals = computeTotals(amounts, promoCode);
   const totalsView: TotalsView = {
     subtotalFormatted: formatPrice(totals.subtotalCents, locale),
     discountFormatted:

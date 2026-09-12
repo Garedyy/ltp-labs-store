@@ -8,6 +8,22 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Cart page: pressing Enter in the quantity field dropped the focus to the document (#18). The
+  input was keyed on the in-flight value, so React remounted it mid-submission; it is now
+  uncontrolled and never remounted, the shown value is written back when a submission or a
+  clamp changes it. Applying a promo code dropped the focus too, because the Apply form was
+  replaced by the Remove form: "Remove code" now receives it, as the plan's focus matrix states.
+- Header badge: the cart link only knew the raw cookie count, so a cart reconciled by the cart
+  page (vanished or sold-out lines dropped, quantities clamped) kept the stale count until the
+  next navigation (#18). `SiteHeader` prefers `useRouteLoaderData("routes/cart")`.
+- Checkout: the only mutation form without the `noJs` hidden input, so a refused checkout
+  (`empty-cart`) answered a bare 400 without JavaScript and, with it, its result never reached
+  the page (`useFetchers` does not see navigation forms) (#18). The form now honours the no-JS
+  contract, the page reads `actionData`, reloads the cart after the refusal (React Router skips
+  the reload after a 4xx by default) and renders a focused `empty-cart` alert in both states.
+- Hardening in the same files: `redirectBack` no longer throws on a malformed `Referer`, the cart
+  action answers 400 instead of 500 to a non-form body, and `loadCartView` derives the totals
+  once.
 - Search page: the first search from `/search` was never announced to screen readers, and
   neither was the way back to the empty prompt (#19). The prompt rendered a different tree, so
   the results component mounted fresh and its announcer hook only reacted to later changes.
