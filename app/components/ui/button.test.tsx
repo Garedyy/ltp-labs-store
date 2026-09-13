@@ -41,6 +41,14 @@ describe("Button", () => {
     expect(screen.getByRole("button", { name: "Medium" })).toHaveClass("min-h-11");
     expect(screen.getByRole("button", { name: "Small" })).toHaveClass("min-h-11");
   });
+
+  it("gives press feedback and gates its transition behind motion-safe", () => {
+    render(<Button>Press</Button>);
+    const button = screen.getByRole("button", { name: "Press" });
+    expect(button).toHaveClass("active:scale-[0.97]");
+    expect(button).toHaveClass("motion-safe:transition");
+    expect(button.className).not.toMatch(/(^|\s)transition/);
+  });
 });
 
 describe("ButtonLink", () => {

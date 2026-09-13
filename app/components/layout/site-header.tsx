@@ -43,7 +43,7 @@ export function SiteHeader({ cartCount }: { cartCount: number }) {
           <Disclosure
             className="lg:hidden"
             summaryLabel={t("common.nav.openMenu")}
-            summaryClassName="inline-flex size-11 items-center justify-center rounded-xl border border-border-strong text-primary hover:bg-surface-muted forced-colors:border"
+            summaryClassName="inline-flex size-11 items-center justify-center rounded-xl border border-border-strong text-primary hover:bg-surface-muted motion-safe:transition motion-safe:duration-150 active:scale-[0.97] forced-colors:border"
             summary={
               <>
                 <Icon name="menu" className="size-5 group-open:hidden" />
@@ -51,7 +51,7 @@ export function SiteHeader({ cartCount }: { cartCount: number }) {
               </>
             }
           >
-            <div className="absolute inset-x-0 top-full z-40 mt-2 rounded-2xl border border-border bg-surface p-4 shadow-header">
+            <div className="absolute inset-x-0 top-full z-40 mt-2 origin-top rounded-2xl border border-border bg-surface p-4 shadow-header motion-safe:animate-pop-in">
               <nav aria-label={t("common.nav.label")}>
                 <SiteNav className="flex-col gap-0" />
               </nav>

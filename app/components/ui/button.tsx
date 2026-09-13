@@ -7,7 +7,7 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "icon";
 type ButtonSize = "md" | "sm";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 no-underline font-medium text-tagline motion-safe:transition-colors forced-colors:border";
+  "inline-flex items-center justify-center gap-2 no-underline font-medium text-tagline motion-safe:transition motion-safe:duration-150 active:scale-[0.97] forced-colors:border";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "rounded-xl bg-primary text-primary-fg hover:bg-primary-hover disabled:bg-fg-muted",

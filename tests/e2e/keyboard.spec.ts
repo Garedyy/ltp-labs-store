@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
+// After a client navigation the focus moves in an effect, once the new page is committed: poll.
 async function activeElementId(page: Page) {
   return page.evaluate(() => document.activeElement?.id ?? document.activeElement?.tagName);
 }
@@ -73,7 +74,7 @@ test("mobile menu: Escape restores focus; navigating closes it and focuses main"
   await menuAbout.click();
   await expect(page).toHaveURL(/\/en\/about$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("About us");
-  expect(await activeElementId(page)).toBe("main");
+  await expect.poll(() => activeElementId(page)).toBe("main");
   await expect(page.getByRole("banner").getByRole("link", { name: "Contact" })).toBeHidden();
 });
 
@@ -81,7 +82,7 @@ test("client navigation announces the new title and focuses main", async ({ page
   await page.goto("/en");
   await page.getByRole("contentinfo").getByRole("link", { name: "Contact" }).click();
   await expect(page).toHaveURL(/\/en\/contact$/);
-  expect(await activeElementId(page)).toBe("main");
+  await expect.poll(() => activeElementId(page)).toBe("main");
   await expect(
     page.getByRole("status").filter({ hasText: "Contact - The Online Store" }),
   ).toHaveCount(1);

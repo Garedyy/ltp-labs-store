@@ -15,7 +15,7 @@ export function ProductCard({ product, priority = "lazy" }: ProductCardProps) {
 
   return (
     <li>
-      <article className="relative flex h-full flex-col gap-3 rounded-2xl border border-border p-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus forced-colors:border">
+      <article className="group relative flex h-full flex-col gap-3 rounded-2xl border border-border p-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus hover:border-border-strong motion-safe:transition-colors motion-safe:duration-200 forced-colors:border">
         <div className="aspect-square overflow-hidden rounded-xl bg-surface-placeholder">
           <img
             src={product.thumbnail}
@@ -25,7 +25,7 @@ export function ProductCard({ product, priority = "lazy" }: ProductCardProps) {
             loading={priority === "lazy" ? "lazy" : "eager"}
             decoding={priority === "lazy" ? "async" : undefined}
             fetchPriority={priority === "high" ? "high" : undefined}
-            className="size-full object-contain"
+            className="size-full object-contain group-hover:scale-[1.04] motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[ease]"
           />
         </div>
         <h2 className="text-body font-medium">

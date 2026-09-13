@@ -62,7 +62,31 @@ Breakpoints: Tailwind defaults; every grid collapses to one column at 320 px. `h
 ## Motion and media
 
 - Reduced motion: global kill switch in `base.css` (`animation/transition-duration: 0.01ms`,
-  `scroll-behavior: auto`); components only use `motion-safe:` transitions.
+  `scroll-behavior: auto`); components only use `motion-safe:` transitions and animations, so
+  nothing moves at all under `prefers-reduced-motion: reduce` (the `delay-300` of the navigation
+  bar stays ungated on purpose: it is the anti-flicker delay, not motion).
+- Motion scale (#43, D-18), defined in the `@theme` block of `tokens.css` and following
+  Emil Kowalski's rules (only `transform` and `opacity` move, entrances ease out, hover eases,
+  nothing above 200 ms, never from `scale(0)`, the child moves on hover rather than the parent):
+
+  | Token / utility                                        | Value                                           | Applies to                                                                                       |
+  | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+  | `--ease-out-quart`                                     | `cubic-bezier(0.165, 0.84, 0.44, 1)`            | every entrance below                                                                             |
+  | `animate-page-enter`                                   | opacity 0 → 1, `translateY(0.5rem)` → 0, 200 ms | the page wrapper inside `<main>` (`data-page`), keyed by pathname                                |
+  | `animate-pop-in`                                       | opacity 0 → 1, `scale(0.97)` → 1, 150 ms        | language panel and mobile menu (`origin-top`), the header cart badge (keyed by count)            |
+  | `animate-fade-in`                                      | opacity 0 → 1, 150 ms                           | `FormNotice`, `Alert`, the unfolded categories panel on phones                                   |
+  | `transition duration-150 active:scale-[0.97]`          | colours + press, Tailwind default easing        | `Button` / `ButtonLink`, header icon links, the two disclosure summaries, the cart remove button |
+  | `transition-colors duration-200`                       | border colour on hover                          | product card (`hover:border-border-strong`)                                                      |
+  | `transition-transform duration-200 ease-[ease]`        | `group-hover:scale-[1.04]`                      | product card image, inside its `overflow-hidden` frame                                           |
+  | `transition-[opacity,transform] duration-150 ease-out` | fade + 0.25 rem slide                           | navigation progress bar                                                                          |
+  | `opacity-60 transition-opacity`                        | pending state                                   | product grid while results load, cart line while it is removed                                   |
+
+  Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
+  exit needs `@starting-style` / `transition-behavior: allow-discrete` on `display`, whose support
+  is still partial. Value changes (quantities, totals) are not animated either: they are repeated
+  actions and motion would slow them down. The page fade can delay the LCP by up to 200 ms; the
+  measured budget (D-9) keeps a wide margin.
+
 - Forced colours: `forced-colors:border` on buttons, badges and cards; focus outline uses
   `Highlight`.
 - `prefers-contrast: more`: stronger borders, muted text becomes full-contrast text.

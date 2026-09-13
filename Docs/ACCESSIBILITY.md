@@ -44,7 +44,11 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
   (`aria-busy`, never `disabled`).
 - **Never colour alone**: `aria-current` + underline on the current nav item; `<s>` + "Original
   price" for discounts; icon + text for errors and stock; stars decorative + visible number.
-- **Reduced motion**: global kill switch; only `motion-safe:` transitions.
+- **Reduced motion**: global kill switch; only `motion-safe:` transitions and keyframes (motion
+  scale in `Docs/DESIGN_SYSTEM.md`), and motion is never the only signal: `aria-busy`, the
+  announcer and the focus moves stay in place under `prefers-reduced-motion: reduce`. The
+  Playwright suite runs under reduced motion (D-18) and `layout.spec.ts` checks that nothing
+  animates on any route in that state.
 - **Forced colours**: `forced-colors:border` on buttons, badges and cards; `forced-colors:underline`
   on `aria-current` links; icons use `fill="currentColor"`.
 - **`prefers-contrast: more`**: stronger borders, muted text becomes full-contrast text.

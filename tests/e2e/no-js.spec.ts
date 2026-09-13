@@ -16,6 +16,17 @@ test("the home page and the catalogue render without JavaScript", async ({ page 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
 });
 
+// The suite runs under reduced motion (playwright.config.ts); this test opts back in and only
+// reads a computed style, so no action can hang on the animation.
+test("the page enters with the page-enter keyframe without JavaScript", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/en");
+  const enter = page.locator("main [data-page]");
+  expect(await enter.evaluate((el) => getComputedStyle(el).animationName)).toBe("page-enter");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(await enter.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+});
+
 test("the language switcher works without JavaScript", async ({ page }) => {
   await page.goto("/en/nowhere?x=1");
   await openLanguagePanel(page, "Language");
