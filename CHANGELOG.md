@@ -19,6 +19,12 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Product page: the main image was a square as wide as its column, about 800 px tall on desktop
+  and tablet, so the thumbnails and, in one column, the buy block fell out of the first screen
+  (#27). The gallery `<figure>` is now bounded by 60 % of the viewport height (20 rem floor, never
+  wider than its column) and centred, the image keeps its square ratio, `preload` and
+  `fetchPriority="high"`; `tests/e2e/product.spec.ts` checks the cap at 1280 x 800 and 820 x
+  1180 and the full width on a phone.
 - Shell: on short pages (coming soon, 404, empty cart, order confirmation) the footer stopped
   right after the content and left the page background visible below it (#26). `<body>` is now a
   `min-h-svh` flex column and `<main>` grows, so the footer sits on the bottom edge of the viewport

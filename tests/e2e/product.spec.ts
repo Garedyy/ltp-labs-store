@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 
 test.describe("product detail", () => {
   test("shows every wireframe element plus the extras", async ({ page }) => {
@@ -90,5 +90,51 @@ test.describe("product detail", () => {
     await expect(page.getByText("Em stock")).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "3 avaliações" })).toBeVisible();
     await expect(page.locator("time").first()).toHaveText(/\d{2}\/\d{2}\/\d{4}/);
+  });
+
+  // The gallery is bounded by the viewport height (#27): the square image never exceeds 60 % of
+  // it, so the thumbnails stay in the first screen and the buy block beside them on desktop.
+  test.describe("gallery size", () => {
+    async function galleryBoxes(page: Page) {
+      await page.goto("/en/products/117");
+      await page.evaluate(() => document.fonts.ready);
+      const box = async (locator: Locator) => {
+        const rect = await locator.boundingBox();
+        if (!rect) throw new Error("not rendered");
+        return rect;
+      };
+      return {
+        image: await box(page.getByRole("img", { name: "Sportbike Motorcycle, image 1 of 4" })),
+        thumbnails: await box(page.getByRole("list", { name: "Product images" })),
+        button: await box(page.getByRole("button", { name: "Add to cart" })),
+        column: await box(page.getByRole("heading", { level: 1 }).locator("..")),
+      };
+    }
+
+    for (const [name, viewport] of [
+      ["desktop", { width: 1280, height: 800 }],
+      ["tablet", { width: 820, height: 1180 }],
+    ] as const) {
+      test.describe(name, () => {
+        test.use({ viewport });
+
+        test("the image is capped by the viewport height", async ({ page }, testInfo) => {
+          test.skip(testInfo.project.name !== "desktop-chromium", "one project is enough");
+          const { image, thumbnails, button } = await galleryBoxes(page);
+          expect(Math.abs(image.width - image.height)).toBeLessThanOrEqual(1);
+          expect(image.height).toBeLessThanOrEqual(viewport.height * 0.6 + 1);
+          expect(thumbnails.y + thumbnails.height).toBeLessThanOrEqual(viewport.height);
+          if (name === "desktop") {
+            expect(button.y + button.height).toBeLessThanOrEqual(viewport.height);
+          }
+        });
+      });
+    }
+
+    test("the image keeps the full column width on a phone", async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== "mobile-chromium", "phone layout only");
+      const { image, column } = await galleryBoxes(page);
+      expect(Math.abs(image.width - column.width)).toBeLessThanOrEqual(1);
+    });
   });
 });

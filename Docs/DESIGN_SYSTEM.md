@@ -129,7 +129,10 @@ icon sits next to text.
   Product card: `rounded-2xl border p-3`, `aspect-square rounded-xl bg-surface-placeholder object-contain`
   image, `focus-within` ring. First three images eager (first `fetchPriority="high"`), rest lazy.
 - **Product**: `grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12`; gallery
-  `aspect-square rounded-2xl bg-surface-placeholder object-contain`, thumbnails
+  `<figure>` `mx-auto w-full max-w-[min(100%,max(20rem,60svh))]` (the square image is bounded by
+  60 % of the viewport height, 20 rem floor, and centred in its column so the thumbnails and the
+  buy block share the first screen, #27), image box `aspect-square rounded-2xl
+bg-surface-placeholder object-contain`, thumbnails
   `flex gap-2 overflow-x-auto size-16 rounded-lg border-2`; title `text-h3 md:text-h2 font-medium`,
   rating, price `text-h4` + badge, stock line, full-width Add to cart, "Product details" uppercase
   label + `text-body-sm` description, practical `<dl>`, tags; reviews `lg:col-span-2`.

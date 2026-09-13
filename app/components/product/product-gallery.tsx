@@ -35,8 +35,10 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
     return search ? `?${search}` : "?";
   }
 
+  // Square image bounded by the viewport height (60 svh, 20 rem floor) and centred in its column,
+  // so the gallery and the buy block share the first screen (#27).
   return (
-    <figure className="flex flex-col gap-3">
+    <figure className="mx-auto flex w-full max-w-[min(100%,max(20rem,60svh))] flex-col gap-3">
       <div className="aspect-square overflow-hidden rounded-2xl bg-surface-placeholder">
         <img
           src={current}
