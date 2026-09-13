@@ -159,17 +159,19 @@ id above; then run `npm run test:e2e`.
   `buy-now` (`AddIntent`) belong to the product route. `noJs=1` (a hidden input inside
   `<noscript>`) marks a submission made without JavaScript.
 - **`add` / `buy-now` action** (`routes/product.tsx`): unsets `lastOrder`, refuses a missing
-  product (`product-not-found`, 400), a sold-out one (`out-of-stock`) or a 51st distinct line
-  (`cart-full`), otherwise `addLine` (quantity +1 in place, capped at `min(99, stock)` →
-  `added-capped`). For `add`, with JavaScript the fetcher receives `data(result)` + `Set-Cookie`;
-  without it the result is flashed into the session and the action answers **303 back to the
-  page** (Post/Redirect/Get), where the loader reads and clears the flash and the status
-  paragraph receives focus. For `buy-now` (#28) a successful add is flashed as a cart notice
-  (`added` / `added-capped`, the `CartActionResult` shape) and the action answers **303 to
-  `/:lang/cart`** with or without JavaScript — the fetcher follows the redirect as a navigation —
-  where `CartNotice` shows it; a refusal takes the `add` paths above. Both buttons live in the
-  one `AddToCartForm` fetcher form as submit buttons named `intent`, so a refusal renders in the
-  same alert and the focus returns to the button that was pressed.
+  product (`product-not-found`, 400) or a sold-out one (`out-of-stock`). `add` then refuses a
+  51st distinct line (`cart-full`), otherwise `addLine` (quantity +1 in place, capped at
+  `min(99, stock)` → `added-capped`); with JavaScript the fetcher receives `data(result)` +
+  `Set-Cookie`, without it the result is flashed into the session and the action answers **303
+  back to the page** (Post/Redirect/Get), where the loader reads and clears the flash and the
+  status paragraph receives focus. `buy-now` (#28, D-12) is a one-unit order of this product
+  alone: `computeTotals` on one line (price + shipping, no promo code), `lastOrder` written with
+  `method: "card"` and `itemCount: 1`, then **303 to `/:lang/checkout/confirmation`** with or
+  without JavaScript — the fetcher follows the redirect as a navigation; the `cart` and
+  `promoCode` slots are untouched. A refusal takes the `add` paths above. Both buttons live in
+  the one `AddToCartForm` fetcher form (landmark `product.buyBlock`) as submit buttons named
+  `intent`, so a refusal renders in the same alert and the focus returns to the button that was
+  pressed.
 - **Header count**: the locale layout loader counts the sanitised cookie (no API call, no
   commit) and revalidates after every submission. On the cart page `SiteHeader` prefers the
   reconciled `useRouteLoaderData("routes/cart")?.view.cartCount`, so dropped or clamped lines

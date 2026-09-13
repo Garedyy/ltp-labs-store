@@ -41,7 +41,7 @@ export function parseCartIntent(form: FormData): CartIntent {
   }
 }
 
-// The product route's intents: both add one unit; buy-now then redirects to the cart.
+// The product route's intents: add puts one unit in the cart; buy-now orders one unit on its own.
 export type AddIntent = "add" | "buy-now";
 
 export function isAddIntent(value: unknown): value is AddIntent {

@@ -26,7 +26,8 @@ export default {
   addToCart: "Add to cart",
   adding: "Adding…",
   buyNow: "Buy now",
-  buyingNow: "Going to cart…",
+  buyingNow: "Placing your order…",
+  buyBlock: "Purchase options",
   details: {
     heading: "Product details",
   },

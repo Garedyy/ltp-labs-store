@@ -46,45 +46,44 @@ test.describe("add to cart", () => {
     await expect(page.getByRole("link", { name: "Cart, 8 items" })).toBeVisible();
   });
 
-  test("Buy now adds the product and lands on the cart with the line and a notice", async ({
+  test("Buy now orders one unit of the product alone and leaves the cart untouched", async ({
     page,
   }) => {
+    await page.goto("/en/products/2");
+    await page.getByRole("button", { name: "Add to cart" }).click();
+    await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
     await page.goto("/en/products/1");
     await page.getByRole("button", { name: "Buy now" }).click();
-    await expect(page).toHaveURL(/\/en\/cart$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart");
-    await expect(
-      page.getByRole("status").filter({ hasText: "Added to your cart. You now have 1 item." }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("list", { name: "Items" }).getByRole("link", { name: /Essence Mascara/ }),
-    ).toBeVisible();
+    await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      /Thank you — order LTP-[A-Z0-9]+/,
+    );
+    // Product 1 costs $9.99: one unit plus the $20 shipping, no promo, nothing from the cart.
+    await expect(page.getByRole("definition").filter({ hasText: /^1$/ })).toBeVisible();
+    await expect(page.getByRole("definition").filter({ hasText: "Card" })).toBeVisible();
+    await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
-    await page.goBack();
-    await expect(page).toHaveURL(/\/en\/products\/1$/);
-    await page.getByRole("button", { name: "Buy now" }).click();
-    await expect(page).toHaveURL(/\/en\/cart$/);
-    await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("2");
-    await expect(page.getByRole("link", { name: "Cart, 2 items" })).toBeVisible();
+    await page.goto("/en/cart");
+    await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveCount(1);
+    await expect(
+      page.getByRole("list", { name: "Items" }).getByRole("link", { name: /Eyeshadow Palette/ }),
+    ).toBeVisible();
   });
 
-  test("Buy now at the stock cap still lands on the cart with the capped notice", async ({
-    page,
-  }) => {
-    await page.goto("/en/products/16");
-    const button = page.getByRole("button", { name: "Add to cart" });
-    for (let i = 0; i < 8; i += 1) {
-      await button.click();
-      await expect(
-        page.getByRole("status").filter({ hasText: `You now have ${i + 1} item` }),
-      ).toBeVisible();
-    }
+  test("Buy now ignores the cart's promo code", async ({ page }) => {
+    await page.goto("/en/products/1");
+    await page.getByRole("button", { name: "Add to cart" }).click();
+    await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+    await page.goto("/en/cart");
+    await page.getByRole("textbox", { name: "Promo code" }).fill("FREESHIP");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await expect(page.getByText("Code FREESHIP applied", { exact: true })).toBeVisible();
+    await page.goto("/en/products/1");
     await page.getByRole("button", { name: "Buy now" }).click();
-    await expect(page).toHaveURL(/\/en\/cart$/);
-    await expect(
-      page.getByRole("status").filter({ hasText: "Quantity limited to available stock (8)." }),
-    ).toBeVisible();
-    await expect(page.getByRole("link", { name: "Cart, 8 items" })).toBeVisible();
+    await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+    await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
+    await page.goto("/en/cart");
+    await expect(page.getByText("Code FREESHIP applied", { exact: true })).toBeVisible();
   });
 
   test("a tampered cookie reads as an empty cart without a server error", async ({

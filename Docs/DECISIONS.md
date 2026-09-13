@@ -195,6 +195,28 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   `sort-form.test.tsx`, `catalogue.spec.ts`, `search.spec.ts` and `targets.spec.ts` cover the
   new behaviour; `no-js.spec.ts` keeps proving the GET form.
 
+## D-12 · Buy now is a one-unit order owned by the product route
+
+- **Date / branch**: 2026-09-13 · `fix/28-buy-now-button` (#28)
+- **Context**: issue #28 asked for a "Buy now" button that adds the product to the cart and
+  lands on the cart page. Reviewing the first implementation, the user asked for the intended
+  behaviour instead: Buy now finalises a purchase of the product shown, on its own, without
+  including or touching whatever is already in the cart. `CLAUDE.md` gave the cart route sole
+  ownership of `checkout`.
+- **Decision**: the product route's action owns a second intent, `buy-now`, which is a
+  single-product checkout: the product is verified like `add` (`product-not-found`,
+  `out-of-stock`, same JS / no-JS refusal paths; `cart-full` cannot apply), one unit is priced
+  with `computeTotals` (price + $20 shipping, **no** promo code: the promo belongs to the cart),
+  `lastOrder` is written with `method: "card"` and `itemCount: 1`, and the action answers 303 to
+  `/:lang/checkout/confirmation` with or without JavaScript (the fetcher follows the redirect as
+  a navigation). The `cart` and `promoCode` session slots are left untouched, so the header count
+  and the cart page are unchanged after a Buy now. The cart route keeps `checkout` for the cart.
+- **Consequences**: two actions can write `lastOrder`; the confirmation page reads it the same
+  way. Buy now offers no payment choice (one button, card) and no quantity; both are out of
+  scope. The `AddToCartForm` landmark is named `product.buyBlock` ("Purchase options") since it
+  now holds two distinct actions. `cart-session.spec.ts`, `no-js.spec.ts` and
+  `a11y-states.spec.ts` prove the cart survives a Buy now and the promo code is ignored.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

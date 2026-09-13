@@ -20,7 +20,7 @@ type AddToCartFormProps = {
 };
 
 // One fetcher for both buttons: the user stays on the page (Add to cart) or follows the action's
-// redirect to the cart (Buy now); submits are ignored while one is pending.
+// redirect to the order confirmation (Buy now); submits are ignored while one is pending.
 export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps) {
   const { t } = useTranslation();
   const lang = useLocale();
@@ -46,7 +46,7 @@ export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps)
     <fetcher.Form
       method="post"
       noValidate
-      aria-label={t("product.addToCart")}
+      aria-label={t("product.buyBlock")}
       className="flex flex-col gap-3"
       onSubmit={(event) => {
         if (pending) event.preventDefault();

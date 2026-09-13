@@ -8,16 +8,16 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
-- Product page: a "Buy now" button next to "Add to cart" (#28). It adds one unit through the
-  product route's new `buy-now` intent — same stock cap and `out-of-stock` / `cart-full` /
-  `product-not-found` refusals as "Add to cart" — and answers 303 to the cart, with and without
-  JavaScript, where the "Added to your cart" notice is shown (and focused without JavaScript);
-  the existing Check out button completes the order. Both buttons share the one fetcher form as
-  submit buttons named `intent`, are described by the stock status, disabled when sold out and
-  stack under 640 px (`Docs/DESIGN_SYSTEM.md`). Translated in `en` and `pt`; `isAddIntent`
-  unit-tested; covered in the `desktop-chromium`,
-  `mobile-chromium`, `pt` and `no-js` Playwright projects and by an IBM scan of the cart reached
-  through Buy now.
+- Product page: a "Buy now" button next to "Add to cart" (#28). It orders one unit of the
+  product shown, on its own — the cart is neither included nor touched, the cart's promo code
+  does not apply — through the product route's new `buy-now` intent (same `out-of-stock` /
+  `product-not-found` refusals as "Add to cart"), writes the order (card, one item, price +
+  shipping) and answers 303 to the confirmation page, with and without JavaScript (D-12). Both
+  buttons share the one fetcher form (landmark "Purchase options") as submit buttons named
+  `intent`, are described by the stock status, disabled when sold out and stack under 640 px
+  (`Docs/DESIGN_SYSTEM.md`). Translated in `en` and `pt`; `isAddIntent` unit-tested; covered in
+  the `desktop-chromium`, `mobile-chromium`, `pt` and `no-js` Playwright projects and by an IBM
+  scan of the confirmation reached through Buy now.
 
 ### Changed
 
