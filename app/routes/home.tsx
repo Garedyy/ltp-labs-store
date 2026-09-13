@@ -71,6 +71,11 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         </ButtonLink>
       </div>
       <ProductGrid products={loaderData.products} labelledBy={TRENDING_HEADING} />
+      <div className="flex justify-end">
+        <ButtonLink to={href("/:lang/shop", { lang })} prefetch="intent">
+          {t("pages.home.browse")}
+        </ButtonLink>
+      </div>
     </div>
   );
 }

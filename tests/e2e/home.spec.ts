@@ -16,9 +16,12 @@ test.describe("home", () => {
     await expect(page.getByRole("combobox", { name: "Sort by" })).toHaveCount(0);
     await expect(page.getByRole("navigation", { name: "Pagination" })).toHaveCount(0);
     const browse = page.getByRole("main").getByRole("link", { name: "Browse the shop" });
-    await expect(browse).toHaveAttribute("href", "/en/shop");
-    expect(await precedes(browse, grid)).toBe(true);
-    await browse.click();
+    await expect(browse).toHaveCount(2);
+    await expect(browse.first()).toHaveAttribute("href", "/en/shop");
+    await expect(browse.last()).toHaveAttribute("href", "/en/shop");
+    expect(await precedes(browse.first(), grid)).toBe(true);
+    expect(await precedes(grid, browse.last())).toBe(true);
+    await browse.first().click();
     await expect(page).toHaveURL(/\/en\/shop$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
   });
@@ -60,11 +63,12 @@ test.describe("home", () => {
     await page.goto("/pt");
     await expect(page).toHaveTitle("Produtos em destaque - The Online Store");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos em destaque");
-    const browse = page.getByRole("link", { name: "Ver a loja" });
-    await expect(browse).toHaveAttribute("href", "/pt/shop");
-    expect(await precedes(browse, page.getByRole("list", { name: "Produtos em destaque" }))).toBe(
-      true,
-    );
+    const browse = page.getByRole("main").getByRole("link", { name: "Ver a loja" });
+    const grid = page.getByRole("list", { name: "Produtos em destaque" });
+    await expect(browse).toHaveCount(2);
+    await expect(browse.first()).toHaveAttribute("href", "/pt/shop");
+    expect(await precedes(browse.first(), grid)).toBe(true);
+    expect(await precedes(grid, browse.last())).toBe(true);
     const title = page.getByRole("link", { name: "Amazon Echo Plus" });
     await expect(title).toHaveAttribute("lang", "en");
   });
