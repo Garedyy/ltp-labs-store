@@ -34,6 +34,14 @@ test("the sort Apply button is at least 44 px tall", async ({ page }) => {
   await expectTallEnough(apply);
 });
 
+test("the pagination links are at least 44 px tall", async ({ page }) => {
+  await page.goto("/en/shop?page=9");
+  await page.evaluate(() => document.fonts.ready);
+  const links = page.getByRole("navigation", { name: "Pagination" }).getByRole("link");
+  await expect(links).toHaveCount(7);
+  await expectTallEnough(links);
+});
+
 test("the Categories toggle is at least 44 px tall on a phone", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile-chromium", "phone layout only");
   await page.goto("/en/shop");

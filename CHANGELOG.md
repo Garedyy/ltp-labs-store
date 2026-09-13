@@ -89,6 +89,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Catalogue pagination: a page change on `/shop` and `/search` no longer scrolls the viewport
+  to the results heading; the pagination links carry `preventScrollReset` and the focus stays
+  on the clicked link (or moves to the current page link when the clicked control vanished, e.g.
+  Next on the last page), so paging continues with the keyboard or the mouse without scrolling
+  back down (#51, D-21). The row keeps the wireframe's five-number window; first and last page
+  links with ellipses were tried and dropped as noise. Covered by `pagination.test.tsx`,
+  `catalogue.spec.ts`, `search.spec.ts` and `targets.spec.ts`.
 - Home: a "Browse the shop" link now sits next to the heading block ("Trending products" and
   its intro, grouped), aligned to its bottom end and wrapping under it on narrow screens, so the
   way to the full catalogue is visible without scrolling on desktop and on a 320 px phone; a

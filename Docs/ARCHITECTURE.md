@@ -103,7 +103,9 @@ boundary renders 404 or 502 inside the shell. Titles: "Shop" or the translated c
 "— page N" appended above page 1.
 
 Client-side behaviour is owned by `CatalogueResults`: on every search-param change it announces
-`catalogue.results.announce` and, when only `page` changed, focuses `#results-heading`.
+`catalogue.results.announce` and, when only `page` changed, keeps the focus in the pagination
+(the clicked link, or the current page link when the clicked control vanished, D-21); the
+pagination links carry `preventScrollReset` so the viewport never moves on a page change.
 `CategoryFilter` and `SortForm` navigate on change with `buildSearch` and show an optimistic
 selection while the navigation is pending (the sort reads it from the pending URL, D-11); the
 filter focuses its fieldset after "Clear filter". Both are plain GET forms underneath (hidden

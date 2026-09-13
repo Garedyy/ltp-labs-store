@@ -502,6 +502,37 @@ none` was tried first and replayed the whole entrance on blur) and a small addit
   of blocks in `tokens.css`, one value in `THEMES`, one icon and three strings. No new
   dependency; the icons are three more Remix Icon v4.8.0 paths (D-4).
 
+## D-21 · Pagination keeps the scroll and the focus; the window stays at five numbers
+
+- **Date / branch**: 2026-09-13 · `fix/51-pagination-scroll-and-far-pages` (#51)
+- **Context**: the plan (§4 catalogue, announcements table) moved the focus to
+  `#results-heading` on every page change so a vanishing previous/next control never held it.
+  In practice the focus call scrolled the viewport up to the heading and, on top of it, the
+  pagination links had no `preventScrollReset`, so `<ScrollRestoration>` reset the scroll to
+  the top of the document on every push navigation: a visitor reading the pagination was thrown
+  to the top of the grid on every click. The issue also asked for first and last page links
+  around the window (`1 … 7 8 9 10 11 … 22`) because the shop has 22 pages and the wireframe's
+  `1 2 3 4 5 >` only reflects a five-page mock.
+- **Decision**:
+  - A page change moves neither the viewport nor the focus: every pagination link carries
+    `preventScrollReset` and the focus stays on the clicked link. Page links are keyed by
+    number, so a link that survives the window shift keeps its DOM element (and the focus)
+    while becoming the current page. When the clicked control no longer exists — previous/next
+    at the ends, a mouse click in a browser that does not focus links — `CatalogueResults`
+    moves the focus to the current page link with `preventScroll: true`. The focus never lands
+    on a control that is gone; the results announcement is unchanged. Without JavaScript the
+    browser does a full navigation and lands at the top: expected, out of scope.
+  - The row keeps the wireframe's window of five numbers with previous/next. The first and
+    last page links with `aria-hidden` ellipses were implemented, reviewed and then dropped on
+    the same branch: nine items in the row read as noise for a catalogue this size, and the
+    window already slides one page per click. Reaching a far page stays a matter of repeated
+    Next clicks (the focus now stays on Next, so it is one key per page) or of editing `?page`.
+- **Consequences**: `catalogue.spec.ts` and `search.spec.ts` assert `window.scrollY` and the
+  focused link instead of `#results-heading`, plus the window shift and the vanishing-Next
+  handover; `targets.spec.ts` measures the seven pagination links. `#results-heading` keeps
+  `tabIndex={-1}` for the grid's `aria-labelledby` and for any future programmatic focus.
+  `pageWindow` is unchanged. No new dependency, no new icon, no new string.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.
