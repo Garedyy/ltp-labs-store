@@ -30,7 +30,7 @@ No `Co-Authored-By` or tool attribution trailers.
 nvm use && npm ci
 npm run dev                 # development server
 npm run check               # typecheck + lint + format:check + check:licenses + unit tests
-npm run test:e2e            # Playwright (builds and serves the app; four Chromium projects, reduced motion)
+npm run test:e2e            # Playwright (builds and serves the app; five Chromium projects, reduced motion)
 ```
 
 Git hooks (Husky): `pre-commit` runs lint-staged (ESLint + Prettier on staged files);

@@ -62,7 +62,13 @@ export default defineConfig({
     {
       name: "pt",
       use: { ...devices["Desktop Chrome"], locale: "pt-PT" },
-      testMatch: /i18n|catalogue|cart|reflow/,
+      testMatch: /i18n|catalogue|cart|reflow|theme/,
+    },
+    // System dark preference without a cookie: the WCAG scan of every route x locale, dark.
+    {
+      name: "dark-chromium",
+      use: { ...devices["Desktop Chrome"], colorScheme: "dark" },
+      testMatch: /a11y\.spec/,
     },
   ],
 });

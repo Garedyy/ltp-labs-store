@@ -460,6 +460,48 @@ none` was tried first and replayed the whole entrance on blur) and a small addit
   where it sits on each screen; `Docs/ACCESSIBILITY.md` states that it is the first focusable
   element of the page content and moves no focus.
 
+## D-20 · Dark theme: a `theme` cookie, two identical token blocks, no script
+
+- **Date / branch**: 2026-09-13 · `fix/47-dark-theme` (#47)
+- **Context**: plan decision 15 left the dark theme for later, on the promise that the
+  three-layer tokens would make it a token remap and never a per-component change. A theme
+  needs three things decided: how the choice is stored, how it reaches the page without a
+  flash, and how the CSS expresses "explicit dark" and "system dark" without repeating itself.
+- **Decision**:
+  - The choice is a `theme` cookie (`light` | `dark`; `httpOnly`, `SameSite=Lax`, one year,
+    unsigned like `lng` and validated on every read), written only by the action-only
+    `set-theme` route (POST `theme` + same-origin `redirectTo`, 303 back, 405 on GET, 400 on
+    anything invalid). Choosing **system deletes the cookie**: the absence of a choice is the
+    default, and a stored "system" would only say "follow the OS" for a year.
+  - The root loader reads the cookie and `root.tsx` renders `data-theme` on `<html>` and a
+    `<meta name="color-scheme">`; nothing runs on the client. `system` leaves the attribute
+    off and the CSS follows `prefers-color-scheme`. The browser paints the canvas in the
+    right colour from the meta before the stylesheet arrives, so no theme flashes.
+  - The dark roles are declared **twice with the same values** —
+    `:root:where([data-theme="dark"])` and
+    `@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) }` — and
+    `contrast.test.ts` fails if the two blocks differ. `:where()` keeps both at the
+    specificity of `:root`, so the `prefers-contrast: more` remap declared later on bare
+    `:root` wins by source order in every theme (the first review of PR #48 caught the
+    (0,2,0) selectors silently disabling it in the dark theme). `light-dark()` would give one block and
+    is the standard answer, but a `light-dark()` inside a custom property cannot be polyfilled
+    by lightningcss (it only rewrites real colour properties) and the function is newer than
+    the Safari 16.4 floor Tailwind v4 already imposes: an unsupported browser would lose every
+    semantic colour at once. Twenty duplicated lines guarded by a test cost less than that.
+  - Three derived palette values (`gray-on-dark`, `green-on-dark`, `error-on-dark`) join
+    `error-text` in the raw palette with the ratio that justifies each; `focus-inner` turns
+    `dark-blue` so the orange ring has 3:1 on both sides around the now-light primary button;
+    the footer stays dark (`dark-blue-lighter`); the header card and the panels gain a 1 px
+    ring through `--elevation-ring` because their shadow disappears on a dark surface.
+  - The switcher mirrors the language switcher (a `<details>` pill with a POST form) but is
+    not a `<nav>`; since the redirect keeps the pathname, the instance that submitted closes
+    its panel, focuses its summary and announces the new theme itself.
+- **Consequences**: a fifth Playwright project `dark-chromium` (`colorScheme: "dark"`) runs
+  the WCAG scan of every route × locale under the system preference; `a11y-states.spec.ts`
+  covers the explicit cookie and forced colours in the dark theme. Adding a theme = one pair
+  of blocks in `tokens.css`, one value in `THEMES`, one icon and three strings. No new
+  dependency; the icons are three more Remix Icon v4.8.0 paths (D-4).
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

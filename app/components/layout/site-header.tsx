@@ -9,6 +9,7 @@ import { AccountLink, CartLink, SearchLink } from "./header-actions";
 import { LanguageSwitcher } from "./language-switcher";
 import { NavigationStatus } from "./navigation-status";
 import { SiteNav } from "./site-nav";
+import { ThemeSwitcher } from "./theme-switcher";
 
 // Floating card, sticky except on short viewports (zoomed pages keep their content reachable).
 export function SiteHeader({ cartCount }: { cartCount: number }) {
@@ -37,8 +38,9 @@ export function SiteHeader({ cartCount }: { cartCount: number }) {
           <SearchLink className="hidden sm:inline-flex" />
           <AccountLink className="hidden sm:inline-flex" />
           <CartLink count={count} />
-          <div className="hidden lg:block">
+          <div className="hidden lg:flex lg:gap-2">
             <LanguageSwitcher />
+            <ThemeSwitcher />
           </div>
           <Disclosure
             className="lg:hidden"
@@ -63,8 +65,9 @@ export function SiteHeader({ cartCount }: { cartCount: number }) {
                   <AccountLink />
                 </li>
               </ul>
-              <div className="mt-4 border-t border-border pt-4">
+              <div className="mt-4 flex gap-2 border-t border-border pt-4">
                 <LanguageSwitcher />
+                <ThemeSwitcher />
               </div>
             </div>
           </Disclosure>

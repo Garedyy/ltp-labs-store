@@ -31,4 +31,12 @@ export default {
     current: "{{code}}, {{name}}. Change language",
     switchTo: "Switch to {{name}}",
   },
+  theme: {
+    label: "Theme",
+    current: "Theme: {{name}}. Change theme",
+    applied: "{{name}} theme applied",
+    system: "System",
+    light: "Light",
+    dark: "Dark",
+  },
 };

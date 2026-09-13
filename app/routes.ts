@@ -5,6 +5,7 @@ export default [
   ...prefix(":lang", [
     layout("routes/locale-layout.tsx", [
       route("set-language", "routes/set-language.tsx"),
+      route("set-theme", "routes/set-theme.tsx"),
       layout("routes/locale-errors.tsx", [
         index("routes/home.tsx"),
         route("shop", "routes/catalogue.tsx"),
