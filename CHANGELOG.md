@@ -51,6 +51,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Home: the "Browse the shop" link now sits between the intro text and the trending grid instead
+  of after the eight product cards, so the way to the full catalogue is visible without scrolling
+  on desktop and on a 320 px phone; DOM order and visual order stay the same (#40, D-13).
 - Shop: on phones the category filter folds under the toolbar behind a "Categories" button
   (`aria-expanded`; opening moves the focus into the list, Escape folds it back) instead of
   sitting after the pagination behind a jump link; choosing a category behaves as before and
