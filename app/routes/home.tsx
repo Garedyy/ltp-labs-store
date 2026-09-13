@@ -59,15 +59,17 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 id={TRENDING_HEADING} className="text-h4 font-medium">
-          {loaderData.title}
-        </h1>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 id={TRENDING_HEADING} className="text-h4 font-medium">
+            {loaderData.title}
+          </h1>
+          <p className="text-body-sm text-fg-muted">{t("pages.home.intro")}</p>
+        </div>
         <ButtonLink to={href("/:lang/shop", { lang })} prefetch="intent">
           {t("pages.home.browse")}
         </ButtonLink>
       </div>
-      <p className="text-body-sm text-fg-muted">{t("pages.home.intro")}</p>
       <ProductGrid products={loaderData.products} labelledBy={TRENDING_HEADING} />
     </div>
   );

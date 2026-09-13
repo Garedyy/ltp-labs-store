@@ -246,9 +246,10 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   the trending list, the two `aria-current`s, the 301 and the Portuguese page. The Lighthouse
   figures in `README.md` were measured on the catalogue when it lived at `/en`.
 - **Addendum (2026-09-13, #40)**: the "Browse the shop" link is the main call to action of the
-  landing page, so it is rendered on the heading row, right after the `<h1>` and aligned to the
-  end of the line (wrapping under the heading on narrow screens), above the intro and the grid
-  and never after the cards; `home.spec.ts` and `no-js.spec.ts` assert the DOM order.
+  landing page, so it is rendered right after the heading block (`<h1>` and intro grouped
+  tightly), aligned to the bottom end of that block and wrapping under it on narrow screens,
+  above the grid and never after the cards; `home.spec.ts` and `no-js.spec.ts` assert the DOM
+  order.
 
 ## D-14 · Content pages replace the "coming soon" placeholders
 
