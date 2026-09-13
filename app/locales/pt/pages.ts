@@ -6,6 +6,7 @@ export default {
     description: "Os nossos produtos mais bem avaliados, escolhidos em todo o catálogo.",
     intro: "Os nossos produtos mais bem avaliados, escolhidos em todo o catálogo.",
     browse: "Ver a loja",
+    seeMore: "Ver mais",
   },
   about: {
     title: "Sobre nós",

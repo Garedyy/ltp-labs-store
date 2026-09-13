@@ -1,13 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-import { payByCard } from "./helpers";
-
-import { openLanguagePanel } from "./helpers";
+import { openLanguagePanel, payByCard, precedes } from "./helpers";
 
 test("the home page and the catalogue render without JavaScript", async ({ page }) => {
   const home = await page.goto("/en");
   expect(home?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trending products");
+  const browse = page.getByRole("main").getByRole("link", { name: "Browse the shop" });
+  const seeMore = page.getByRole("main").getByRole("link", { name: "See more" });
+  const grid = page.getByRole("list", { name: "Trending products" });
+  expect(await precedes(browse, grid)).toBe(true);
+  expect(await precedes(grid, seeMore)).toBe(true);
   const shop = await page.goto("/en/shop");
   expect(shop?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");

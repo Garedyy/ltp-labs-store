@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 // The language switcher lives in the header on large screens and inside the menu below lg.
 export async function openLanguagePanel(page: Page, navName: string): Promise<void> {
@@ -41,4 +41,13 @@ export async function payByCard(page: Page, overrides: Partial<typeof VALID_CARD
     await page.getByRole("textbox", { name: label }).fill(values[field]);
   }
   await page.getByRole("button", { name: /^Pay / }).click();
+}
+
+// True when `first` comes before `second` in the DOM order.
+export async function precedes(first: Locator, second: Locator): Promise<boolean> {
+  return first.evaluate(
+    (element, other) =>
+      Boolean(element.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING),
+    await second.elementHandle(),
+  );
 }

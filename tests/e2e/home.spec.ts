@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { precedes } from "./helpers";
+
 test.describe("home", () => {
   test("lists the eight best-rated products and links to the shop", async ({ page }) => {
     await page.goto("/en");
@@ -13,7 +15,13 @@ test.describe("home", () => {
     await expect(cards.nth(1).getByRole("link")).toHaveText("Huawei Matebook X Pro");
     await expect(page.getByRole("combobox", { name: "Sort by" })).toHaveCount(0);
     await expect(page.getByRole("navigation", { name: "Pagination" })).toHaveCount(0);
-    await page.getByRole("main").getByRole("link", { name: "Browse the shop" }).click();
+    const browse = page.getByRole("main").getByRole("link", { name: "Browse the shop" });
+    const seeMore = page.getByRole("main").getByRole("link", { name: "See more" });
+    await expect(browse).toHaveAttribute("href", "/en/shop");
+    await expect(seeMore).toHaveAttribute("href", "/en/shop");
+    expect(await precedes(browse, grid)).toBe(true);
+    expect(await precedes(grid, seeMore)).toBe(true);
+    await browse.click();
     await expect(page).toHaveURL(/\/en\/shop$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
   });
@@ -55,10 +63,13 @@ test.describe("home", () => {
     await page.goto("/pt");
     await expect(page).toHaveTitle("Produtos em destaque - The Online Store");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos em destaque");
-    await expect(page.getByRole("link", { name: "Ver a loja" })).toHaveAttribute(
-      "href",
-      "/pt/shop",
-    );
+    const browse = page.getByRole("main").getByRole("link", { name: "Ver a loja" });
+    const seeMore = page.getByRole("main").getByRole("link", { name: "Ver mais" });
+    const grid = page.getByRole("list", { name: "Produtos em destaque" });
+    await expect(browse).toHaveAttribute("href", "/pt/shop");
+    await expect(seeMore).toHaveAttribute("href", "/pt/shop");
+    expect(await precedes(browse, grid)).toBe(true);
+    expect(await precedes(grid, seeMore)).toBe(true);
     const title = page.getByRole("link", { name: "Amazon Echo Plus" });
     await expect(title).toHaveAttribute("lang", "en");
   });

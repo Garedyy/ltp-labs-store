@@ -245,6 +245,12 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   `tests/e2e/routes.ts` scans `/`, `/shop` and the two `/shop?…` states; `home.spec.ts` covers
   the trending list, the two `aria-current`s, the 301 and the Portuguese page. The Lighthouse
   figures in `README.md` were measured on the catalogue when it lived at `/en`.
+- **Addendum (2026-09-13, #40)**: the "Browse the shop" link is the main call to action of the
+  landing page, so it is rendered right after the heading block (`<h1>` and intro grouped
+  tightly), aligned to the bottom end of that block and wrapping under it on narrow screens,
+  above the grid; a centred "See more" link to the same shop closes the page after the cards so a
+  visitor who scrolled the grid does not have to scroll back up. `home.spec.ts` and
+  `no-js.spec.ts` assert the DOM order of both.
 
 ## D-14 · Content pages replace the "coming soon" placeholders
 
