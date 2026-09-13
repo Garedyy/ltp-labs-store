@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { data, useFetchers } from "react-router";
+import { data, href, useFetchers } from "react-router";
 
 import { CartLineItem } from "~/components/cart/cart-line-item";
 import { CartSummary } from "~/components/cart/cart-summary";
@@ -11,7 +11,9 @@ import { PromoCodeForm } from "~/components/cart/promo-code-form";
 import { FormNotice } from "~/components/forms/form-notice";
 import { useAnnounce } from "~/components/layout/announcer";
 import { Alert } from "~/components/ui/alert";
+import { BackLink } from "~/components/ui/back-link";
 import { isLocale } from "~/i18n/config";
+import { useLocale } from "~/i18n/use-locale";
 import { ERROR_MESSAGE_KEYS } from "~/lib/error-codes";
 import { badRequest, notFound, redirectBack, toRouteError } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
@@ -223,6 +225,7 @@ function CheckoutRefused({ result }: { result?: CartActionResult }) {
 
 export default function Cart({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
+  const lang = useLocale();
   const announce = useAnnounce();
   const { view, flash, reconciliation } = loaderData;
   const productIds = view.lines.map((line) => line.productId);
@@ -259,6 +262,7 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12">
       <div className="flex min-w-0 flex-col gap-4">
+        <BackLink to={href("/:lang/shop", { lang })}>{t("common.backTo.shop")}</BackLink>
         <h1 id="cart-heading" tabIndex={-1} className="text-h4 font-medium">
           {t("cart.title")}
         </h1>

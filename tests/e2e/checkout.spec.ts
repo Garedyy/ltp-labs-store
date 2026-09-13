@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-import { payByCard } from "./helpers";
+import { payByCard, precedes } from "./helpers";
 
 async function addToCart(page: Page, id: number, expectedCount: number) {
   await page.goto(`/en/products/${id}`);
@@ -40,10 +40,9 @@ test.describe("payment page", () => {
     await page.getByRole("radio", { name: "Card" }).check();
     await expect(page.getByRole("textbox", { name: "Card number" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Pay $29.99" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Back to the cart" })).toHaveAttribute(
-      "href",
-      "/en/cart",
-    );
+    const back = page.getByRole("link", { name: "Back to the cart" });
+    await expect(back).toHaveAttribute("href", "/en/cart");
+    expect(await precedes(back, page.getByRole("heading", { level: 1 }))).toBe(true);
   });
 
   test("invalid fields are refused with focus on the first one and the values kept", async ({
@@ -172,10 +171,9 @@ test.describe("payment page", () => {
     // Product 1 costs $9.99: one unit plus the $20 shipping, no promo, nothing from the cart.
     await expect(page.getByRole("button", { name: "Pay $29.99" })).toBeVisible();
     await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveCount(1);
-    await expect(page.getByRole("link", { name: "Back to the product" })).toHaveAttribute(
-      "href",
-      "/en/products/1",
-    );
+    const back = page.getByRole("link", { name: "Back to the product" });
+    await expect(back).toHaveAttribute("href", "/en/products/1");
+    expect(await precedes(back, page.getByRole("heading", { level: 1 }))).toBe(true);
     await payByCard(page);
     await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
     await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveText([

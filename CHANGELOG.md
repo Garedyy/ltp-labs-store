@@ -8,6 +8,14 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- A back link above the heading of the product page, the cart page (with items) and the
+  payment page (#45, D-19): a `BackLink` primitive (`components/ui/`), a left chevron plus a
+  translated label (`common.backTo.*`, "Back to the shop" / "Voltar à loja") in a 44 px target.
+  The destinations are fixed (product and cart go to the shop; the payment page goes to the
+  cart, or to the product after Buy now) so the link is a plain `<a href>` that works without
+  JavaScript. The payment page's text-only link that sat below the form is replaced. The
+  chevron mirrors under `dir="rtl"`. Covered by `back-link.test.tsx` and by `product.spec.ts`,
+  `cart.spec.ts`, `checkout.spec.ts`, `no-js.spec.ts` and `targets.spec.ts`.
 - Motion-safe transitions across the interface (#43, D-18). A motion scale in `tokens.css`
   (`--ease-out-quart`, keyframes `page-enter`, `pop-in`, `fade-in`) applied with Tailwind
   utilities only, every use gated by `motion-safe:`: the page content enters with a 200 ms fade

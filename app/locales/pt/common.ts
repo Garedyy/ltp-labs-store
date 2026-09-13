@@ -6,6 +6,11 @@ export default {
   skipToContent: "Saltar para o conteúdo principal",
   loading: "A carregar",
   errorPrefix: "Erro:",
+  backTo: {
+    shop: "Voltar à loja",
+    cart: "Voltar ao carrinho",
+    product: "Voltar ao produto",
+  },
   nav: {
     label: "Principal",
     footerLabel: "Rodapé",

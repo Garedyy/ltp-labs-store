@@ -439,6 +439,27 @@ none` was tried first and replayed the whole entrance on blur) and a small addit
   effect after the commit. The skill lives in `.claude/skills/web-animation-design/` (MIT, from
   `vercel-labs/open-agents`).
 
+## D-19 · Back links point at fixed destinations
+
+- **Date / branch**: 2026-09-13 · `fix/45-back-links` (#45)
+- **Context**: the product page, the cart page and the payment page had no visible way back;
+  the payment page's text-only link sat below the form. A back link can call
+  `history.back()`, read the `Referer`, carry the catalogue URL through the product link, or
+  point at a fixed page.
+- **Decision**: a `BackLink` primitive with fixed destinations — product and cart go to the
+  shop, the payment page goes to the cart or, after Buy now, to the product it sells. A fixed
+  `href` renders and works without JavaScript, survives a deep link (no referrer, no history),
+  and keeps the URL the only state; `history.back()` would need scripts and would leave a
+  visitor arriving from a search engine on the wrong site. Returning to the exact catalogue
+  page (query, category, sort, page) would need the list URL threaded through every product
+  link or a `Referer` read on the server, both out of scope until asked. The strings live in
+  `common.backTo` (the payment page's `cart.checkout.backToCart` / `backToProduct` moved
+  there) so the label is defined once per destination.
+- **Consequences**: the empty cart and the confirmation page keep their "Continue shopping"
+  button (a call to action, not a way back). `Docs/DESIGN_SYSTEM.md` lists the primitive and
+  where it sits on each screen; `Docs/ACCESSIBILITY.md` states that it is the first focusable
+  element of the page content and moves no focus.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

@@ -115,6 +115,7 @@ and pass `eslint-plugin-i18next/no-literal-string`. Each has a role/name test ne
 | ---------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `Button`         | `variant: primary \| secondary \| ghost \| icon`, `size: md \| sm`, `pending`, `pendingLabel`   | `type="button"` by default; pending keeps the button enabled with `aria-busy`; `disabled` only for out-of-stock |
 | `ButtonLink`     | same variants, React Router `Link` props                                                        | never `aria-disabled` — blocked states omit the control                                                         |
+| `BackLink`       | React Router `Link` props                                                                       | chevron + label above the h1, fixed destination (never `history.back()`), 44 px, `rtl:-scale-x-100` on the icon |
 | `Icon`           | `name: IconName`, SVG props                                                                     | `aria-hidden focusable="false" fill="currentColor"`, 15 Remix Icon paths                                        |
 | `VisuallyHidden` | `as?`, `children`                                                                               | `sr-only`                                                                                                       |
 | `Field`          | `name`, `label`, `hideLabel?`, `hint?`, `error?`, `errorPrefix`, `children: (ids) => ReactNode` | render-prop instead of `cloneElement`; error is `role="alert"` with icon + sr prefix                            |
@@ -177,7 +178,8 @@ lg:grid-rows-[auto_1fr] lg:gap-x-8` of three items — head (h1 `text-h4`, toolb
   row per category.
   Product card: `rounded-2xl border p-3`, `aspect-square rounded-xl bg-surface-placeholder object-contain`
   image, `focus-within` ring. First three images eager (first `fetchPriority="high"`), rest lazy.
-- **Product**: `grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12`; gallery image
+- **Product**: a `flex flex-col gap-4` column, the back link to the shop (`BackLink`, #45) first,
+  then `grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12`; gallery image
   box `aspect-square md:aspect-[5/3] rounded-2xl bg-surface-placeholder object-contain` (the
   wireframe's landscape box from `md`, as wide as its column, so the thumbnails and the buy block
   share the first screen; the square image is centred inside it, #27), thumbnails
@@ -186,7 +188,8 @@ lg:grid-rows-[auto_1fr] lg:gap-x-8` of three items — head (h1 `text-h4`, toolb
   action, #28) then Add to cart (secondary), both full-width and stacked with `gap-3` at every
   width — "Product details" uppercase label + `text-body-sm` description, practical `<dl>`, tags; reviews
   `lg:col-span-2`.
-- **Cart**: `grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12`; `<ul class="divide-y divide-border">`,
+- **Cart**: `grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12`; the back link to the shop
+  above the h1 (#45), `<ul class="divide-y divide-border">`,
   line `grid grid-cols-[5rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr_auto]`, thumbnail `size-20 sm:size-28`,
   stepper `inline-flex rounded-lg border` with 44 px buttons; summary card
   `rounded-2xl border border-border p-6 lg:sticky lg:top-28` (static under 30 rem height) with the
@@ -204,6 +207,7 @@ lg:grid-rows-[auto_1fr] lg:gap-x-8` of three items — head (h1 `text-h4`, toolb
   demo note and the "Continue shopping" `ButtonLink` close the page. The green disc is the only
   place `success` is used as a background.
 - **Payment page** (`/checkout`, D-15): `grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-12`;
+  the back link to the cart, or to the product after Buy now (#45), then
   `<h1 class="text-h4 font-medium">`, `text-body-sm text-fg-muted` intro, then the form as stacked
   `<fieldset class="flex flex-col gap-4">` blocks with `text-h5 font-medium` legends (contact,
   shipping address, payment method radios `size-5 accent-primary` in 44 px `<label>` rows, card

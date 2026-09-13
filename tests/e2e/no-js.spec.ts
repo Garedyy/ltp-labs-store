@@ -97,6 +97,22 @@ test("adding to the cart twice without JavaScript redirects back and a refresh d
   await expect(page.getByRole("status").filter({ hasText: "You now have" })).toHaveCount(0);
 });
 
+test("the back links are plain navigations without JavaScript", async ({ page }) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Buy now" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\?product=1$/);
+  await page.getByRole("link", { name: "Back to the product" }).click();
+  await expect(page).toHaveURL(/\/en\/products\/1$/);
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/cart");
+  await page.getByRole("link", { name: "Check out" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout$/);
+  await page.getByRole("link", { name: "Back to the cart" }).click();
+  await expect(page).toHaveURL(/\/en\/cart$/);
+  await page.getByRole("link", { name: "Back to the shop" }).click();
+  await expect(page).toHaveURL(/\/en\/shop$/);
+});
+
 test("Buy now without JavaScript opens the payment page, then the confirmation, and keeps the cart", async ({
   page,
 }) => {

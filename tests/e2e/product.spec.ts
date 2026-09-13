@@ -1,5 +1,7 @@
 import { expect, type Locator, type Page, test } from "@playwright/test";
 
+import { precedes } from "./helpers";
+
 test.describe("product detail", () => {
   test("shows every wireframe element plus the extras", async ({ page }) => {
     await page.goto("/en/products/1");
@@ -146,5 +148,24 @@ test.describe("product detail", () => {
       expect(Math.abs(image.width - column.width)).toBeLessThanOrEqual(1);
       expect(Math.abs(image.width - image.height)).toBeLessThanOrEqual(1);
     });
+  });
+});
+
+test.describe("back link", () => {
+  test("the product page links back to the shop above its heading", async ({ page }) => {
+    await page.goto("/en/products/1");
+    const back = page.getByRole("link", { name: "Back to the shop" });
+    await expect(back).toHaveAttribute("href", "/en/shop");
+    expect(await precedes(back, page.getByRole("heading", { level: 1 }))).toBe(true);
+    await back.click();
+    await expect(page).toHaveURL(/\/en\/shop$/);
+  });
+
+  test("the back link is translated", async ({ page }) => {
+    await page.goto("/pt/products/1");
+    await expect(page.getByRole("link", { name: "Voltar à loja" })).toHaveAttribute(
+      "href",
+      "/pt/shop",
+    );
   });
 });

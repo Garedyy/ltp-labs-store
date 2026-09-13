@@ -4,6 +4,11 @@ export default {
   skipToContent: "Skip to main content",
   loading: "Loading",
   errorPrefix: "Error:",
+  backTo: {
+    shop: "Back to the shop",
+    cart: "Back to the cart",
+    product: "Back to the product",
+  },
   nav: {
     label: "Main",
     footerLabel: "Footer",

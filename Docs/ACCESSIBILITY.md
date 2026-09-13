@@ -17,6 +17,12 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
   keeps anchored targets clear of the sticky header.
 - **Links**: underlined by default in running text; navigation, cards, pagination and buttons opt
   out with `no-underline`. Icon-only links carry `aria-label` (Search, Account, "Cart, 3 items").
+- **Back links** (#45): the product, cart and payment pages open with a `BackLink` above the
+  `<h1>` — the first focusable element of the page content, before the heading — pointing at a
+  fixed destination (shop, cart or product), so it is a plain `<a href>` with and without
+  JavaScript; no `history.back()`. The chevron is `aria-hidden`; the label is the accessible
+  name. It moves no focus and announces nothing: following it is a pathname change handled by
+  `RouteAnnouncer`.
 - **Focus ring**: two-tone `:focus-visible` (3 px orange outline + 2 px medium-blue inner ring,
   ≥ 3:1 on every surface); `outline-none` is banned except on `main`; forced colours use
   `Highlight`.
