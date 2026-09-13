@@ -49,8 +49,8 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
   announcer and the focus moves stay in place under `prefers-reduced-motion: reduce`. The
   Playwright suite runs under reduced motion (D-18) and `layout.spec.ts` checks that nothing
   animates on any route in that state. On the landing page, a control focused before its
-  delayed entrance drops the animation (`home.spec.ts`), so a focus ring never sits on an
-  invisible element.
+  delayed entrance loses the delay and stays revealed after blur (`home.spec.ts`), so a focus
+  ring never sits on an invisible element.
 - **Forced colours**: `forced-colors:border` on buttons, badges and cards; `forced-colors:underline`
   on `aria-current` links; icons use `fill="currentColor"`.
 - **`prefers-contrast: more`**: stronger borders, muted text becomes full-contrast text.

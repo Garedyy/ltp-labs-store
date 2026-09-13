@@ -65,16 +65,28 @@ test.describe("home", () => {
       .toBe(0);
     await expect(cards.last()).toBeVisible();
     await expect(main.getByRole("link", { name: "See more" })).toBeVisible();
-    // A control focused before its turn drops its delayed entrance, so it is never an invisible
-    // focus target (checked on a fresh load, while the delays are still running).
+    // A control focused before its turn loses its delay (never an invisible focus target) and
+    // stays revealed after the focus leaves; a late focus and blur never hide it again.
     await page.goto("/en");
     const seeMore = main.getByRole("link", { name: "See more" });
+    const seeMoreBox = seeMore.locator("xpath=..");
     await seeMore.focus();
-    expect(
-      await seeMore.locator("xpath=..").evaluate((el) => getComputedStyle(el).animationName),
-    ).toBe("none");
+    expect(await seeMoreBox.evaluate(timing)).toBe("hero-enter 0s");
     await cards.last().getByRole("link").focus();
-    expect(await cards.last().evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+    expect(await cards.last().evaluate(timing)).toBe("card-enter 0s");
+    expect(await seeMoreBox.evaluate(timing)).toBe("hero-enter 0s");
+    await hero.evaluate((el) => {
+      el.setAttribute("tabindex", "-1");
+      (el as HTMLElement).focus();
+    });
+    expect(await cards.last().evaluate(timing)).toBe("card-enter 0s");
+    await expect
+      .poll(() => seeMoreBox.evaluate((el) => getComputedStyle(el).opacity), { timeout: 3000 })
+      .toBe("1");
+    await seeMore.focus();
+    await hero.evaluate((el) => (el as HTMLElement).focus());
+    await page.waitForTimeout(100);
+    expect(await seeMoreBox.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
     await page.emulateMedia({ reducedMotion: "reduce" });
     expect(await hero.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
     expect(

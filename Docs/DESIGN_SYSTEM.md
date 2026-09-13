@@ -89,14 +89,18 @@ Breakpoints: Tailwind defaults; every grid collapses to one column at 320 px. `h
   first thing a visitor sees): its header comes in three beats, its cards cascade and See more
   follows, the whole sequence about 1.3 s; it replays on every arrival on `/`. A delayed element
   is held invisible until its turn (fill both), so every focusable one - Browse the shop, the
-  cards, See more - drops its entrance the moment it receives focus (`focus-visible:animate-none`,
-  `focus-within:animate-none`): a keyboard user never lands on an invisible control. Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
+  cards, See more - loses its delay the moment it receives focus (`focus-visible:` /
+  `focus-within:[animation-delay:0s]`; the delay is a `--enter-delay` custom property on the
+  cards): the running animation is not restarted, unlike `animation: none`, which would replay
+  the whole entrance on blur. A small additive handler on the page (`data-entered`) keeps the
+  reveal once the focus leaves; without JavaScript, only a focus that leaves before the original
+  delay has elapsed lets the element wait for its turn again. Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
   exit needs `@starting-style` / `transition-behavior: allow-discrete` on `display`, whose support
   is still partial. Value changes (quantities, totals) are not animated either: they are repeated
   actions and motion would slow them down. The fades do not move the LCP: Chrome dates it at the
-  first painted frame, where the opacity is already above zero (measured on the built app,
-  six loads each, median LCP on `/` 132 ms with motion and 132 ms under reduced motion, on
-  `/products/1` 152 ms and 176 ms).
+  first painted frame, where the opacity is already above zero. Measured with the README's
+  Lighthouse method (mobile, simulated throttling) on this build and on the build before the
+  branch: same scores and same LCP on `/`, `/en/shop` and `/en/products/1` (README table).
 
 - Forced colours: `forced-colors:border` on buttons, badges and cards; focus outline uses
   `Highlight`.

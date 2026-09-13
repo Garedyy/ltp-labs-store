@@ -19,7 +19,7 @@ All notable changes to this project are documented here. The format follows
   the categories panel fades in on phones; the navigation bar fades and slides; a cart line
   dims while it is removed. The landing page opens with more motion than the other pages: title, intro and Browse the
   shop rise in three beats (500 ms, 120 ms apart), the eight trending cards cascade in (450 ms,
-  one every 80 ms, `ProductGrid stagger`) and See more follows; a control focused before its turn drops its entrance; Lighthouse A/B against the previous build shows identical scores and LCP. Nothing moves under `prefers-reduced-motion: reduce`. Covered by
+  one every 80 ms, `ProductGrid stagger`) and See more follows; a control focused before its turn loses its delay and stays revealed; Lighthouse A/B against the previous build shows identical scores and LCP. Nothing moves under `prefers-reduced-motion: reduce`. Covered by
   `layout.spec.ts`, `no-js.spec.ts` and `header-actions.test.tsx`; the rules come from the
   `web-animation-design` skill vendored in `.claude/skills/` (MIT).
 - About, Contact, Blog and Account pages with real, invented content in `en` and `pt` (#30,

@@ -53,8 +53,8 @@ describe("ProductGrid", () => {
     );
     const [first, second] = screen.getAllByRole("listitem");
     expect(first).toHaveClass("motion-safe:animate-card-enter");
-    expect(first).toHaveStyle({ animationDelay: "0ms" });
-    expect(second).toHaveStyle({ animationDelay: "80ms" });
+    expect(first).toHaveAttribute("style", "--enter-delay: 0ms;");
+    expect(second).toHaveAttribute("style", "--enter-delay: 80ms;");
   });
 
   it("leaves the cards still by default, as in the shop", () => {
