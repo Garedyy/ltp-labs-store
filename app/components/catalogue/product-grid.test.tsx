@@ -13,6 +13,14 @@ const products = [
     inStock: true,
     href: "/en/products/1",
   },
+  {
+    id: 2,
+    title: "Eyeshadow Palette",
+    thumbnail: "https://cdn.example/2.webp",
+    priceFormatted: "$19.99",
+    inStock: true,
+    href: "/en/products/2",
+  },
 ];
 
 describe("ProductGrid", () => {
@@ -34,5 +42,25 @@ describe("ProductGrid", () => {
       </>,
     );
     expect(screen.getByRole("list", { name: "Trending products" })).toBeInTheDocument();
+  });
+
+  it("cascades the cards in only when staggered, one every 60 ms", () => {
+    renderWithProviders(
+      <>
+        <h1 id="trending-heading">Trending products</h1>
+        <ProductGrid products={products} labelledBy="trending-heading" stagger />
+      </>,
+    );
+    const [first, second] = screen.getAllByRole("listitem");
+    expect(first).toHaveClass("motion-safe:animate-card-enter");
+    expect(first).toHaveStyle({ animationDelay: "0ms" });
+    expect(second).toHaveStyle({ animationDelay: "60ms" });
+  });
+
+  it("leaves the cards still by default, as in the shop", () => {
+    renderWithProviders(<ProductGrid products={products} />);
+    const [first] = screen.getAllByRole("listitem");
+    expect(first).not.toHaveClass("motion-safe:animate-card-enter");
+    expect(first).not.toHaveAttribute("style");
   });
 });

@@ -5,16 +5,24 @@ import { VisuallyHidden } from "~/components/ui/visually-hidden";
 import { useLocale } from "~/i18n/use-locale";
 import type { ProductCardView } from "~/lib/catalogue/types";
 
-type ProductCardProps = { product: ProductCardView; priority?: "high" | "eager" | "lazy" };
+type ProductCardProps = {
+  product: ProductCardView;
+  priority?: "high" | "eager" | "lazy";
+  // Set by a staggered grid (the landing page): the card enters after this delay.
+  enterDelayMs?: number;
+};
 
 // The title link is stretched over the whole card; the image is decorative (alt="").
-export function ProductCard({ product, priority = "lazy" }: ProductCardProps) {
+export function ProductCard({ product, priority = "lazy", enterDelayMs }: ProductCardProps) {
   const { t } = useTranslation();
   const locale = useLocale();
   const lang = locale === "en" ? undefined : "en";
 
   return (
-    <li>
+    <li
+      className={enterDelayMs === undefined ? undefined : "motion-safe:animate-card-enter"}
+      style={enterDelayMs === undefined ? undefined : { animationDelay: `${enterDelayMs}ms` }}
+    >
       <article className="group relative flex h-full flex-col gap-3 rounded-2xl border border-border p-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus hover:border-border-strong motion-safe:transition-colors motion-safe:duration-200 forced-colors:border">
         <div className="aspect-square overflow-hidden rounded-xl bg-surface-placeholder">
           <img

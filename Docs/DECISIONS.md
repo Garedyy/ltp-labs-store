@@ -406,7 +406,9 @@ totalFormatted }` built by the account loader. `cart.test.ts` covers `sanitiseOr
   (JavaScript only, partial browser support, and a second focus/announcement path to reconcile)
   could not offer. Search-param changes (sort, filter, page) do not replay it: the grid's pending
   fade already covers them and repeating a page fade on every filter would slow the catalogue
-  down. `RouteAnnouncer` and the focus on `main` are untouched (the animation is on a child of
+  down. The landing page alone opens with more motion (`hero-enter`, 300 ms, and a `card-enter`
+  cascade of 60 ms per card, `ProductGrid stagger`): it is the marketing surface, seen once per
+  visit, where the skill allows a longer, more special entrance; the shop grid stays still. `RouteAnnouncer` and the focus on `main` are untouched (the animation is on a child of
   `main`, without fill mode, so no stacking context outlives it). Disclosure panels and the cart
   badge animate their entrance only; exits snap, because a CSS-only exit needs `@starting-style`
   and `transition-behavior: allow-discrete`, still partially supported.

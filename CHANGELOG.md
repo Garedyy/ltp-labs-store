@@ -17,7 +17,9 @@ All notable changes to this project are documented here. The format follows
   `scale(0.97)` press; product cards raise their border and scale the image on hover; the
   language panel, the mobile menu and the header cart badge pop in; notices and alerts fade in;
   the categories panel fades in on phones; the navigation bar fades and slides; a cart line
-  dims while it is removed. Nothing moves under `prefers-reduced-motion: reduce`. Covered by
+  dims while it is removed. The landing page opens with more motion than the other pages: its
+  header rises over 300 ms and the eight trending cards cascade in, one every 60 ms
+  (`ProductGrid stagger`). Nothing moves under `prefers-reduced-motion: reduce`. Covered by
   `layout.spec.ts`, `no-js.spec.ts` and `header-actions.test.tsx`; the rules come from the
   `web-animation-design` skill vendored in `.claude/skills/` (MIT).
 - About, Contact, Blog and Account pages with real, invented content in `en` and `pt` (#30,

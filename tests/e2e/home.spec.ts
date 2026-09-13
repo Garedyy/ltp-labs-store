@@ -26,6 +26,40 @@ test.describe("home", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
   });
 
+  // The landing page opens with more motion than the other pages (#43, D-18): the hero rises and
+  // the cards cascade in. The suite runs under reduced motion; this test opts back in.
+  test("the hero rises and the trending cards cascade in, except under reduced motion", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/en");
+    const hero = page.getByRole("heading", { level: 1 }).locator("xpath=../..");
+    const cards = page.getByRole("list", { name: "Trending products" }).getByRole("listitem");
+    expect(await hero.evaluate((el) => getComputedStyle(el).animationName)).toBe("hero-enter");
+    const delays = await cards.evaluateAll((items) =>
+      items.map((item) => getComputedStyle(item).animationDelay),
+    );
+    expect(delays).toEqual(["0s", "0.06s", "0.12s", "0.18s", "0.24s", "0.3s", "0.36s", "0.42s"]);
+    // fill-mode both keeps a finished card animation listed: wait until none is still running.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => document.getAnimations().filter((a) => a.playState !== "finished").length,
+          ),
+        { timeout: 3000 },
+      )
+      .toBe(0);
+    await expect(cards.last()).toBeVisible();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    expect(await hero.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+    expect(
+      await cards.evaluateAll((items) =>
+        items.every((item) => getComputedStyle(item).animationName === "none"),
+      ),
+    ).toBe(true);
+  });
+
   test("Home and Shop each carry aria-current on their own page", async ({ page }) => {
     await page.goto("/en");
     const menuToggle = page.getByLabel("Open menu");

@@ -69,19 +69,23 @@ Breakpoints: Tailwind defaults; every grid collapses to one column at 320 px. `h
   Emil Kowalski's rules (only `transform` and `opacity` move, entrances ease out, hover eases,
   nothing above 200 ms, never from `scale(0)`, the child moves on hover rather than the parent):
 
-  | Token / utility                                        | Value                                           | Applies to                                                                                       |
-  | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-  | `--ease-out-quart`                                     | `cubic-bezier(0.165, 0.84, 0.44, 1)`            | every entrance below                                                                             |
-  | `animate-page-enter`                                   | opacity 0 → 1, `translateY(0.5rem)` → 0, 200 ms | the page wrapper inside `<main>` (`data-page`), keyed by pathname                                |
-  | `animate-pop-in`                                       | opacity 0 → 1, `scale(0.97)` → 1, 150 ms        | language panel and mobile menu (`origin-top`), the header cart badge (keyed by count)            |
-  | `animate-fade-in`                                      | opacity 0 → 1, 150 ms                           | `FormNotice`, `Alert`, the unfolded categories panel on phones                                   |
-  | `transition duration-150 active:scale-[0.97]`          | colours + press, Tailwind default easing        | `Button` / `ButtonLink`, header icon links, the two disclosure summaries, the cart remove button |
-  | `transition-colors duration-200`                       | border colour on hover                          | product card (`hover:border-border-strong`)                                                      |
-  | `transition-transform duration-200 ease-[ease]`        | `group-hover:scale-[1.04]`                      | product card image, inside its `overflow-hidden` frame                                           |
-  | `transition-[opacity,transform] duration-150 ease-out` | fade + 0.25 rem slide                           | navigation progress bar                                                                          |
-  | `opacity-60 transition-opacity`                        | pending state                                   | product grid while results load, cart line while it is removed                                   |
+  | Token / utility                                        | Value                                                                             | Applies to                                                                                       |
+  | ------------------------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+  | `--ease-out-quart`                                     | `cubic-bezier(0.165, 0.84, 0.44, 1)`                                              | every entrance below                                                                             |
+  | `animate-page-enter`                                   | opacity 0 → 1, `translateY(0.5rem)` → 0, 200 ms                                   | the page wrapper inside `<main>` (`data-page`), keyed by pathname                                |
+  | `animate-pop-in`                                       | opacity 0 → 1, `scale(0.97)` → 1, 150 ms                                          | language panel and mobile menu (`origin-top`), the header cart badge (keyed by count)            |
+  | `animate-fade-in`                                      | opacity 0 → 1, 150 ms                                                             | `FormNotice`, `Alert`, the unfolded categories panel on phones                                   |
+  | `animate-hero-enter`                                   | opacity 0 → 1, `translateY(1rem)` → 0, 300 ms                                     | the landing page header (title, intro, Browse the shop)                                          |
+  | `animate-card-enter`                                   | opacity 0 → 1, `translateY(0.75rem)` → 0, 300 ms, fill both, one card every 60 ms | the eight trending cards (`ProductGrid stagger`); the shop grid stays still                      |
+  | `transition duration-150 active:scale-[0.97]`          | colours + press, Tailwind default easing                                          | `Button` / `ButtonLink`, header icon links, the two disclosure summaries, the cart remove button |
+  | `transition-colors duration-200`                       | border colour on hover                                                            | product card (`hover:border-border-strong`)                                                      |
+  | `transition-transform duration-200 ease-[ease]`        | `group-hover:scale-[1.04]`                                                        | product card image, inside its `overflow-hidden` frame                                           |
+  | `transition-[opacity,transform] duration-150 ease-out` | fade + 0.25 rem slide                                                             | navigation progress bar                                                                          |
+  | `opacity-60 transition-opacity`                        | pending state                                                                     | product grid while results load, cart line while it is removed                                   |
 
-  Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
+  The landing page is the one place with more motion than the rest (a marketing surface seen once
+  per visit): a longer rise for its header and a cascade for its cards, the whole sequence under
+  800 ms. Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
   exit needs `@starting-style` / `transition-behavior: allow-discrete` on `display`, whose support
   is still partial. Value changes (quantities, totals) are not animated either: they are repeated
   actions and motion would slow them down. The page fade can delay the LCP by up to 200 ms; the
