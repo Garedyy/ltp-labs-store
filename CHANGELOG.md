@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-13
+
+Post-release work from the 2026-09-12 project review and the issues filed since `v1.0.0`:
+every change below shipped as a `fix/<N>-<slug>` pull request squash-merged into
+`development`, then released to `main` in one merge commit.
+
 ### Added
 
 - A dark theme and a system / light / dark switch in the header (#47, D-20). With no choice
