@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { data, type ShouldRevalidateFunctionArgs } from "react-router";
+import { data, href, redirect, type ShouldRevalidateFunctionArgs } from "react-router";
 
 import { AddToCartForm, type AddResult } from "~/components/product/add-to-cart-form";
 import { ProductGallery } from "~/components/product/product-gallery";
@@ -16,7 +16,7 @@ import { pageMeta } from "~/lib/meta";
 import { buildProductView } from "~/lib/product/view.server";
 import { getInstance, getLocale } from "~/middleware/i18next";
 import { addLine, countItems, MAX_QUANTITY, sanitiseLines } from "~/services/cart/cart";
-import { isNoJs } from "~/services/cart/intents";
+import { isAddIntent, isNoJs } from "~/services/cart/intents";
 import { commitCartSession, getCartSession } from "~/services/cart/session.server";
 import { getProduct } from "~/services/dummyjson/products.server";
 import type { Route } from "./+types/product";
@@ -50,11 +50,14 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
   );
 }
 
-// The product route owns intent=add; the cart route owns every other intent.
-export async function action({ params, request, url }: Route.ActionArgs) {
+// The product route owns intent=add and intent=buy-now; the cart route owns every other intent.
+export async function action({ params, context, request, url }: Route.ActionArgs) {
   const id = productIdFrom(params);
+  const locale = getLocale(context);
+  if (!isLocale(locale)) notFound();
   const form = await request.formData();
-  if (form.get("intent") !== "add") throw data({ code: "invalid-intent" }, { status: 400 });
+  const intent = form.get("intent");
+  if (!isAddIntent(intent)) throw data({ code: "invalid-intent" }, { status: 400 });
 
   const session = await getCartSession(request);
   session.unset("lastOrder");
@@ -81,6 +84,16 @@ export async function action({ params, request, url }: Route.ActionArgs) {
     }
   }
 
+  // Buy now lands on the cart with the outcome flashed as a cart notice, with or without JS.
+  if (intent === "buy-now" && result.ok) {
+    const values =
+      result.notice === "added-capped" ? { max: result.max } : { count: result.cartCount };
+    session.flash("flash", { ok: true, notice: result.notice, values });
+    throw redirect(href("/:lang/cart", { lang: locale }), {
+      status: 303,
+      headers: { "Set-Cookie": await commitCartSession(session) },
+    });
+  }
   if (isNoJs(form)) {
     session.flash("flash", result);
     throw redirectBack(request, url, { "Set-Cookie": await commitCartSession(session) });

@@ -41,6 +41,13 @@ export function parseCartIntent(form: FormData): CartIntent {
   }
 }
 
+// The product route's intents: both add one unit; buy-now then redirects to the cart.
+export type AddIntent = "add" | "buy-now";
+
+export function isAddIntent(value: unknown): value is AddIntent {
+  return value === "add" || value === "buy-now";
+}
+
 export function isNoJs(form: FormData): boolean {
   return form.get("noJs") === "1";
 }

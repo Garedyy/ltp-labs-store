@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Product page: a "Buy now" button next to "Add to cart" (#28). It adds one unit through the
+  product route's new `buy-now` intent — same stock cap and `out-of-stock` / `cart-full` /
+  `product-not-found` refusals as "Add to cart" — and answers 303 to the cart, with and without
+  JavaScript, where the "Added to your cart" notice is shown (and focused without JavaScript);
+  the existing Check out button completes the order. Both buttons share the one fetcher form as
+  submit buttons named `intent`, are described by the stock status, disabled when sold out and
+  stack under 640 px. Translated in `en` and `pt`; covered in the `desktop-chromium`,
+  `mobile-chromium`, `pt` and `no-js` Playwright projects and by an IBM scan of the cart reached
+  through Buy now.
+
 ### Changed
 
 - Catalogue and search: choosing a "Sort by" option applies the sort at once instead of waiting

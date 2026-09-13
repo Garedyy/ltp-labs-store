@@ -6,6 +6,7 @@ import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { useLocale } from "~/i18n/use-locale";
 import { ERROR_MESSAGE_KEYS, type ErrorCode, type NoticeCode } from "~/lib/error-codes";
+import { type AddIntent, isAddIntent } from "~/services/cart/intents";
 
 export type AddResult =
   | { ok: true; notice: NoticeCode; cartCount: number; max?: number }
@@ -18,17 +19,27 @@ type AddToCartFormProps = {
   flash?: AddResult;
 };
 
-// One fetcher per form: the user stays on the page; submits are ignored while one is pending.
+// One fetcher for both buttons: the user stays on the page (Add to cart) or follows the action's
+// redirect to the cart (Buy now); submits are ignored while one is pending.
 export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps) {
   const { t } = useTranslation();
   const lang = useLocale();
   const fetcher = useFetcher<AddResult>();
-  const button = useRef<HTMLButtonElement>(null);
+  const buttons = useRef<Record<AddIntent, HTMLButtonElement | null>>({
+    add: null,
+    "buy-now": null,
+  });
+  const submitted = useRef<AddIntent>("add");
   const pending = fetcher.state !== "idle";
+  const pendingIntent = fetcher.formData?.get("intent");
   const result = fetcher.data ?? flash;
 
   useEffect(() => {
-    if (fetcher.state === "idle" && fetcher.data) button.current?.focus();
+    if (isAddIntent(pendingIntent)) submitted.current = pendingIntent;
+  }, [pendingIntent]);
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data) buttons.current[submitted.current]?.focus();
   }, [fetcher.state, fetcher.data]);
 
   return (
@@ -41,22 +52,43 @@ export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps)
         if (pending) event.preventDefault();
       }}
     >
-      <input type="hidden" name="intent" value="add" />
       <input type="hidden" name="productId" value={productId} />
       <noscript>
         <input type="hidden" name="noJs" value="1" />
       </noscript>
-      <Button
-        ref={button}
-        type="submit"
-        disabled={!inStock}
-        pending={pending}
-        pendingLabel={t("product.adding")}
-        aria-describedby="stock-status"
-        className="w-full"
-      >
-        {t("product.addToCart")}
-      </Button>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Button
+          ref={(element) => {
+            buttons.current.add = element;
+          }}
+          type="submit"
+          name="intent"
+          value="add"
+          disabled={!inStock}
+          pending={pendingIntent === "add"}
+          pendingLabel={t("product.adding")}
+          aria-describedby="stock-status"
+          className="w-full"
+        >
+          {t("product.addToCart")}
+        </Button>
+        <Button
+          ref={(element) => {
+            buttons.current["buy-now"] = element;
+          }}
+          type="submit"
+          name="intent"
+          value="buy-now"
+          variant="secondary"
+          disabled={!inStock}
+          pending={pendingIntent === "buy-now"}
+          pendingLabel={t("product.buyingNow")}
+          aria-describedby="stock-status"
+          className="w-full"
+        >
+          {t("product.buyNow")}
+        </Button>
+      </div>
       {result?.ok && (
         // Without JavaScript the page reloads: autoFocus is the only way to hand focus to the
         // outcome (plan §3.6); with JavaScript the effect above focuses the button instead.

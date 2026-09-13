@@ -75,6 +75,14 @@ test.describe("accessibility of states", () => {
     await expectAccessible(page, `state-confirmation-${testInfo.project.name}`);
   });
 
+  test("cart reached through Buy now", async ({ page }, testInfo) => {
+    await page.goto("/en/products/1");
+    await page.getByRole("button", { name: "Buy now" }).click();
+    await expect(page).toHaveURL(/\/en\/cart$/);
+    await expect(page.getByRole("status").filter({ hasText: "Added to your cart" })).toBeVisible();
+    await expectAccessible(page, `state-cart-buy-now-${testInfo.project.name}`, cartReview);
+  });
+
   test("open language panel", async ({ page }, testInfo) => {
     await page.goto("/en");
     await page

@@ -56,6 +56,24 @@ test("adding to the cart twice without JavaScript redirects back and a refresh d
   await expect(page.getByRole("status").filter({ hasText: "You now have" })).toHaveCount(0);
 });
 
+test("Buy now without JavaScript lands on the cart with the notice focused and no re-add on refresh", async ({
+  page,
+}) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Buy now" }).click();
+  await expect(page).toHaveURL(/\/en\/cart$/);
+  await expect(
+    page.getByRole("status").filter({ hasText: "Added to your cart. You now have 1 item." }),
+  ).toBeFocused();
+  await expect(
+    page.getByRole("list", { name: "Items" }).getByRole("link", { name: /Essence Mascara/ }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Added to your cart" })).toHaveCount(0);
+});
+
 test("the cart works without JavaScript: stepper, promo, remove, checkout", async ({ page }) => {
   await page.goto("/en/products/1");
   await page.getByRole("button", { name: "Add to cart" }).click();

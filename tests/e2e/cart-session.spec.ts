@@ -46,6 +46,47 @@ test.describe("add to cart", () => {
     await expect(page.getByRole("link", { name: "Cart, 8 items" })).toBeVisible();
   });
 
+  test("Buy now adds the product and lands on the cart with the line and a notice", async ({
+    page,
+  }) => {
+    await page.goto("/en/products/1");
+    await page.getByRole("button", { name: "Buy now" }).click();
+    await expect(page).toHaveURL(/\/en\/cart$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart");
+    await expect(
+      page.getByRole("status").filter({ hasText: "Added to your cart. You now have 1 item." }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("list", { name: "Items" }).getByRole("link", { name: /Essence Mascara/ }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\/products\/1$/);
+    await page.getByRole("button", { name: "Buy now" }).click();
+    await expect(page).toHaveURL(/\/en\/cart$/);
+    await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("2");
+    await expect(page.getByRole("link", { name: "Cart, 2 items" })).toBeVisible();
+  });
+
+  test("Buy now at the stock cap still lands on the cart with the capped notice", async ({
+    page,
+  }) => {
+    await page.goto("/en/products/16");
+    const button = page.getByRole("button", { name: "Add to cart" });
+    for (let i = 0; i < 8; i += 1) {
+      await button.click();
+      await expect(
+        page.getByRole("status").filter({ hasText: `You now have ${i + 1} item` }),
+      ).toBeVisible();
+    }
+    await page.getByRole("button", { name: "Buy now" }).click();
+    await expect(page).toHaveURL(/\/en\/cart$/);
+    await expect(
+      page.getByRole("status").filter({ hasText: "Quantity limited to available stock (8)." }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Cart, 8 items" })).toBeVisible();
+  });
+
   test("a tampered cookie reads as an empty cart without a server error", async ({
     page,
     context,
@@ -73,5 +114,30 @@ test.describe("add to cart", () => {
     expect(missing.status()).toBe(400);
     const bad = await page.request.post("/en/products/1", { form: { intent: "increment" } });
     expect(bad.status()).toBe(400);
+    const buyOut = await page.request.post("/en/products/117", {
+      form: { intent: "buy-now", productId: "117" },
+      maxRedirects: 0,
+    });
+    expect(buyOut.status()).toBe(400);
+    const buyMissing = await page.request.post("/en/products/9999", {
+      form: { intent: "buy-now", productId: "9999" },
+      maxRedirects: 0,
+    });
+    expect(buyMissing.status()).toBe(400);
+  });
+
+  test("a refused Buy now with JavaScript shows the error and keeps the focus on Buy now", async ({
+    page,
+  }) => {
+    // Product 117 is sold out, so its buttons are disabled: re-enable Buy now to stand in for a
+    // stock that ran out after the page was rendered. The action must refuse, not navigate.
+    await page.goto("/en/products/117");
+    const buyNow = page.getByRole("button", { name: "Buy now" });
+    await buyNow.evaluate((button) => button.removeAttribute("disabled"));
+    await buyNow.click();
+    await expect(page.getByRole("alert")).toContainText("out of stock");
+    await expect(page).toHaveURL(/\/en\/products\/117$/);
+    await expect(buyNow).toBeFocused();
+    await expect(page.getByRole("link", { name: "Cart, empty" })).toBeVisible();
   });
 });
