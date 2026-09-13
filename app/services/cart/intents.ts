@@ -5,7 +5,6 @@ export type CartIntent =
   | { type: "remove"; productId: number }
   | { type: "apply-promo"; code: string }
   | { type: "remove-promo" }
-  | { type: "checkout"; payment: PaymentMethod }
   | { type: "invalid" };
 
 function productIdFrom(form: FormData): number | null {
@@ -32,10 +31,6 @@ export function parseCartIntent(form: FormData): CartIntent {
       return { type: "apply-promo", code: String(form.get("code") ?? "") };
     case "remove-promo":
       return { type: "remove-promo" };
-    case "checkout": {
-      const payment = form.get("payment");
-      return { type: "checkout", payment: payment === "paypal" ? "paypal" : "card" };
-    }
     default:
       return { type: "invalid" };
   }
@@ -46,6 +41,11 @@ export type AddIntent = "add" | "buy-now";
 
 export function isAddIntent(value: unknown): value is AddIntent {
   return value === "add" || value === "buy-now";
+}
+
+// The payment page's method, from the URL (preselection) or the submitted radio; card by default.
+export function parsePaymentMethod(value: unknown): PaymentMethod {
+  return value === "paypal" ? "paypal" : "card";
 }
 
 export function isNoJs(form: FormData): boolean {

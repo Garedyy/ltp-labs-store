@@ -6,6 +6,7 @@ import { VisuallyHidden } from "./visually-hidden";
 
 export type FieldIds = {
   inputId: string;
+  labelId: string;
   hintId: string;
   errorId: string;
   describedBy: string | undefined;
@@ -16,7 +17,7 @@ export function useFieldIds(name: string, { hint, error }: { hint?: boolean; err
   const hintId = `${base}-hint`;
   const errorId = `${base}-error`;
   const describedBy = [error && errorId, hint && hintId].filter(Boolean).join(" ") || undefined;
-  return { inputId: `${base}-input`, hintId, errorId, describedBy };
+  return { inputId: `${base}-input`, labelId: `${base}-label`, hintId, errorId, describedBy };
 }
 
 type FieldProps = {
@@ -44,7 +45,11 @@ export function Field({
   const ids = useFieldIds(name, { hint: Boolean(hint), error: Boolean(error) });
   return (
     <div className={cx("flex flex-col gap-1", className)}>
-      <label htmlFor={ids.inputId} className={cx("font-medium", hideLabel && "sr-only")}>
+      <label
+        id={ids.labelId}
+        htmlFor={ids.inputId}
+        className={cx("font-medium", hideLabel && "sr-only")}
+      >
         {label}
       </label>
       {hint && (

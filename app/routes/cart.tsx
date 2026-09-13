@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { data, href, redirect, type ShouldRevalidateFunctionArgs, useFetchers } from "react-router";
+import { data, useFetchers } from "react-router";
 
 import { CartLineItem } from "~/components/cart/cart-line-item";
-import { CartNotice } from "~/components/cart/cart-notice";
 import { CartSummary } from "~/components/cart/cart-summary";
 import type { CartActionResult } from "~/components/cart/cart-types";
 import { CheckoutActions } from "~/components/cart/checkout-actions";
 import { EmptyCart } from "~/components/cart/empty-cart";
 import { PromoCodeForm } from "~/components/cart/promo-code-form";
+import { FormNotice } from "~/components/forms/form-notice";
 import { useAnnounce } from "~/components/layout/announcer";
 import { Alert } from "~/components/ui/alert";
 import { isLocale } from "~/i18n/config";
-import { formatPrice } from "~/i18n/format.server";
 import { ERROR_MESSAGE_KEYS } from "~/lib/error-codes";
 import { badRequest, notFound, redirectBack, toRouteError } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
@@ -122,26 +121,6 @@ async function act({ context, request, url }: Route.ActionArgs) {
       session.unset("promoCode");
       result = { ok: true, notice: "promo-removed" };
       break;
-    case "checkout": {
-      const loaded = await loadCartView(request, locale);
-      if (loaded.view.lines.length === 0) {
-        result = { ok: false, error: "empty-cart" };
-        break;
-      }
-      session.set("lastOrder", {
-        number: `LTP-${Date.now().toString(36).toUpperCase()}`,
-        method: intent.payment,
-        totalCents: loaded.view.totals.totalCents,
-        itemCount: loaded.view.cartCount,
-        totalFormatted: formatPrice(loaded.view.totals.totalCents, locale),
-      });
-      session.unset("cart");
-      session.unset("promoCode");
-      throw redirect(href("/:lang/checkout/confirmation", { lang: locale }), {
-        status: 303,
-        headers: { "Set-Cookie": await commitCartSession(session) },
-      });
-    }
     default:
       result = { ok: false, error: "invalid-intent" };
   }
@@ -156,18 +135,6 @@ async function act({ context, request, url }: Route.ActionArgs) {
   });
 }
 
-// React Router skips the reload after a 4xx action. A refused checkout means the cookie no
-// longer matches the page (emptied elsewhere), so the cart is reloaded; the other refusals
-// (invalid quantity, unknown code) keep the default.
-export function shouldRevalidate({
-  formData,
-  actionStatus,
-  defaultShouldRevalidate,
-}: ShouldRevalidateFunctionArgs) {
-  if (formData?.get("intent") === "checkout" && actionStatus === 400) return true;
-  return defaultShouldRevalidate;
-}
-
 export function meta({ loaderData, matches }: Route.MetaArgs) {
   return pageMeta({
     title: loaderData.title,
@@ -175,6 +142,9 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
     brand: matches[0].loaderData.brand,
   });
 }
+
+// Arriving from the payment page with a refusal, the route announcer focuses the alert, not main.
+export const handle = { initialFocus: "#checkout-refused" };
 
 type RemovalTarget = { removed: number; next?: number; previous?: number };
 
@@ -226,9 +196,9 @@ function useCartResults(onResult: (result: CartActionResult) => void) {
   }, [fetchers, onResult]);
 }
 
-// Checkout is a navigation form, so its refusal arrives as actionData (JS) or as the flash (no JS).
-// The Checkout button that held the focus is gone with the cart, so the alert takes it: through
-// `autoFocus` on the no-JS document, through the effect once mounted by JS.
+// The payment page sends an emptied cart back here with a flashed `empty-cart`. The control that
+// held the focus is gone with the page, so the alert takes it: through `autoFocus` on the no-JS
+// document, through the effect once mounted by JS.
 function CheckoutRefused({ result }: { result?: CartActionResult }) {
   const { t } = useTranslation();
   const alert = useRef<HTMLDivElement>(null);
@@ -240,6 +210,7 @@ function CheckoutRefused({ result }: { result?: CartActionResult }) {
   return (
     <Alert
       ref={alert}
+      id="checkout-refused"
       prefix={t("common.errorPrefix")}
       tabIndex={-1}
       // eslint-disable-next-line jsx-a11y/no-autofocus -- no-JS render hands focus to the error
@@ -250,7 +221,7 @@ function CheckoutRefused({ result }: { result?: CartActionResult }) {
   );
 }
 
-export default function Cart({ loaderData, actionData }: Route.ComponentProps) {
+export default function Cart({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
   const announce = useAnnounce();
   const { view, flash, reconciliation } = loaderData;
@@ -271,13 +242,12 @@ export default function Cart({ loaderData, actionData }: Route.ComponentProps) {
   useCartResults(onResult);
 
   const notice = flash ?? reconciliation;
-  const checkout = actionData ?? flash;
 
   if (view.lines.length === 0) {
     return (
       <>
-        {notice?.ok && <CartNotice>{noticeText(t, notice)}</CartNotice>}
-        <CheckoutRefused result={checkout} />
+        {notice?.ok && <FormNotice>{noticeText(t, notice)}</FormNotice>}
+        <CheckoutRefused result={flash} />
         <EmptyCart />
       </>
     );
@@ -292,8 +262,8 @@ export default function Cart({ loaderData, actionData }: Route.ComponentProps) {
         <h1 id="cart-heading" tabIndex={-1} className="text-h4 font-medium">
           {t("cart.title")}
         </h1>
-        {notice?.ok && <CartNotice>{noticeText(t, notice)}</CartNotice>}
-        <CheckoutRefused result={checkout} />
+        {notice?.ok && <FormNotice>{noticeText(t, notice)}</FormNotice>}
+        <CheckoutRefused result={flash} />
         <ul aria-label={t("cart.items.heading")} className="divide-y divide-border">
           {view.lines.map((line) => (
             <CartLineItem key={line.productId} item={line} flash={lineFlash(line.productId)} />

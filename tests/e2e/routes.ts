@@ -15,11 +15,14 @@ export const ROUTES: readonly string[] = [
   "/search?q=phone",
   "/search?q=zzzzzz",
   "/cart",
+  "/checkout?product=1",
   "/checkout/confirmation",
   "/about",
   "/contact",
+  "/contact?sent=1",
   "/blog",
   "/account",
+  "/account?demo=1",
   "/nowhere",
 ];
 

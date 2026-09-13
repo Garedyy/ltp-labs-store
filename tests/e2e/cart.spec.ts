@@ -29,7 +29,7 @@ test.describe("cart page", () => {
       "href",
       "/en/shop",
     );
-    await expect(page.getByRole("button", { name: "Check out" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Check out" })).toHaveCount(0);
     await expect(page).toHaveTitle("Your cart — The Online Store");
     await page.goto("/en/checkout/confirmation");
     await expect(page).toHaveURL(/\/en\/cart$/);
@@ -150,53 +150,28 @@ test.describe("cart page", () => {
     await expect(row(page, /^Total$/)).toHaveText("$9.99");
   });
 
-  test("checkout leads to a confirmation that survives reload and language switch", async ({
-    page,
-  }) => {
+  test("Check out and PayPal are links to the payment page", async ({ page }) => {
     await addProduct(page, 1, 1, 1);
     await page.goto("/en/cart");
-    await page.getByRole("button", { name: "Or pay with PayPal" }).click();
-    await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      /Thank you — order LTP-[A-Z0-9]+/,
+    await expect(page.getByRole("link", { name: "Check out" })).toHaveAttribute(
+      "href",
+      "/en/checkout",
     );
-    await expect(page.getByRole("definition").filter({ hasText: "PayPal" })).toBeVisible();
-    await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Cart, empty" })).toBeVisible();
-    await page.reload();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
-    await page.goto("/pt/checkout/confirmation");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Obrigado — encomenda LTP-/);
+    await expect(page.getByRole("link", { name: "Or pay with PayPal" })).toHaveAttribute(
+      "href",
+      "/en/checkout?method=paypal",
+    );
+    await expect(page.getByRole("link", { name: "Check out" })).toHaveAccessibleDescription(
+      "This is a demo store: no payment is taken.",
+    );
   });
 
-  test("checking out a cart emptied elsewhere shows the empty-cart error", async ({
-    page,
-    context,
-  }) => {
-    await addProduct(page, 1, 1, 1);
-    await page.goto("/en/cart");
-    await context.clearCookies();
-    await page.getByRole("button", { name: "Check out" }).click();
-    const alert = page.getByRole("alert").filter({ hasText: "Your cart is empty" });
-    await expect(alert).toBeFocused();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart is empty");
-    await expect(page.getByRole("link", { name: "Cart, empty" })).toBeVisible();
-  });
-
-  test("the checkout action refuses an empty cart with and without JavaScript", async ({
-    page,
-  }) => {
+  test("the cart action no longer owns checkout", async ({ page }) => {
     const refused = await page.request.post("/en/cart", {
       form: { intent: "checkout", payment: "card" },
-    });
-    expect(refused.status()).toBe(400);
-    expect(await refused.text()).toContain("Your cart is empty");
-    const redirected = await page.request.post("/en/cart", {
-      form: { intent: "checkout", payment: "card", noJs: "1" },
       maxRedirects: 0,
     });
-    expect(redirected.status()).toBe(303);
-    expect(redirected.headers()["location"]).toBe("/en/cart");
+    expect(refused.status()).toBe(400);
   });
 
   test("Portuguese cart", async ({ page }) => {
@@ -204,6 +179,9 @@ test.describe("cart page", () => {
     await page.goto("/pt/cart");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("O seu carrinho");
     await expect(row(page, /^Envio$/)).toHaveText("20,00 US$");
-    await expect(page.getByRole("button", { name: "Finalizar compra" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Finalizar compra" })).toHaveAttribute(
+      "href",
+      "/pt/checkout",
+    );
   });
 });

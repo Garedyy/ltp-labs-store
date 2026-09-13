@@ -55,6 +55,26 @@ export default {
     title: "O seu carrinho está vazio",
     description: "Adicione produtos antes de finalizar a compra.",
   },
+  fieldRequired: {
+    title: "Este campo é obrigatório",
+    description: "Preencha-o antes de continuar.",
+  },
+  emailInvalid: {
+    title: "Introduza um endereço de e-mail válido",
+    description: "Use a forma nome@exemplo.com.",
+  },
+  cardNumberInvalid: {
+    title: "Introduza um número de cartão válido",
+    description: "13 a 19 dígitos. Nesta demonstração, 4242 4242 4242 4242 funciona.",
+  },
+  cardExpiryInvalid: {
+    title: "Introduza uma data de validade válida",
+    description: "Use a forma MM/AA com um mês que ainda não passou.",
+  },
+  cardCodeInvalid: {
+    title: "Introduza um código de segurança válido",
+    description: "Os 3 ou 4 dígitos impressos no cartão.",
+  },
   links: {
     home: "Ir para a loja",
     search: "Pesquisar produtos",

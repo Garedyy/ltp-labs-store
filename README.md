@@ -127,8 +127,10 @@ Docs/                                brief, wireframes, API contract, plan, prog
 - Images come in a single size from the DummyJSON CDN (`Cache-Control: no-store`).
 - The cookie cart is last-write-wins across tabs and racing requests; `minimumOrderQuantity` is
   ignored; dimensions are assumed in cm and weight in kg (units are undocumented).
-- Checkout is a mock: no payment, nothing shipped; "Account", "About", "Contact" and "Blog" are
-  translated "coming soon" pages.
+- Checkout is a mock: the payment page (`/checkout`) checks the format of the card details and
+  drops them — nothing is charged, stored or shipped. "About", "Contact", "Blog" and "Account"
+  carry invented content written for the demo (fictional team, address and posts); the contact
+  and sign-in forms are validated server-side but send and store nothing.
 - Cookies: `lng` (language choice) and `__cart` (cart) are strictly necessary, so there is no
   banner.
 

@@ -10,7 +10,6 @@ import { DiscountBadge } from "~/components/ui/discount-badge";
 import { Price } from "~/components/ui/price";
 import { Rating } from "~/components/ui/rating";
 import { isLocale } from "~/i18n/config";
-import { formatPrice } from "~/i18n/format.server";
 import { useLocale } from "~/i18n/use-locale";
 import { notFound, redirectBack, toRouteError } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
@@ -19,7 +18,6 @@ import { getInstance, getLocale } from "~/middleware/i18next";
 import { addLine, countItems, MAX_QUANTITY, sanitiseLines } from "~/services/cart/cart";
 import { isAddIntent, isNoJs } from "~/services/cart/intents";
 import { commitCartSession, getCartSession } from "~/services/cart/session.server";
-import { computeTotals, toCents } from "~/services/cart/totals";
 import { getProduct } from "~/services/dummyjson/products.server";
 import type { Route } from "./+types/product";
 
@@ -52,9 +50,10 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
   );
 }
 
-// The product route owns intent=add and intent=buy-now; the cart route owns every other intent.
-// Buy now is a one-unit order of this product alone (D-12): the cart is neither included nor
-// touched, and the action answers 303 to the confirmation with or without JavaScript.
+// The product route owns intent=add and intent=buy-now; the cart route owns the cart's intents and
+// the checkout route owns place-order. Buy now is a one-unit purchase of this product alone (D-12,
+// D-15): the cart is neither included nor touched, and the action answers 303 to the payment page
+// in product mode with or without JavaScript.
 export async function action({ params, context, request, url }: Route.ActionArgs) {
   const id = productIdFrom(params);
   const locale = getLocale(context);
@@ -74,15 +73,7 @@ export async function action({ params, context, request, url }: Route.ActionArgs
   if (!product) result = { ok: false, error: "product-not-found" };
   else if (product.stock <= 0) result = { ok: false, error: "out-of-stock" };
   else if (intent === "buy-now") {
-    const totals = computeTotals([{ unitCents: toCents(product.price), quantity: 1 }]);
-    session.set("lastOrder", {
-      number: `LTP-${Date.now().toString(36).toUpperCase()}`,
-      method: "card",
-      totalCents: totals.totalCents,
-      itemCount: 1,
-      totalFormatted: formatPrice(totals.totalCents, locale),
-    });
-    throw redirect(href("/:lang/checkout/confirmation", { lang: locale }), {
+    throw redirect(`${href("/:lang/checkout", { lang: locale })}?product=${id}`, {
       status: 303,
       headers: { "Set-Cookie": await commitCartSession(session) },
     });
