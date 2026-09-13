@@ -146,9 +146,28 @@ icon sits next to text.
   line `grid grid-cols-[5rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr_auto]`, thumbnail `size-20 sm:size-28`,
   stepper `inline-flex rounded-lg border` with 44 px buttons; summary card
   `rounded-2xl border border-border p-6 lg:sticky lg:top-28` (static under 30 rem height) with the
-  `<dl>`, Check out / PayPal buttons, demo note and promo form. Empty cart and confirmation use the
-  centred `max-w-prose` recipe. Coming-soon, 404 and error
-  pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
+  `<dl>`, Check out / PayPal links (`ButtonLink`, primary / secondary, to the payment page), demo
+  note and promo form. Empty cart and confirmation use the centred `max-w-prose` recipe. 404 and
+  error pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
+- **Payment page** (`/checkout`, D-15): `grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-12`;
+  `<h1 class="text-h4 font-medium">`, `text-body-sm text-fg-muted` intro, then the form as stacked
+  `<fieldset class="flex flex-col gap-4">` blocks with `text-h5 font-medium` legends (contact,
+  shipping address, payment method radios `size-5 accent-primary` in 44 px `<label>` rows, card
+  details); two-column `sm:grid-cols-2` pairs for postal code / city and expiry / code; full-width
+  primary "Pay {{total}}" on phones, `sm:w-auto` above. The summary card is the cart's
+  (`CartSummary` with the "Your order" heading) preceded by `OrderLines`: `size-12` thumbnails,
+  wrapping title, "Qty n", line price.
+- **Content pages** (`about`, `contact`, `blog`, `account`, D-14): `PageHeader` = `text-h3
+md:text-h2` `<h1>` + `text-fg-muted` lead inside `max-w-prose`; sections `flex flex-col gap-4`
+  with `text-h4 font-medium` `<h2>`s, stacked with `gap-10`; two-column `lg:grid-cols-2` for
+  Contact (details `DefinitionList` / form) and Account (sign-in / session + profile); About's
+  values and team as `grid gap-4 sm:grid-cols-3` cards `rounded-2xl border border-border p-6`
+  (team: `size-12` initials disc `bg-surface-muted text-primary`); Blog articles separated by
+  `border-t border-border pt-8`, date in a `<time>`. Forms use `TextField`
+  (`components/forms/`): the promo input's recipe `min-h-11 w-full rounded-lg border
+border-border-strong bg-surface px-3` with `aria-[invalid]:border-error-border`, textarea
+  `rows=5`; the `Select` primitive for the country; `FormNotice` (`rounded-lg border
+border-border bg-surface-muted p-3`, `role="status"`) for a success.
 
 ## Deviations from ltplabs.com and the wireframes
 

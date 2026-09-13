@@ -40,6 +40,23 @@ export default {
   promoRequired: { title: "Enter a promo code", description: "Type a code before applying it." },
   promoInvalid: { title: "Unknown promo code", description: "Check the code and try again." },
   emptyCart: { title: "Your cart is empty", description: "Add products before checking out." },
+  fieldRequired: { title: "This field is required", description: "Fill it in before continuing." },
+  emailInvalid: {
+    title: "Enter a valid email address",
+    description: "Use the form name@example.com.",
+  },
+  cardNumberInvalid: {
+    title: "Enter a valid card number",
+    description: "13 to 19 digits. In this demo, 4242 4242 4242 4242 works.",
+  },
+  cardExpiryInvalid: {
+    title: "Enter a valid expiry date",
+    description: "Use the form MM/YY with a month that has not passed.",
+  },
+  cardCodeInvalid: {
+    title: "Enter a valid security code",
+    description: "The 3 or 4 digits printed on the card.",
+  },
   links: {
     home: "Go to the shop",
     search: "Search products",

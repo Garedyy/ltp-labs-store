@@ -105,17 +105,23 @@ Tailwind CSS v4 (`@tailwindcss/vite`), remix-i18next 8 + i18next 26 + react-i18n
 upper-case 301, unknown 302 to detected locale; loader supplies `cartCount`; renders the shell) →
 pathless `locale-errors.tsx` (shared `ErrorBoundary` so leaf errors render inside the mounted shell)
 → leaves: home (index, trending products; catalogue params → 301 to `shop`), `shop` (catalogue),
-`search`, `products/:productId`, `cart`, `checkout/confirmation`,
-`about|contact|blog|account` (translated "coming soon"), `*` (404). `set-language` is an action-only
+`search`, `products/:productId`, `cart`, `checkout` (payment page: the cart, or one unit of
+`?product=<id>` after Buy now), `checkout/confirmation`, `about`, `contact` (demo form),
+`blog`, `account` (device session + sign-in mock) — content pages with invented copy, D-14 —,
+`*` (404). `set-language` is an action-only
 resource route and the **only** writer of the `lng` cookie. Loaders/actions/middleware read `url`
 from their args, never parse `request.url` (client navigations carry `.data` suffixes).
 
-**Action ownership**: the product route owns `intent=add` and `intent=buy-now` (a one-unit order
-of that product alone, cart untouched, D-12); the cart route owns
-`set-quantity | remove | apply-promo | remove-promo | checkout`. Quantities are always absolute (no
-`+1`/`-1` intents) so rapid clicks are idempotent. Every action clears `lastOrder` and commits the
-session. Error/notice codes are a single union in `app/lib/error-codes.ts` mapped to translation
-keys with `Record<ErrorCode, ParseKeys>` so a missing translation is a compile error.
+**Action ownership**: the product route owns `intent=add` and `intent=buy-now` (303 to the
+payment page in product mode: one unit of that product alone, cart untouched, D-12/D-15); the
+cart route owns `set-quantity | remove | apply-promo | remove-promo`; the checkout route owns
+`place-order` (the only writer of `lastOrder`; card data is format-checked and dropped, never
+stored). `contact` owns `send` and `account` owns `sign-in` (validation only, 303 to `?sent=1` /
+`?demo=1`). Quantities are always absolute (no `+1`/`-1` intents) so rapid clicks are
+idempotent. Every cart action clears `lastOrder` and commits the session. Error/notice codes are
+a single union in `app/lib/error-codes.ts` mapped to translation keys with
+`Record<ErrorCode, ParseKeys>` so a missing translation is a compile error; form refusals are a
+400 with per-field codes and the typed values (`app/lib/forms.ts`, `components/forms/`).
 
 **Data layer** (`app/services/dummyjson/`, server-only): `fetchJson(path, params, guard)` with 8 s
 timeout; 404 → `ApiError(404)`, anything else (429 rate limit, timeout, HTML body, guard failure) →

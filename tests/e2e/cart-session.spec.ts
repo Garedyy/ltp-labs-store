@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { payByCard } from "./helpers";
+
 test.describe("add to cart", () => {
   test("adding twice updates the status, the header badge and keeps focus on the button", async ({
     page,
@@ -54,6 +56,9 @@ test.describe("add to cart", () => {
     await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
     await page.goto("/en/products/1");
     await page.getByRole("button", { name: "Buy now" }).click();
+    await expect(page).toHaveURL(/\/en\/checkout\?product=1$/);
+    await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+    await payByCard(page);
     await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       /Thank you — order LTP-[A-Z0-9]+/,
@@ -80,6 +85,9 @@ test.describe("add to cart", () => {
     await expect(page.getByText("Code FREESHIP applied", { exact: true })).toBeVisible();
     await page.goto("/en/products/1");
     await page.getByRole("button", { name: "Buy now" }).click();
+    await expect(page).toHaveURL(/\/en\/checkout\?product=1$/);
+    await expect(page.getByRole("button", { name: "Pay $29.99" })).toBeVisible();
+    await payByCard(page);
     await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
     await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
     await page.goto("/en/cart");

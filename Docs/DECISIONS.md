@@ -246,6 +246,72 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   the trending list, the two `aria-current`s, the 301 and the Portuguese page. The Lighthouse
   figures in `README.md` were measured on the catalogue when it lived at `/en`.
 
+## D-14 · Content pages replace the "coming soon" placeholders
+
+- **Date / branch**: 2026-09-13 · `fix/30-content-pages` (#30)
+- **Context**: `PROJECT_PLAN.md` §2 decision 6 made About, Contact, Blog and Account translated
+  "coming soon" pages. With the store otherwise complete, four empty pages behind the header and
+  footer links made the demo less credible; the user asked in #30 for real, fictional content.
+- **Decision**: each route renders its own page component (`app/components/pages/`), and
+  `ComingSoon` is deleted. **About**: story, three values and a team of three people who are
+  explicitly fictional (initials avatar, no image). **Contact**: address, e-mail on a `.example`
+  domain, phone and hours — all invented — plus a name / e-mail / message form. **Blog**: three
+  invented posts whose text lives in the locales and whose dates live in `app/content/posts.ts`,
+  formatted in the loader (`formatDate`). **Account**: what the device knows (cart count,
+  `lastOrder` with a link to the confirmation), a fixed demo profile, and a sign-in form. All copy
+  is in `pages.ts` for `en` and `pt` (`satisfies` check); nothing names a real person, address or
+  mailbox. The two forms follow one pattern: a navigation `<Form method="post" noValidate>`,
+  server-side codes per field (`field-required`, `email-invalid`) rendered by `TextField` under
+  the control, a refusal answered **400 with the typed values** (the password is never echoed) and
+  the focus on the first invalid field (`autoFocus` on the no-JS document, `useFocusFirstInvalid`
+  with JavaScript), and a success answered **303 to `?sent=1` / `?demo=1`** — the URL is the state,
+  no session and no flash — where the loader renders a focused `FormNotice` (`role="status"`).
+  Nothing is sent, created or stored, and both forms say so in their copy.
+- **Consequences**: decision 6 of the plan is superseded (the "Coming soon ×4" row of the §3
+  route table with it). The shared building blocks (`lib/forms.ts`, `lib/validation.ts`,
+  `components/forms/`) are also used by the payment page (D-15). `CartNotice` became the generic
+  `FormNotice`, which now focuses itself on mount too: React only honours `autoFocus` on form
+  controls when an element mounts client-side. `Field` exposes a `labelId` so the contact
+  `<textarea>` can carry `aria-labelledby` (the IBM checker does not credit `<label for>` to a
+  textarea). `tests/e2e/routes.ts` scans `/contact?sent=1` and `/account?demo=1`;
+  `pages.spec.ts`, `no-js.spec.ts` and `a11y-states.spec.ts` cover the forms in both modes.
+  `layout.spec.ts` no longer treats `/about` as a short page.
+
+## D-15 · A payment page between the cart and the confirmation
+
+- **Date / branch**: 2026-09-13 · `fix/30-content-pages` (#30)
+- **Context**: the cart's "Check out" / "Or pay with PayPal" buttons (plan §2 decision 8, item 23) and Buy now (D-12) created the order in one click: the store had no payment step at all.
+  The user asked, while #30 was being planned, for a payment page, and chose (a) a checkout step
+  rather than an information page and (b) that Buy now goes through it too.
+- **Decision**: `/:lang/checkout` (`app/routes/checkout.tsx`) is the payment page. **Cart mode**
+  prices the reconciled cart (promo code included); an empty cart is sent back to the cart with
+  `empty-cart` flashed, so the existing focused alert renders there (302 from the loader, 303
+  from the action; the cart route's `handle.initialFocus` targets that alert because the pathname
+  changes). **Product mode** (`?product=<id>`) prices one unit of that product without the promo
+  code — Buy now's semantics, D-12 — and is where the product route's `buy-now` intent now
+  answers 303 instead of writing the order; an unknown product is a 404 and a sold-out one goes
+  back to its page. `?method=paypal` preselects PayPal: the cart's two buttons become two links
+  (`/checkout`, `/checkout?method=paypal`), so the wireframe's summary keeps its two calls to
+  action. The form asks for an e-mail, a shipping address (name, address, postal code, city,
+  country) and the payment method; card fields (name on card, number, MM/YY, security code) are
+  required only for `card` and, with JavaScript, fold away for PayPal. The `place-order` action
+  validates with `lib/validation.ts` (`isEmail`, Luhn `isCardNumber` 13–19 digits, `isCardExpiry`
+  not before the current month, `isCardCode` 3–4 digits) into per-field codes, answers 400 with
+  the typed values (security code never echoed) or writes `lastOrder` exactly as the cart's
+  `checkout` intent used to (`method`, `totalCents`, `itemCount`, `totalFormatted`), clears
+  `cart` and `promoCode` in cart mode only, and answers 303 to the confirmation. **Card data is
+  format-checked and dropped**: never stored in the cookie, never logged, never sent anywhere;
+  `LastOrder` keeps its shape. The cart route loses the `checkout` intent and its
+  `shouldRevalidate` clause; the checkout route is the only writer of `lastOrder`.
+- **Consequences**: plan §2 decision 8 / item 23 ("Check out / PayPal → mocked confirmation")
+  and D-12's "303 to the confirmation" are superseded as stated above; D-12's cart-untouched and
+  no-promo rules hold. `CartSummary` takes an optional `heading` and a `lines` slot
+  (`OrderLines`, a read-only recap; titles wrap rather than truncate so the page reflows at
+  320 px). `intents.ts` gains `parsePaymentMethod`; `load-cart.server.ts` exports `toLineView` and
+  `toTotalsView` for the product mode. `tests/e2e/routes.ts` scans `/checkout?product=1`;
+  `checkout.spec.ts` covers both modes, the refusals and the PayPal path; `cart.spec.ts`,
+  `cart-session.spec.ts`, `no-js.spec.ts` and `a11y-states.spec.ts` follow the new flow.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

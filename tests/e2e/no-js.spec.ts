@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { payByCard } from "./helpers";
+
 import { openLanguagePanel } from "./helpers";
 
 test("the home page and the catalogue render without JavaScript", async ({ page }) => {
@@ -59,7 +61,7 @@ test("adding to the cart twice without JavaScript redirects back and a refresh d
   await expect(page.getByRole("status").filter({ hasText: "You now have" })).toHaveCount(0);
 });
 
-test("Buy now without JavaScript lands on the confirmation and keeps the cart", async ({
+test("Buy now without JavaScript opens the payment page, then the confirmation, and keeps the cart", async ({
   page,
 }) => {
   await page.goto("/en/products/2");
@@ -67,6 +69,10 @@ test("Buy now without JavaScript lands on the confirmation and keeps the cart", 
   await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
   await page.goto("/en/products/1");
   await page.getByRole("button", { name: "Buy now" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\?product=1$/);
+  // Without JavaScript the card fields stay visible whatever the method.
+  await expect(page.getByRole("textbox", { name: "Card number" })).toBeVisible();
+  await payByCard(page);
   await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
   await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
@@ -111,7 +117,17 @@ test("the cart works without JavaScript: stepper, promo, remove, checkout", asyn
   await mascara.press("Enter");
   await expect(page.getByRole("alert")).toContainText("Enter a whole number");
   await expect(mascara).toBeFocused();
-  await page.getByRole("button", { name: "Check out" }).click();
+  await page.getByRole("link", { name: "Check out" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout$/);
+  await payByCard(page, { cardNumber: "1111" });
+  await expect(page).toHaveURL(/\/en\/checkout$/);
+  const cardNumber = page.getByRole("textbox", { name: "Card number" });
+  await expect(cardNumber).toBeFocused();
+  await expect(cardNumber).toHaveAccessibleDescription(/Enter a valid card number/);
+  await expect(page.getByRole("textbox", { name: "Full name" })).toHaveValue("Ana Demo");
+  // The security code is never echoed back by the server.
+  await expect(page.getByRole("textbox", { name: "Security code" })).toHaveValue("");
+  await payByCard(page);
   await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
 });
@@ -124,8 +140,33 @@ test("checking out a cart emptied elsewhere without JavaScript redirects back wi
   await page.getByRole("button", { name: "Add to cart" }).click();
   await page.goto("/en/cart");
   await context.clearCookies();
-  await page.getByRole("button", { name: "Check out" }).click();
+  await page.getByRole("link", { name: "Check out" }).click();
   await expect(page).toHaveURL(/\/en\/cart$/);
   await expect(page.getByRole("alert").filter({ hasText: "Your cart is empty" })).toBeFocused();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart is empty");
+});
+
+test("the contact and sign-in forms work without JavaScript", async ({ page }) => {
+  await page.goto("/en/contact");
+  await page.getByRole("textbox", { name: "Email address" }).fill("nope");
+  await page.getByRole("button", { name: "Send message" }).click();
+  const name = page.getByRole("textbox", { name: "Your name" });
+  await expect(name).toBeFocused();
+  await expect(name).toHaveAccessibleDescription(/This field is required/);
+  await expect(page.getByRole("textbox", { name: "Email address" })).toHaveValue("nope");
+  await name.fill("Ana");
+  await page.getByRole("textbox", { name: "Email address" }).fill("ana@example.com");
+  await page.getByRole("textbox", { name: "Message" }).fill("Hello");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page).toHaveURL(/\/en\/contact\?sent=1$/);
+  await expect(page.getByRole("status").filter({ hasText: "nothing was sent" })).toBeFocused();
+
+  await page.goto("/en/account");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByRole("textbox", { name: "Email address" })).toBeFocused();
+  await page.getByRole("textbox", { name: "Email address" }).fill("ana@example.com");
+  await page.getByLabel("Password").fill("secret");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/en\/account\?demo=1$/);
+  await expect(page.getByRole("status").filter({ hasText: "Sign-in is a demo" })).toBeFocused();
 });

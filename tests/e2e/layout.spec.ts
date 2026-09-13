@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 
 // The shell fills the viewport: on short pages the footer sits on the bottom edge, on long pages
 // it ends with the document (#26).
-const SHORT_ROUTES = ["/en/about", "/en/nowhere", "/en/cart", "/en/checkout/confirmation"];
+const SHORT_ROUTES = ["/en/nowhere", "/en/cart", "/en/checkout/confirmation"];
 
 async function footerBottom(page: Page) {
   await page.evaluate(() => document.fonts.ready);

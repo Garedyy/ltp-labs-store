@@ -72,7 +72,7 @@ test("mobile menu: Escape restores focus; navigating closes it and focuses main"
   await page.keyboard.press("Enter");
   await menuAbout.click();
   await expect(page).toHaveURL(/\/en\/about$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("About");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("About us");
   expect(await activeElementId(page)).toBe("main");
   await expect(page.getByRole("banner").getByRole("link", { name: "Contact" })).toBeHidden();
 });

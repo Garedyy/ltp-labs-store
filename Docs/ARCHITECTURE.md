@@ -26,9 +26,13 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
     shop                   catalogue.tsx         loader: categories → query → products → CatalogueView
     products/:productId    product.tsx           loader: getProduct → ProductView; ?image read client-side
     search                 search.tsx            ?q → searchProducts; empty q renders the prompt without fetching
-    cart                   cart.tsx              loader: loadCartView; action: set-quantity | remove | apply-promo | remove-promo | checkout
+    cart                   cart.tsx              loader: loadCartView; action: set-quantity | remove | apply-promo | remove-promo
+    checkout               checkout.tsx          payment page: loader prices the cart or ?product=<id>; action: place-order
     checkout/confirmation  order-confirmation.tsx lastOrder from the session; never revalidates
-    about|contact|blog|account                   translated "coming soon" pages
+    about                  about.tsx             static content (story, values, fictional team)
+    contact                contact.tsx           details + form; action: send → 400 codes or 303 ?sent=1
+    blog                   blog.tsx              three invented posts, dates formatted in the loader
+    account                account.tsx           device session (cart count, lastOrder), demo profile; action: sign-in → 400 codes or 303 ?demo=1
     *                      not-found.tsx         404 inside the shell
 ```
 
@@ -164,9 +168,10 @@ id above; then run `npm run test:e2e`.
   (unit-tested).
 - **Maths** (`totals.ts`): integer cents; shipping $20 on a non-empty cart; `LTP10` = 10 % of the
   subtotal (rounded); `FREESHIP` = free shipping (`promo-codes.ts`, case-insensitive, trimmed).
-- **Intents** (`intents.ts`): `set-quantity | remove | apply-promo | remove-promo | checkout` for
-  the cart route, all with **absolute** quantities (idempotent under rapid clicks); `add` and
-  `buy-now` (`AddIntent`) belong to the product route. `noJs=1` (a hidden input inside
+- **Intents** (`intents.ts`): `set-quantity | remove | apply-promo | remove-promo` for the cart
+  route, all with **absolute** quantities (idempotent under rapid clicks); `add` and `buy-now`
+  (`AddIntent`) belong to the product route; `place-order` belongs to the checkout route
+  (`parsePaymentMethod` reads `card | paypal`, card by default). `noJs=1` (a hidden input inside
   `<noscript>`) marks a submission made without JavaScript.
 - **`add` / `buy-now` action** (`routes/product.tsx`): unsets `lastOrder`, refuses a missing
   product (`product-not-found`, 400) or a sold-out one (`out-of-stock`). `add` then refuses a
@@ -174,11 +179,11 @@ id above; then run `npm run test:e2e`.
   `min(99, stock)` → `added-capped`); with JavaScript the fetcher receives `data(result)` +
   `Set-Cookie`, without it the result is flashed into the session and the action answers **303
   back to the page** (Post/Redirect/Get), where the loader reads and clears the flash and the
-  status paragraph receives focus. `buy-now` (#28, D-12) is a one-unit order of this product
-  alone: `computeTotals` on one line (price + shipping, no promo code), `lastOrder` written with
-  `method: "card"` and `itemCount: 1`, then **303 to `/:lang/checkout/confirmation`** with or
-  without JavaScript — the fetcher follows the redirect as a navigation; the `cart` and
-  `promoCode` slots are untouched. A refusal takes the `add` paths above. Both buttons live in
+  status paragraph receives focus. `buy-now` (#28, D-12, amended by D-15) is a one-unit purchase
+  of this product alone: after the same checks the action answers **303 to
+  `/:lang/checkout?product=<id>`** with or without JavaScript — the fetcher follows the redirect
+  as a navigation — and the payment page prices that one unit (price + shipping, no promo code);
+  the `cart` and `promoCode` slots are untouched. A refusal takes the `add` paths above. Both buttons live in
   the one `AddToCartForm` fetcher form (landmark `product.buyBlock`) as submit buttons named
   `intent`, so a refusal renders in the same alert and the focus returns to the button that was
   pressed.
@@ -197,14 +202,36 @@ id above; then run `npm run test:e2e`.
   non-integer → `invalid-quantity` 400; clamped to `1..min(99, stock)` → `quantity-clamped`;
   product vanished → line removed + `items-removed`), `remove` (→ `removed{title}`), `apply-promo`
   (`promo-required` / `promo-invalid` / `promo-applied{code}`; a new code replaces the old one),
-  `remove-promo`, `checkout` (`empty-cart` 400, else `lastOrder = { number: "LTP-" + base36 time,
-method, totalCents, itemCount, totalFormatted }`, cart and promo cleared, 303 to the
-  confirmation). With JavaScript every form but checkout is a keyed `fetcher.Form` and the page
-  handles results centrally through `useFetchers` (announcements, removal focus handoff);
-  checkout is a navigation `<Form>`, so its refusal arrives as `actionData`, the route's
-  `shouldRevalidate` reloads the cart (React Router skips the reload after a 4xx by default) and
-  the `empty-cart` alert takes the focus the vanished Checkout button held. Without JavaScript
-  the result is flashed and the action redirects back (303).
+  `remove-promo`. With JavaScript every form is a keyed `fetcher.Form` and the page handles
+  results centrally through `useFetchers` (announcements, removal focus handoff). Without
+  JavaScript the result is flashed and the action redirects back (303). "Check out" and "Or pay
+  with PayPal" are links to the payment page (`/checkout`, `/checkout?method=paypal`); the route
+  exports `handle.initialFocus = "#checkout-refused"` so that, arriving back from the payment
+  page with a flashed `empty-cart`, the route announcer focuses the alert rather than `main`.
+- **Payment page** (`routes/checkout.tsx`, D-15): the loader runs `loadCheckout`
+  (`services/cart/checkout.server.ts`) — cart mode reuses `loadCartView` (reconciliation, promo,
+  totals) and an empty cart is sent **back to the cart** with `empty-cart` flashed
+  (302 from the loader, 303 from the action); product mode (`?product=<id>`, Buy now) prices one
+  unit through `toLineView` / `toTotalsView` without the promo code, answers 404
+  (`product-not-found`) for an unknown product and redirects a sold-out one to its page.
+  `?method=paypal` preselects PayPal. The form (`components/cart/checkout-form.tsx`) is a
+  navigation `<Form>`: e-mail, shipping address (name, address, postal code, city, country
+  `<select>`), payment method radios and card fields (name on card, number, MM/YY, security
+  code). The `place-order` action validates with `lib/validation.ts` (`isEmail`, Luhn
+  `isCardNumber` 13–19 digits, `isCardExpiry` not before the current month, `isCardCode` 3–4
+  digits) into per-field codes (`field-required`, `email-invalid`, `card-*-invalid`); card
+  fields are only required for `card`. A refusal is a **400 with the typed values** re-rendered
+  (`defaultValue`, security code never echoed) and the focus on the first invalid field
+  (`autoFocus` on the no-JS document, `useFocusFirstInvalid` with JavaScript). On success the
+  action writes `lastOrder = { number: "LTP-" + base36 time, method, totalCents, itemCount,
+totalFormatted }`, clears `cart` and `promoCode` in cart mode only, and answers 303 to the
+  confirmation. **Card data is checked for its format and dropped**: it is never stored, logged
+  or sent anywhere.
+- **Content forms** (`routes/contact.tsx`, `routes/account.tsx`): the same pattern without a
+  session — `readFields` / `fieldProps` (`lib/forms.ts`), `TextField` and `FormNotice`
+  (`components/forms/`), errors as a 400 with values kept, success as **303 to `?sent=1` /
+  `?demo=1`** (the URL is the state, no flash) where the loader renders a focused
+  `role="status"`. Nothing is sent, created or stored: both are demo forms and say so.
 - **Confirmation** (`routes/order-confirmation.tsx`): `lastOrder` persists until the next cart
   mutation, so reloads and language switches keep it; missing → redirect to the cart;
   `shouldRevalidate: () => false`.
@@ -213,16 +240,18 @@ method, totalCents, itemCount, totalFormatted }`, cart and promo cleared, 303 to
 
 JavaScript is additive. Every flow is verified with it disabled (Playwright `no-js` project).
 
-| Interaction                         | Without JavaScript                                                                              | With JavaScript                                                           |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Sort                                | GET form, visible Apply                                                                         | `onChange` navigates in place, optimistic selection, Apply shown on focus |
-| Category                            | checkbox + Apply button                                                                         | `onChange` navigates in place, optimistic selection, Apply shown on focus |
-| Page / search                       | links and GET form → full document                                                              | client navigation; page change focuses the results summary                |
-| Gallery thumbnail                   | link `?image=n`                                                                                 | client navigation with `replace`, no refetch                              |
-| Add to cart, stepper, remove, promo | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice | `fetcher.Form`, stay in place, announcements, focus handoff               |
-| Checkout / PayPal                   | POST → 303 to the confirmation; `empty-cart` → 303 back with a flashed, focused alert           | same (full navigation); `empty-cart` → `actionData`, cart reloaded        |
-| Language switch                     | POST form → 303 + cookie                                                                        | same                                                                      |
-| Mobile menu / language panel        | native `<details>`                                                                              | Escape, outside click, focus leaving, close on navigation                 |
+| Interaction                         | Without JavaScript                                                                                                                    | With JavaScript                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Sort                                | GET form, visible Apply                                                                                                               | `onChange` navigates in place, optimistic selection, Apply shown on focus                      |
+| Category                            | checkbox + Apply button                                                                                                               | `onChange` navigates in place, optimistic selection, Apply shown on focus                      |
+| Page / search                       | links and GET form → full document                                                                                                    | client navigation; page change focuses the results summary                                     |
+| Gallery thumbnail                   | link `?image=n`                                                                                                                       | client navigation with `replace`, no refetch                                                   |
+| Add to cart, stepper, remove, promo | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice                                       | `fetcher.Form`, stay in place, announcements, focus handoff                                    |
+| Check out / PayPal (cart)           | links to `/checkout` (`?method=paypal`); empty cart → 302 back with a flashed, focused alert                                          | same (client navigation, `handle.initialFocus` targets the alert)                              |
+| Payment page                        | POST → 400 with values kept and `autofocus` on the first invalid field; success → 303 to the confirmation; card fields always visible | same navigation form; effect focuses the first invalid field; card fields fold away for PayPal |
+| Contact / sign-in forms             | POST → 400 with values kept, `autofocus` on the first invalid field; success → 303 to `?sent=1` / `?demo=1` with a focused status     | same; the status mounts after the navigation and takes the focus                               |
+| Language switch                     | POST form → 303 + cookie                                                                                                              | same                                                                                           |
+| Mobile menu / language panel        | native `<details>`                                                                                                                    | Escape, outside click, focus leaving, close on navigation                                      |
 
 ## Security
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isAddIntent, isNoJs, parseCartIntent } from "./intents";
+import { isAddIntent, isNoJs, parseCartIntent, parsePaymentMethod } from "./intents";
 
 const form = (entries: Record<string, string>) => {
   const data = new FormData();
@@ -33,14 +33,6 @@ describe("parseCartIntent", () => {
       code: " ltp10 ",
     });
     expect(parseCartIntent(form({ intent: "remove-promo" }))).toEqual({ type: "remove-promo" });
-    expect(parseCartIntent(form({ intent: "checkout", payment: "paypal" }))).toEqual({
-      type: "checkout",
-      payment: "paypal",
-    });
-    expect(parseCartIntent(form({ intent: "checkout" }))).toEqual({
-      type: "checkout",
-      payment: "card",
-    });
   });
 
   it("lets a +/- submitter override the typed quantity wherever it sits in the payload", () => {
@@ -52,6 +44,10 @@ describe("parseCartIntent", () => {
 
   it("rejects unknown intents and missing product ids", () => {
     expect(parseCartIntent(form({ intent: "increment" }))).toEqual({ type: "invalid" });
+    // checkout left the cart route for the payment page (D-15).
+    expect(parseCartIntent(form({ intent: "checkout", payment: "card" }))).toEqual({
+      type: "invalid",
+    });
     expect(parseCartIntent(form({ intent: "remove", productId: "abc" }))).toEqual({
       type: "invalid",
     });
@@ -71,5 +67,14 @@ describe("isAddIntent", () => {
     expect(isAddIntent("checkout")).toBe(false);
     expect(isAddIntent(null)).toBe(false);
     expect(isAddIntent(undefined)).toBe(false);
+  });
+});
+
+describe("parsePaymentMethod", () => {
+  it("reads paypal and falls back to card", () => {
+    expect(parsePaymentMethod("paypal")).toBe("paypal");
+    expect(parsePaymentMethod("card")).toBe("card");
+    expect(parsePaymentMethod(null)).toBe("card");
+    expect(parsePaymentMethod("bitcoin")).toBe("card");
   });
 });

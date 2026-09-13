@@ -8,6 +8,25 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- About, Contact, Blog and Account pages with real, invented content in `en` and `pt` (#30,
+  D-14), replacing the "coming soon" placeholders. About tells the story, values and a
+  fictional team; Contact lists an invented address, mailbox and hours and offers a name /
+  e-mail / message form; Blog carries three dated posts; Account shows what the device knows
+  (cart count, last order with a link to its confirmation), a demo profile and a sign-in form.
+  Both forms are validated server-side with per-field codes (`field-required`, `email-invalid`),
+  keep the typed values on a refusal, focus the first invalid field with and without JavaScript,
+  and confirm through the URL (`?sent=1`, `?demo=1`) with a focused status; nothing is sent,
+  created or stored. New shared building blocks: `lib/forms.ts`, `lib/validation.ts`,
+  `components/forms/` (`TextField`, `FormNotice`, `useFocusFirstInvalid`).
+- A payment page at `/:lang/checkout` between the cart and the confirmation (#30, D-15). It
+  recaps the order, asks for an e-mail, a shipping address and the payment method (card fields
+  — name, number, MM/YY, security code — required for card only and folded away for PayPal with
+  JavaScript), validates everything server-side (Luhn, expiry, code) and places the order the way
+  the cart's checkout used to. Card data is format-checked and dropped, never stored or logged.
+  Buy now now lands on this page in product mode (`?product=<id>`): one unit, cart and promo
+  untouched. Covered by `checkout.spec.ts` in the four Playwright projects, IBM scans of every
+  new state and reflow at 320 px.
+
 - Home page split from the shop (#29). `/:lang` is now a landing page listing the eight
   best-rated products (`sortBy=rating&order=desc`, one cached DummyJSON call) with a visible
   "Trending products" heading and a "Browse the shop" link; the catalogue — sort, category filter,
@@ -29,6 +48,13 @@ All notable changes to this project are documented here. The format follows
   scan of the confirmation reached through Buy now.
 
 ### Changed
+
+- Cart: "Check out" and "Or pay with PayPal" are links to the payment page (`?method=paypal`
+  preselects PayPal); the cart action no longer accepts `intent=checkout`. An empty cart reaching
+  the payment page is sent back to the cart with the focused "Your cart is empty" alert (#30,
+  D-15).
+- Product page: Buy now answers 303 to `/checkout?product=<id>` instead of writing the order
+  itself (D-12 amended by D-15).
 
 - Catalogue and search: choosing a "Sort by" option applies the sort at once instead of waiting
   for the Apply button (#25). The select navigates on change like the category checkboxes, keeps
