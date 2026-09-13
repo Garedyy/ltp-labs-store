@@ -410,8 +410,12 @@ totalFormatted }` built by the account loader. `cart.test.ts` covers `sanitiseOr
   and Browse the shop 120 ms apart and on See more; a `card-enter` cascade, 450 ms, one card
   every 80 ms, through `ProductGrid stagger`): it is the marketing surface, the first thing a
   visitor sees, where the skill allows longer, more special entrances; the shop grid stays
-  still. Measured on the built app, the fades do not move the LCP (Chrome dates it at the first
-  painted frame, opacity already above zero): median 132 ms on `/` in both motion states. `RouteAnnouncer` and the focus on `main` are untouched (the animation is on a child of
+  still. A delayed control drops its entrance the moment it receives focus (`focus-visible:` /
+  `focus-within:animate-none`), so the focus ring is never on an invisible element. The fades
+  do not move the LCP: with the README's Lighthouse method (mobile, simulated throttling), the
+  build before this change and this build give the same scores and LCP on `/`, `/en/shop` and
+  `/en/products/1` (94 / 93 / 93, 2.7 / 2.8 / 2.9 s, two runs each); Chrome dates the LCP at
+  the first painted frame, where the opacity is already above zero. `RouteAnnouncer` and the focus on `main` are untouched (the animation is on a child of
   `main`, without fill mode, so no stacking context outlives it). Disclosure panels and the cart
   badge animate their entrance only; exits snap, because a CSS-only exit needs `@starting-style`
   and `transition-behavior: allow-discrete`, still partially supported.

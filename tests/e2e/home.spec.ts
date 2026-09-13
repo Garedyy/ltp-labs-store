@@ -65,6 +65,16 @@ test.describe("home", () => {
       .toBe(0);
     await expect(cards.last()).toBeVisible();
     await expect(main.getByRole("link", { name: "See more" })).toBeVisible();
+    // A control focused before its turn drops its delayed entrance, so it is never an invisible
+    // focus target (checked on a fresh load, while the delays are still running).
+    await page.goto("/en");
+    const seeMore = main.getByRole("link", { name: "See more" });
+    await seeMore.focus();
+    expect(
+      await seeMore.locator("xpath=..").evaluate((el) => getComputedStyle(el).animationName),
+    ).toBe("none");
+    await cards.last().getByRole("link").focus();
+    expect(await cards.last().evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
     await page.emulateMedia({ reducedMotion: "reduce" });
     expect(await hero.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
     expect(

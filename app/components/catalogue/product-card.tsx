@@ -8,7 +8,8 @@ import type { ProductCardView } from "~/lib/catalogue/types";
 type ProductCardProps = {
   product: ProductCardView;
   priority?: "high" | "eager" | "lazy";
-  // Set by a staggered grid (the landing page): the card enters after this delay.
+  // Set by a staggered grid (the landing page): the card enters after this delay. A card that
+  // receives focus before its turn drops the entrance, so the focus ring is never invisible.
   enterDelayMs?: number;
 };
 
@@ -20,7 +21,11 @@ export function ProductCard({ product, priority = "lazy", enterDelayMs }: Produc
 
   return (
     <li
-      className={enterDelayMs === undefined ? undefined : "motion-safe:animate-card-enter"}
+      className={
+        enterDelayMs === undefined
+          ? undefined
+          : "focus-within:animate-none motion-safe:animate-card-enter"
+      }
       style={enterDelayMs === undefined ? undefined : { animationDelay: `${enterDelayMs}ms` }}
     >
       <article className="group relative flex h-full flex-col gap-3 rounded-2xl border border-border p-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus hover:border-border-strong motion-safe:transition-colors motion-safe:duration-200 forced-colors:border">

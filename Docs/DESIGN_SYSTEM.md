@@ -87,7 +87,10 @@ Breakpoints: Tailwind defaults; every grid collapses to one column at 320 px. `h
 
   The landing page is the one place with more motion than the rest (a marketing surface, the
   first thing a visitor sees): its header comes in three beats, its cards cascade and See more
-  follows, the whole sequence about 1.3 s; it replays on every arrival on `/`. Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
+  follows, the whole sequence about 1.3 s; it replays on every arrival on `/`. A delayed element
+  is held invisible until its turn (fill both), so every focusable one - Browse the shop, the
+  cards, See more - drops its entrance the moment it receives focus (`focus-visible:animate-none`,
+  `focus-within:animate-none`): a keyboard user never lands on an invisible control. Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
   exit needs `@starting-style` / `transition-behavior: allow-discrete` on `display`, whose support
   is still partial. Value changes (quantities, totals) are not animated either: they are repeated
   actions and motion would slow them down. The fades do not move the LCP: Chrome dates it at the

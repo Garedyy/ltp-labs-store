@@ -53,6 +53,8 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
   });
 }
 
+// The delayed entrances hold their target invisible until their turn (fill both): a control that
+// receives focus first drops its animation so the focus ring is always visible.
 export default function Home({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
   const lang = useLocale();
@@ -71,13 +73,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <ButtonLink
           to={href("/:lang/shop", { lang })}
           prefetch="intent"
-          className="motion-safe:animate-hero-enter motion-safe:[animation-delay:240ms]"
+          className="focus-visible:animate-none motion-safe:animate-hero-enter motion-safe:[animation-delay:240ms]"
         >
           {t("pages.home.browse")}
         </ButtonLink>
       </div>
       <ProductGrid products={loaderData.products} labelledBy={TRENDING_HEADING} stagger />
-      <div className="flex justify-center motion-safe:animate-hero-enter motion-safe:[animation-delay:900ms]">
+      <div className="flex justify-center focus-within:animate-none motion-safe:animate-hero-enter motion-safe:[animation-delay:900ms]">
         <ButtonLink to={href("/:lang/shop", { lang })} prefetch="intent">
           {t("pages.home.seeMore")}
         </ButtonLink>

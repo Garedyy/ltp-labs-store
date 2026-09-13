@@ -136,15 +136,17 @@ Docs/                                brief, wireframes, API contract, plan, prog
 
 ## Performance
 
-Measured on 2026-09-11 with the production build served by `react-router-serve` against the mock
+Measured on 2026-09-13 with the production build served by `react-router-serve` against the mock
 API (Lighthouse 13.4, mobile emulation, simulated throttling, `npx lighthouse <url>
---form-factor=mobile`):
+--form-factor=mobile`), on the motion-safe transitions branch (#43) and, for comparison, on the
+build before it: both give the same numbers, so the entrance animations do not move the LCP
+(Chrome dates it at the first painted frame, where the opacity is already above zero).
 
-| Page                              | Performance | Accessibility | Best practices | SEO | LCP   | CLS | TBT  |
-| --------------------------------- | ----------- | ------------- | -------------- | --- | ----- | --- | ---- |
-| `/en` (catalogue, now `/en/shop`) | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
-| `/en/products/1`                  | 94          | 100           | 100            | 100 | 2.7 s | 0   | 0 ms |
-| `/en/cart`                        | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
+| Page             | Performance | Accessibility | Best practices | SEO | LCP   | CLS | TBT  |
+| ---------------- | ----------- | ------------- | -------------- | --- | ----- | --- | ---- |
+| `/en` (home)     | 94          | 100           | 100            | 92  | 2.7 s | 0   | 0 ms |
+| `/en/shop`       | 93          | 100           | 100            | 100 | 2.8 s | 0   | 0 ms |
+| `/en/products/1` | 93          | 100           | 100            | 100 | 2.9 s | 0   | 0 ms |
 
 Bundle sizes (gzip, measured on 2026-09-12 by gzipping each chunk in `build/client/assets/`): the
 catalogue page downloads about 146 KB of JavaScript in total. `entry.client` weighs 79 KB (React
@@ -187,3 +189,6 @@ Third-party credits:
 - [Remix Icon](https://remixicon.com) v4.8.0: 15 icon paths, Apache License 2.0
   (`app/components/ui/icon.tsx`). Later Remix Icon releases use a custom licence and are not used.
 - IBM Equal Access [`accessibility-checker`](https://github.com/IBMa/equal-access): Apache-2.0.
+- [`web-animation-design`](https://github.com/vercel-labs/open-agents/tree/main/.agents/skills/web-animation-design):
+  Emil Kowalski's animation rules as a Claude Code skill, MIT, vendored in
+  `.claude/skills/web-animation-design/` (not shipped to the browser).
