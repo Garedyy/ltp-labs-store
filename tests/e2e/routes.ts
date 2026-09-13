@@ -3,8 +3,9 @@ import { localeCodes } from "../../app/i18n/config";
 // Locale-relative paths; every feature PR appends the routes it adds. Scans run per locale.
 export const ROUTES: readonly string[] = [
   "/",
-  "/?category=beauty&sort=price-asc",
-  "/?page=2",
+  "/shop",
+  "/shop?category=beauty&sort=price-asc",
+  "/shop?page=2",
   "/products/1",
   "/products/117",
   "/products/117?image=2",
@@ -14,11 +15,14 @@ export const ROUTES: readonly string[] = [
   "/search?q=phone",
   "/search?q=zzzzzz",
   "/cart",
+  "/checkout?product=1",
   "/checkout/confirmation",
   "/about",
   "/contact",
+  "/contact?sent=1",
   "/blog",
   "/account",
+  "/account?demo=1",
   "/nowhere",
 ];
 

@@ -4,11 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state of the repository
 
-The repo is **pre-scaffold**: only `Docs/` and `.gitignore` exist on `main` (one commit). No app
-code, no `package.json`, no `development` branch yet. Everything below describes the architecture
-that has already been decided and must be implemented — read `Docs/PROJECT_PLAN.md` before doing
-any work; it is the single source of truth (≈1200 lines, fully specified: routes, data layer, i18n,
-a11y, tokens, tooling, git flow, 14 feature branches in order).
+The plan in `Docs/PROJECT_PLAN.md` is **fully executed**: `v1.0.0` was released on `main` on
+2026-09-11 (14 feature PRs squash-merged into `development`, then one release merge commit,
+tagged). `development` now carries unreleased fixes and tooling on top of it. **Read
+`Docs/PROGRESS.md` first** in every session — its "Resume here" block names the current branch,
+the next action and the open questions — then this file and the docs below. The plan remains the
+specification the code must match (routes, data layer, i18n, a11y, tokens, tooling, git flow);
+where implementation diverged, `Docs/DECISIONS.md` records why.
 
 Sources, by authority:
 - `Docs/PROJECT_PLAN.md` — the architecture and execution plan. §2 lists 31 decisions already taken
@@ -32,7 +34,7 @@ Sources, by authority:
 - **No new runtime dependency** beyond: react, react-dom, react-router, @react-router/node,
   @react-router/serve, i18next, react-i18next, remix-i18next, isbot. Dev deps are an approved list
   (plan §2 decision 18); anything else needs the user's approval. No zod (hand-written guards), no
-  icon package (~12 Remix Icon paths inlined as SVG), no CSS beyond Tailwind v4.
+  icon package (18 Remix Icon paths inlined as SVG), no CSS beyond Tailwind v4.
 - Code style: ultra-readable, minimal comments, TypeScript strict with `noUncheckedIndexedAccess`
   and `verbatimModuleSyntax`, `~/*` alias → `app/*`. No hard-coded UI strings in JSX
   (`eslint-plugin-i18next/no-literal-string`). Logical CSS properties only (`ps-`, `pe-`, `start`,
@@ -40,21 +42,22 @@ Sources, by authority:
 
 ## Git workflow
 
-`main` ← `development` ← `feature/<slug>`. Before branch 1, create `development` from `main`;
+`main` ← `development` ← `feature/<slug>`. `development` was created from `main` before branch 1;
 every feature branches from `development`. One PR per feature, **squash-merged** into `development`
 (PR title must be a Conventional Commit — it becomes the squash message); `development → main` via
-merge commit per release, tagged. Hotfixes `fix/<slug>` from `main`, merged into both.
+merge commit per release, tagged. Issue fixes: `fix/<N>-<slug>` from `development` (the
+`fix-issue` skill), same PR flow as a feature. Hotfixes `fix/<slug>` from `main`, merged into both.
 
 Commits: Conventional Commits, English, imperative, ≤ 72-char subject, body says why. Scopes
 (commitlint `scope-enum`, optional): `scaffold, tooling, ui, i18n, shell, api, catalogue, product,
-cart, a11y, docs, ci`.
+cart, a11y, docs, ci, release`. No `Co-Authored-By` or tool attribution trailers (D-10).
 
-The 14 feature branches, in order (plan §4 has the "done when" criteria per branch):
+The 14 feature branches, all merged (plan §4 has the "done when" criteria per branch):
 `project-scaffold` → `tooling` → `design-system` → `i18n-foundation` → `app-shell` →
 `dummyjson-client` → `catalogue` → `search` → `product-detail` → `cart-session` → `cart-page` →
 `a11y-audit` → `performance` → `docs-release`.
 
-## Commands (as specified in the plan; exist once `feature/project-scaffold` and `feature/tooling` land)
+## Commands
 
 Node 24 / npm only (no pnpm/yarn/bun). `.env` is loaded by `react-router dev`/`build` but **not**
 by `react-router-serve` — export `SESSION_SECRET` etc. explicitly for `npm start`, CI and Playwright.
@@ -75,8 +78,9 @@ npm run check:licenses   # scripts/check-licenses.mjs
 npm run check            # typecheck && lint && format:check && check:licenses && test
 ```
 
-Playwright has four Chromium projects: `desktop-chromium`, `mobile-chromium` (Pixel 7), `no-js`
-(`javaScriptEnabled: false`, `testMatch: /no-js/`) and `pt` (`locale: pt-PT`). E2E never hits the
+Playwright has five Chromium projects: `desktop-chromium`, `mobile-chromium` (Pixel 7), `no-js`
+(`javaScriptEnabled: false`, `testMatch: /no-js/`), `pt` (`locale: pt-PT`) and `dark-chromium`
+(`colorScheme: "dark"`, the a11y scan under the system dark preference). E2E never hits the
 real DummyJSON: `tests/e2e/mock-api.server.ts` serves fixtures with fault injection
 (`/products/999` → 500, `/products/998` → 10 s delay, `?fail=1` on categories → 500).
 `tests/e2e/routes.ts` is the route list every feature PR must append to.
@@ -101,16 +105,25 @@ Tailwind CSS v4 (`@tailwindcss/vite`), remix-i18next 8 + i18next 26 + react-i18n
 → `locale-layout.tsx` (middleware validates the locale *before* any loader: asset-like segments 404,
 upper-case 301, unknown 302 to detected locale; loader supplies `cartCount`; renders the shell) →
 pathless `locale-errors.tsx` (shared `ErrorBoundary` so leaf errors render inside the mounted shell)
-→ leaves: catalogue (index), `search`, `products/:productId`, `cart`, `checkout/confirmation`,
-`about|contact|blog|account` (translated "coming soon"), `*` (404). `set-language` is an action-only
-resource route and the **only** writer of the `lng` cookie. Loaders/actions/middleware read `url`
+→ leaves: home (index, trending products; catalogue params → 301 to `shop`), `shop` (catalogue),
+`search`, `products/:productId`, `cart`, `checkout` (payment page: the cart, or one unit of
+`?product=<id>` after Buy now), `checkout/confirmation`, `about`, `contact` (demo form),
+`blog`, `account` (device session + sign-in mock) — content pages with invented copy, D-14 —,
+`*` (404). `set-language` and `set-theme` are action-only
+resource routes and the **only** writers of the `lng` and `theme` cookies (D-20: `theme` is
+`light`/`dark`, "system" deletes it; the root loader renders it as `data-theme` on `<html>`). Loaders/actions/middleware read `url`
 from their args, never parse `request.url` (client navigations carry `.data` suffixes).
 
-**Action ownership**: the product route owns `intent=add`; the cart route owns
-`set-quantity | remove | apply-promo | remove-promo | checkout`. Quantities are always absolute (no
-`+1`/`-1` intents) so rapid clicks are idempotent. Every action clears `lastOrder` and commits the
-session. Error/notice codes are a single union in `app/lib/error-codes.ts` mapped to translation
-keys with `Record<ErrorCode, ParseKeys>` so a missing translation is a compile error.
+**Action ownership**: the product route owns `intent=add` and `intent=buy-now` (303 to the
+payment page in product mode: one unit of that product alone, cart untouched, D-12/D-15); the
+cart route owns `set-quantity | remove | apply-promo | remove-promo`; the checkout route owns
+`place-order` (the only writer of `lastOrder`; card data is format-checked and dropped, never
+stored). `contact` owns `send` and `account` owns `sign-in` (validation only, 303 to `?sent=1` /
+`?demo=1`). Quantities are always absolute (no `+1`/`-1` intents) so rapid clicks are
+idempotent. Every cart action clears `lastOrder` and commits the session. Error/notice codes are
+a single union in `app/lib/error-codes.ts` mapped to translation keys with
+`Record<ErrorCode, ParseKeys>` so a missing translation is a compile error; form refusals are a
+400 with per-field codes and the typed values (`app/lib/forms.ts`, `components/forms/`).
 
 **Data layer** (`app/services/dummyjson/`, server-only): `fetchJson(path, params, guard)` with 8 s
 timeout; 404 → `ApiError(404)`, anything else (429 rate limit, timeout, HTML body, guard failure) →
@@ -136,10 +149,12 @@ loader data carries formatted strings next to numeric values. Client i18next tak
 
 **Design system**: three-layer tokens in `app/styles/tokens.css` — raw ltplabs.com palette →
 semantic roles (`--surface`, `--fg`, `--primary`, `--accent`, `--focus`…) → Tailwind `@theme inline`
-with `--color-*: initial`, so components only ever use semantic colour utilities and a future
-dark/high-contrast theme is one CSS block. Font is self-hosted variable Manrope (OFL) — weights
-400/500/600, bold = 500 never 700. Two-tone focus ring (orange outer + medium-blue inner) because
-orange alone is 2.9:1.
+with `--color-*: initial`, so components only ever use semantic colour utilities; the dark theme
+(#47) is two identical token blocks (`data-theme="dark"` and `prefers-color-scheme` without a
+cookie) kept in sync by `contrast.test.ts`, never a per-component `dark:` class. Font is
+self-hosted variable Manrope (OFL) — weights 400/500/600, bold = 500 never 700. Two-tone focus
+ring (orange outer + medium-blue inner, dark inner in the dark theme) because orange alone is
+2.9:1.
 
 **Accessibility (WCAG 2.2 AA, with and without JS)** is architectural, not a final pass: named
 landmarks, one visible `<h1>` per page, skip link first in `<body>`, `noValidate` forms with
@@ -156,6 +171,9 @@ route-aware ones); loaders/actions are covered by Playwright e2e, not unit tests
 ## Documentation set to maintain
 
 `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `.github/PULL_REQUEST_TEMPLATE.md`, and in `Docs/`:
+`PROGRESS.md` (resume point, session log, TO VERIFY register — updated at every milestone),
 `ARCHITECTURE.md`, `I18N.md` (with the EN↔target-language glossary), `ACCESSIBILITY.md` (with the
-manual audit log), `DESIGN_SYSTEM.md`, `DECISIONS.md` (ADR-lite; every TO VERIFY resolved here).
-Plan §5 gives the outline of each. Update the relevant doc in the same PR as the change.
+announcements/focus table, the manual-review rules and the manual audit log), `DESIGN_SYSTEM.md`,
+`DECISIONS.md` (ADR-lite; every TO VERIFY resolved here). Plan §5 gives the outline of each.
+Update the relevant doc in the same PR as the change — the Definition of Done in
+`CONTRIBUTING.md` requires it.

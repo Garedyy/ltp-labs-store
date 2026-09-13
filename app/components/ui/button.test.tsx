@@ -17,11 +17,11 @@ describe("Button", () => {
 
   it("stays enabled while pending and announces busy with the pending label", () => {
     render(
-      <Button type="submit" pending pendingLabel="Adding…">
+      <Button type="submit" pending pendingLabel="Adding...">
         Add to cart
       </Button>,
     );
-    const button = screen.getByRole("button", { name: "Adding…" });
+    const button = screen.getByRole("button", { name: "Adding..." });
     expect(button).toBeEnabled();
     expect(button).toHaveAttribute("aria-busy", "true");
   });
@@ -29,6 +29,25 @@ describe("Button", () => {
   it("supports a real disabled state", () => {
     render(<Button disabled>Add to cart</Button>);
     expect(screen.getByRole("button", { name: "Add to cart" })).toBeDisabled();
+  });
+
+  it("keeps the 44 px target in both sizes", () => {
+    render(
+      <>
+        <Button>Medium</Button>
+        <Button size="sm">Small</Button>
+      </>,
+    );
+    expect(screen.getByRole("button", { name: "Medium" })).toHaveClass("min-h-11");
+    expect(screen.getByRole("button", { name: "Small" })).toHaveClass("min-h-11");
+  });
+
+  it("gives press feedback and gates its transition behind motion-safe", () => {
+    render(<Button>Press</Button>);
+    const button = screen.getByRole("button", { name: "Press" });
+    expect(button).toHaveClass("active:scale-[0.97]");
+    expect(button).toHaveClass("motion-safe:transition");
+    expect(button.className).not.toMatch(/(^|\s)transition/);
   });
 });
 

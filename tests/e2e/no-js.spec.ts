@@ -1,11 +1,30 @@
 import { expect, test } from "@playwright/test";
 
-import { openLanguagePanel } from "./helpers";
+import { openLanguagePanel, payByCard, precedes } from "./helpers";
 
-test("the catalogue renders without JavaScript", async ({ page }) => {
-  const response = await page.goto("/en");
-  expect(response?.status()).toBe(200);
+test("the home page and the catalogue render without JavaScript", async ({ page }) => {
+  const home = await page.goto("/en");
+  expect(home?.status()).toBe(200);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trending products");
+  const browse = page.getByRole("main").getByRole("link", { name: "Browse the shop" });
+  const seeMore = page.getByRole("main").getByRole("link", { name: "See more" });
+  const grid = page.getByRole("list", { name: "Trending products" });
+  expect(await precedes(browse, grid)).toBe(true);
+  expect(await precedes(grid, seeMore)).toBe(true);
+  const shop = await page.goto("/en/shop");
+  expect(shop?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
+});
+
+// The suite runs under reduced motion (playwright.config.ts); this test opts back in and only
+// reads a computed style, so no action can hang on the animation.
+test("the page enters with the page-enter keyframe without JavaScript", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/en");
+  const enter = page.locator("main [data-page]");
+  expect(await enter.evaluate((el) => getComputedStyle(el).animationName)).toBe("page-enter");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(await enter.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
 });
 
 test("the language switcher works without JavaScript", async ({ page }) => {
@@ -16,22 +35,59 @@ test("the language switcher works without JavaScript", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
 });
 
+test("the theme switcher works without JavaScript", async ({ page }) => {
+  await page.goto("/en/nowhere?x=1");
+  await page
+    .locator("summary", { hasText: /Change theme/ })
+    .filter({ visible: true })
+    .click();
+  await page.getByRole("button", { name: "Dark" }).click();
+  await expect(page).toHaveURL(/\/en\/nowhere\?x=1$/);
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator("details[open]")).toHaveCount(0);
+  expect(
+    await page.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor),
+  ).toBe("rgb(16, 19, 28)");
+});
+
 test("sorting and filtering work without JavaScript through the GET forms", async ({ page }) => {
-  await page.goto("/en");
+  await page.goto("/en/shop");
   await page.getByRole("combobox", { name: "Sort by" }).selectOption("price-desc");
   await page
     .locator("form", { has: page.getByRole("combobox") })
     .getByRole("button", { name: "Apply" })
     .click();
-  await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+  await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
   await page.getByRole("checkbox", { name: "Beauty" }).check();
   const applyFilter = page.locator("aside").getByRole("button", { name: "Apply" });
   await expect(applyFilter).toBeVisible();
   await applyFilter.click();
-  await expect(page).toHaveURL(/\/en\?category=beauty&sort=price-desc$/);
-  await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+  await expect(page).toHaveURL(/\/en\/shop\?category=beauty&sort=price-desc$/);
+  await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
   await page.getByRole("link", { name: "Clear filter" }).click();
-  await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+  await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
+});
+
+test("on a phone the categories are shown in place under the toolbar without JavaScript", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto("/en/shop");
+  await expect(page.getByRole("button", { name: "Categories" })).toBeHidden();
+  const beauty = page.getByRole("checkbox", { name: "Beauty" });
+  await expect(beauty).toBeVisible();
+  const toolbarBottom = await page
+    .getByText("Showing 1-9 of 194")
+    .boundingBox()
+    .then((box) => (box ? box.y + box.height : Infinity));
+  const panelTop = (await page.getByRole("complementary").boundingBox())?.y ?? 0;
+  const gridTop = (await page.getByRole("article").first().boundingBox())?.y ?? 0;
+  expect(panelTop).toBeGreaterThan(toolbarBottom);
+  expect(panelTop).toBeLessThan(gridTop);
+  await beauty.check();
+  await page.locator("aside").getByRole("button", { name: "Apply" }).click();
+  await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
+  await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
 });
 
 test("searching works without JavaScript", async ({ page }) => {
@@ -39,7 +95,7 @@ test("searching works without JavaScript", async ({ page }) => {
   await page.getByRole("searchbox", { name: "Search products" }).fill("laptop");
   await page.getByRole("button", { name: "Search" }).click();
   await expect(page).toHaveURL(/\/en\/search\?q=laptop$/);
-  await expect(page.getByText(/Showing 1–\d+ of \d+/)).toBeVisible();
+  await expect(page.getByText(/Showing 1-\d+ of \d+/)).toBeVisible();
 });
 
 test("adding to the cart twice without JavaScript redirects back and a refresh does not re-add", async ({
@@ -56,24 +112,146 @@ test("adding to the cart twice without JavaScript redirects back and a refresh d
   await expect(page.getByRole("status").filter({ hasText: "You now have" })).toHaveCount(0);
 });
 
+test("the back links are plain navigations without JavaScript", async ({ page }) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Buy now" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\?product=1$/);
+  await page.getByRole("link", { name: "Back to the product" }).click();
+  await expect(page).toHaveURL(/\/en\/products\/1$/);
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/cart");
+  await page.getByRole("link", { name: "Check out" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout$/);
+  await page.getByRole("link", { name: "Back to the cart" }).click();
+  await expect(page).toHaveURL(/\/en\/cart$/);
+  await page.getByRole("link", { name: "Back to the shop" }).click();
+  await expect(page).toHaveURL(/\/en\/shop$/);
+});
+
+test("Buy now without JavaScript opens the payment page, then the confirmation, and keeps the cart", async ({
+  page,
+}) => {
+  await page.goto("/en/products/2");
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Buy now" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\?product=1$/);
+  await expect(page.getByRole("textbox", { name: "Card number" })).toBeVisible();
+  await payByCard(page);
+  await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+  await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+  await page.goto("/en/cart");
+  await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveCount(1);
+});
+
 test("the cart works without JavaScript: stepper, promo, remove, checkout", async ({ page }) => {
   await page.goto("/en/products/1");
   await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/products/2");
+  await page.getByRole("button", { name: "Add to cart" }).click();
   await page.goto("/en/cart");
+  const mascara = page.getByRole("textbox", { name: "Qty Essence Mascara Lash Princess" });
   await page
     .getByRole("button", { name: "Increase quantity of Essence Mascara Lash Princess" })
     .click();
   await expect(page).toHaveURL(/\/en\/cart$/);
   await expect(page.getByRole("status").filter({ hasText: "updated to 2" })).toBeFocused();
-  await expect(page.getByRole("textbox", { name: /^Qty / })).toHaveValue("2");
+  await expect(mascara).toHaveValue("2");
+  await page
+    .getByRole("button", { name: "Decrease quantity of Essence Mascara Lash Princess" })
+    .click();
+  await expect(page.getByRole("status").filter({ hasText: "updated to 1" })).toBeFocused();
+  await expect(mascara).toHaveValue("1");
   await page.getByRole("textbox", { name: "Promo code" }).fill("LTP10");
   await page.getByRole("button", { name: "Apply" }).click();
   await expect(page.getByText("Code LTP10 applied", { exact: true })).toBeVisible();
-  await page.getByRole("textbox", { name: /^Qty / }).fill("x");
-  await page.getByRole("textbox", { name: /^Qty / }).press("Enter");
+  await expect(page.getByRole("status").filter({ hasText: "Code LTP10 applied" })).toBeFocused();
+  await page.getByRole("button", { name: "Remove code" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Promo code removed" })).toBeFocused();
+  await expect(page.getByRole("textbox", { name: "Promo code" })).toBeVisible();
+  await page.getByRole("button", { name: "Remove Eyeshadow Palette with Mirror" }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Eyeshadow Palette with Mirror removed" }),
+  ).toBeFocused();
+  await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveCount(1);
+  await mascara.fill("x");
+  await mascara.press("Enter");
   await expect(page.getByRole("alert")).toContainText("Enter a whole number");
-  await expect(page.getByRole("textbox", { name: /^Qty / })).toBeFocused();
-  await page.getByRole("button", { name: "Check out" }).click();
+  await expect(mascara).toBeFocused();
+  await page.getByRole("link", { name: "Check out" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout$/);
+  await payByCard(page, { cardNumber: "1111" });
+  await expect(page).toHaveURL(/\/en\/checkout$/);
+  const cardNumber = page.getByRole("textbox", { name: "Card number" });
+  await expect(cardNumber).toBeFocused();
+  await expect(cardNumber).toHaveAccessibleDescription(/Enter a valid card number/);
+  await expect(page.getByRole("textbox", { name: "Full name" })).toHaveValue("Ana Demo");
+  // The card number, expiry and security code are never echoed back by the server.
+  await expect(page.getByRole("textbox", { name: "Card number" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Expiry date (MM/YY)" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Security code" })).toHaveValue("");
+  await payByCard(page);
   await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+});
+
+test("checking out a cart emptied elsewhere without JavaScript redirects back with the error", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/cart");
+  await context.clearCookies();
+  await page.getByRole("link", { name: "Check out" }).click();
+  await expect(page).toHaveURL(/\/en\/cart$/);
+  await expect(page.getByRole("alert").filter({ hasText: "Your cart is empty" })).toBeFocused();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart is empty");
+});
+
+test("the contact and sign-in forms work without JavaScript", async ({ page }) => {
+  await page.goto("/en/contact");
+  await page.getByRole("textbox", { name: "Email address" }).fill("nope");
+  await page.getByRole("button", { name: "Send message" }).click();
+  const name = page.getByRole("textbox", { name: "Your name" });
+  await expect(name).toBeFocused();
+  await expect(name).toHaveAccessibleDescription(/This field is required/);
+  await expect(page.getByRole("textbox", { name: "Email address" })).toHaveValue("nope");
+  await name.fill("Ana");
+  await page.getByRole("textbox", { name: "Email address" }).fill("ana@example.com");
+  await page.getByRole("textbox", { name: "Message" }).fill("Hello");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page).toHaveURL(/\/en\/contact\?sent=1$/);
+  await expect(page.getByRole("status").filter({ hasText: "nothing was sent" })).toBeFocused();
+
+  await page.goto("/en/account");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByRole("textbox", { name: "Email address" })).toBeFocused();
+  await page.getByRole("textbox", { name: "Email address" }).fill("ana@example.com");
+  await page.getByLabel("Password").fill("secret");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/en\/account\?demo=1$/);
+  await expect(page.getByRole("status").filter({ hasText: "Sign-in is a demo" })).toBeFocused();
+});
+
+test("the card fields fold and unfold with the payment method without JavaScript", async ({
+  page,
+}) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/cart");
+  await page.getByRole("link", { name: "Or pay with PayPal" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\?method=paypal$/);
+  await expect(page.getByRole("radio", { name: "PayPal" })).toBeChecked();
+  await expect(page.getByRole("textbox", { name: "Card number" })).toBeHidden();
+  await page.getByRole("radio", { name: "Card" }).check();
+  await expect(page.getByRole("textbox", { name: "Card number" })).toBeVisible();
+  await payByCard(page);
+  await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+  await expect(page.getByRole("definition").filter({ hasText: "Card" })).toBeVisible();
 });

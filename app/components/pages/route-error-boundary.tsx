@@ -40,7 +40,7 @@ export function RouteErrorBoundary({ error }: { error: unknown }) {
       title={t(`errors.${key}.title`)}
       description={t(`errors.${key}.description`)}
       actions={
-        <ButtonLink to={href("/:lang", { lang: locale })}>{t("errors.links.home")}</ButtonLink>
+        <ButtonLink to={href("/:lang/shop", { lang: locale })}>{t("errors.links.home")}</ButtonLink>
       }
     />
   );

@@ -9,6 +9,11 @@ export const ERROR_CODES = [
   "promo-required",
   "promo-invalid",
   "empty-cart",
+  "field-required",
+  "email-invalid",
+  "card-number-invalid",
+  "card-expiry-invalid",
+  "card-code-invalid",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -29,6 +34,11 @@ export const ERROR_MESSAGE_KEYS = {
   "promo-required": "promoRequired",
   "promo-invalid": "promoInvalid",
   "empty-cart": "emptyCart",
+  "field-required": "fieldRequired",
+  "email-invalid": "emailInvalid",
+  "card-number-invalid": "cardNumberInvalid",
+  "card-expiry-invalid": "cardExpiryInvalid",
+  "card-code-invalid": "cardCodeInvalid",
 } as const satisfies Record<ErrorCode, string>;
 
 export const NOTICE_CODES = [

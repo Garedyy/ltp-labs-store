@@ -3,7 +3,7 @@ import type en from "~/locales/en/catalogue";
 export default {
   title: "Loja",
   description: "Explore os nossos produtos, ordene-os e filtre por categoria.",
-  pageTitle: "{{title}} — página {{page}}",
+  pageTitle: "{{title}} - página {{page}}",
   search: {
     title: "Pesquisar",
     description: "Pesquise no catálogo por palavra-chave.",
@@ -11,7 +11,10 @@ export default {
     placeholder: "Pesquisar produtos",
     button: "Pesquisar",
     prompt: "Escreva uma palavra para pesquisar no catálogo.",
-    resultsTitle: "Pesquisa: «{{q}}» ({{count}} resultados)",
+    resultsTitle_zero: "Pesquisa: «{{q}}» (sem resultados)",
+    resultsTitle_one: "Pesquisa: «{{q}}» ({{count}} resultado)",
+    resultsTitle_many: "Pesquisa: «{{q}}» ({{count}} resultados)",
+    resultsTitle_other: "Pesquisa: «{{q}}» ({{count}} resultados)",
     noResults: "Sem resultados para «{{q}}»",
     hint: "Os produtos são pesquisados em inglês.",
     announce_one: "{{count}} resultado para «{{q}}»",
@@ -22,17 +25,18 @@ export default {
   sort: {
     label: "Ordenar por",
     defaultOrder: "Ordem predefinida",
+    hint: "Os resultados atualizam-se ao escolher",
     apply: "Aplicar",
     options: {
       "price-asc": "Preço: do mais baixo ao mais alto",
       "price-desc": "Preço: do mais alto ao mais baixo",
-      "title-asc": "Nome: A–Z",
-      "title-desc": "Nome: Z–A",
+      "title-asc": "Nome: A-Z",
+      "title-desc": "Nome: Z-A",
       "rating-desc": "Melhor avaliação",
     },
   },
   results: {
-    showing: "A mostrar {{from}}–{{to}} de {{total}}",
+    showing: "A mostrar {{from}}-{{to}} de {{total}}",
     none: "Nenhum produto encontrado",
     announce_one: "A mostrar {{from}} a {{to}} de {{total}} produto",
     announce_many: "A mostrar {{from}} a {{to}} de {{total}} produtos",
@@ -41,11 +45,11 @@ export default {
   },
   filters: {
     heading: "Categorias",
-    hint: "Escolha uma categoria — os resultados atualizam-se ao escolher",
+    hint: "Escolha uma categoria - os resultados atualizam-se ao escolher",
     apply: "Aplicar",
     clear: "Limpar filtro",
-    jump: "Categorias",
-    jumpLabel: "Ir para as categorias",
+    toggle: "Categorias",
+    jump: "Ir para as categorias",
   },
   card: {
     price: "Preço",

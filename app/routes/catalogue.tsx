@@ -66,9 +66,6 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
 
 export default function Catalogue({ loaderData }: Route.ComponentProps) {
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
-      <CatalogueResults view={loaderData.view} showJumpLink />
-      <CategoryFilter view={loaderData.view} />
-    </div>
+    <CatalogueResults view={loaderData.view} filters={<CategoryFilter view={loaderData.view} />} />
   );
 }

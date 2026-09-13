@@ -20,24 +20,64 @@ test.describe("search", () => {
     await page.getByRole("button", { name: "Search" }).click();
     await expect(page).toHaveURL(/\/en\/search\?q=phone$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Search");
-    await expect(page).toHaveTitle(/Search: “phone” \(\d+ results\) — The Online Store/);
+    await expect(page).toHaveTitle(/Search: "phone" \(\d+ results\) - The Online Store/);
     await expect(page.getByRole("searchbox", { name: "Search products" })).toHaveValue("phone");
-    await expect(page.getByText(/Showing 1–9 of \d+/)).toBeVisible();
-    await page.getByRole("link", { name: "Page 2" }).click();
+    await expect(page.getByText(/Showing 1-9 of \d+/)).toBeVisible();
+    const announcement = page.getByRole("status").filter({ hasText: /\d+ results for "phone"/ });
+    await expect(announcement).toHaveCount(1);
+    const pageTwo = page.getByRole("link", { name: "Page 2", exact: true });
+    await pageTwo.scrollIntoViewIfNeeded();
+    const scrollY = await page.evaluate(() => window.scrollY);
+    await pageTwo.click();
     await expect(page).toHaveURL(/\/en\/search\?q=phone&page=2$/);
-    await expect(page.locator("#results-heading")).toBeFocused();
+    await expect(pageTwo).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
+    // Two alternating status regions: the first search and the page change each keep theirs.
+    await expect(announcement).toHaveCount(2);
+  });
+
+  test("choosing a sort keeps the query, drops the page and announces the results", async ({
+    page,
+  }) => {
+    await page.goto("/en/search?q=phone&page=2");
+    const sort = page.getByRole("combobox", { name: "Sort by" });
+    await sort.focus();
+    await sort.selectOption("price-asc");
+    await expect(page).toHaveURL(/\/en\/search\?q=phone&sort=price-asc$/);
+    await expect(sort).toBeFocused();
+    await expect(page.getByText(/Showing 1-9 of \d+/)).toBeVisible();
     await expect(
-      page.getByRole("status").filter({ hasText: /\d+ results for “phone”/ }),
+      page.getByRole("status").filter({ hasText: /\d+ results for "phone"/ }),
     ).toHaveCount(1);
+  });
+
+  test("clearing the query announces the prompt again", async ({ page }) => {
+    await page.goto("/en/search?q=phone");
+    const prompt = page
+      .getByRole("status")
+      .filter({ hasText: "Type a word to search the catalogue." });
+    await expect(prompt).toHaveCount(0);
+    await page.getByRole("searchbox", { name: "Search products" }).fill("");
+    await page.getByRole("button", { name: "Search" }).click();
+    await expect(page).toHaveURL(/\/en\/search\?q=$/);
+    await expect(page.getByRole("list", { name: /Showing/ })).toHaveCount(0);
+    await expect(prompt).toHaveCount(1);
+  });
+
+  test("a single hit uses the singular title", async ({ page }) => {
+    await page.goto("/en/search?q=mascara");
+    await expect(page).toHaveTitle('Search: "mascara" (1 result) - The Online Store');
+    await expect(page.getByText("Showing 1-1 of 1")).toBeVisible();
   });
 
   test("no results shows the empty state with the English hint", async ({ page }) => {
     await page.goto("/en/search?q=zzzzzz");
-    await expect(page.getByRole("heading", { level: 2 })).toHaveText("No results for “zzzzzz”");
+    await expect(page).toHaveTitle('Search: "zzzzzz" (no results) - The Online Store');
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText('No results for "zzzzzz"');
     await expect(page.getByText("Products are searched in English.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Show all products" })).toHaveAttribute(
       "href",
-      "/en",
+      "/en/shop",
     );
     await expect(page.getByText("No products found")).toBeVisible();
   });
@@ -52,5 +92,9 @@ test.describe("search", () => {
     await page.goto("/pt/search?q=phone");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pesquisar");
     await expect(page).toHaveTitle(/Pesquisa: «phone» \(\d+ resultados\)/);
+    await page.goto("/pt/search?q=mascara");
+    await expect(page).toHaveTitle(/Pesquisa: «mascara» \(1 resultado\)/);
+    await page.goto("/pt/search?q=zzzzzz");
+    await expect(page).toHaveTitle(/Pesquisa: «zzzzzz» \(sem resultados\)/);
   });
 });

@@ -2,10 +2,15 @@ import type en from "~/locales/en/common";
 
 export default {
   brand: "The Online Store",
-  tagline: "Desafio de programação para a LTP Labs — loja de demonstração",
+  tagline: "Desafio de programação para a LTP Labs - loja de demonstração",
   skipToContent: "Saltar para o conteúdo principal",
   loading: "A carregar",
   errorPrefix: "Erro:",
+  backTo: {
+    shop: "Voltar à loja",
+    cart: "Voltar ao carrinho",
+    product: "Voltar ao produto",
+  },
   nav: {
     label: "Principal",
     footerLabel: "Rodapé",
@@ -27,5 +32,13 @@ export default {
     label: "Idioma",
     current: "{{code}}, {{name}}. Mudar de idioma",
     switchTo: "Mudar para {{name}}",
+  },
+  theme: {
+    label: "Tema",
+    current: "Tema: {{name}}. Mudar de tema",
+    applied: "Tema {{name}} aplicado",
+    system: "Sistema",
+    light: "Claro",
+    dark: "Escuro",
   },
 } satisfies typeof en;

@@ -5,11 +5,14 @@ export default [
   ...prefix(":lang", [
     layout("routes/locale-layout.tsx", [
       route("set-language", "routes/set-language.tsx"),
+      route("set-theme", "routes/set-theme.tsx"),
       layout("routes/locale-errors.tsx", [
-        index("routes/catalogue.tsx"),
+        index("routes/home.tsx"),
+        route("shop", "routes/catalogue.tsx"),
         route("search", "routes/search.tsx"),
         route("products/:productId", "routes/product.tsx"),
         route("cart", "routes/cart.tsx"),
+        route("checkout", "routes/checkout.tsx"),
         route("checkout/confirmation", "routes/order-confirmation.tsx"),
         route("about", "routes/about.tsx"),
         route("contact", "routes/contact.tsx"),

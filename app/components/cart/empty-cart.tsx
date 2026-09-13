@@ -14,7 +14,7 @@ export function EmptyCart() {
       </h1>
       <p className="mt-4">{t("cart.empty.body")}</p>
       <div className="mt-8">
-        <ButtonLink to={href("/:lang", { lang })}>{t("cart.empty.action")}</ButtonLink>
+        <ButtonLink to={href("/:lang/shop", { lang })}>{t("cart.empty.action")}</ButtonLink>
       </div>
     </div>
   );

@@ -125,8 +125,15 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   `promo-remove`); the cart page reads all results once through `useFetchers()` (a `WeakSet` of
   handled result objects), announces, plans the removal focus from the DOM order and applies it
   after revalidation. `AnnouncerProvider` now keeps the other slot's text instead of clearing it.
-  The `+`/`−` submitters share the `quantity` name with the input, so the action takes the **last**
-  value (the submitter wins).
+  The `+`/`−` submitters shared the `quantity` name with the input, so the action took the **last**
+  value (the submitter was expected to win) — superseded by the addendum below.
+- **Addendum (2026-09-12, `fix/cart-minus-button`, #15 / #16)**: the shared name was wrong.
+  Browsers serialise the clicked submitter at its **DOM position**, not last: the `−` button sits
+  before the input, so its value was overridden by the unchanged typed one and the button did
+  nothing (with and without JavaScript). New field contract: the buttons submit **`setQuantity`**
+  (`quantity-stepper.tsx`), the input keeps `quantity`, and `parseCartIntent` (`intents.ts`)
+  prefers `setQuantity` when present. A no-JS submit of the typed value alone still works through
+  `quantity`. Unit- and e2e-tested in both projects.
 - **Consequences**: announcements and focus survive unmounts; rapid `+` clicks stay idempotent per
   request, but responses that race on the cookie are last-write-wins (documented limitation; the
   e2e waits for each step).
@@ -144,6 +151,387 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   the plan's ≥ 90 / 100 targets.
 - **Consequences**: a future reduction would require replacing i18next (decision 4) or React
   Router's client runtime — out of scope for this challenge.
+
+## D-10 · Conventions that supersede the plan's git section
+
+- **Date / branch**: 2026-09-11 · `feature/tooling` (scope) and `feature/project-scaffold`
+  (trailers); recorded here on 2026-09-12 (#17)
+- **Context**: `PROJECT_PLAN.md` §3 (tooling) fixes the commitlint `scope-enum` to twelve scopes
+  and §4 states that Claude-authored commits end with the session's attribution trailer. The
+  release commit §4 prescribes, `chore(release): vX.Y.Z`, needs a scope the list did not contain;
+  and the user's global instructions forbid any `Co-Authored-By` or tool attribution in commits
+  and pull requests.
+- **Decision**: `release` is added to the `scope-enum` (`commitlint.config.js`, `CONTRIBUTING.md`).
+  No attribution trailer of any kind is written; commits and PRs are authored by the user only.
+- **Consequences**: the plan's two sentences are superseded by this entry; every other rule of its
+  git section stands. Issue fixes follow `fix/<N>-<slug>` from `development` (the `fix-issue`
+  skill), hotfixes keep `fix/<slug>` from `main`.
+
+## D-11 · Sort applies on selection; the Apply button shows on focus
+
+- **Date / branch**: 2026-09-13 · `fix/25-sort-on-selection` (#25)
+- **Context**: `PROJECT_PLAN.md` §3 specified the sort as a GET form with a visible Apply button and
+  no auto-submit, so that choosing an option never changes the context (SC 3.2.2). In use the
+  extra click made re-sorting the catalogue and the search results slower than the category
+  filter, which already navigates on change behind a hint.
+- **Decision**: choosing a sort option navigates at once (`useNavigate` + `buildSearch`, `page`
+  dropped, `preventScrollReset`); the select is controlled and, while a navigation to the same
+  pathname is pending, shows the `sort` of that pending URL (`useNavigation().location`) so the
+  optimistic value is read from the navigation itself and cannot outlive it; a visible hint
+  ("Results update when you choose") is linked to the select with `aria-describedby`, which is
+  how SC 3.2.2 stays satisfied: the user is told of the behaviour before using the control. The
+  Apply button is kept as the form's submit: visible without JavaScript, `sr-only` until focused
+  with it (same pattern as the category form, D-6; `px-3` restored on focus because
+  `not-sr-only` resets the padding).
+- **Consequences**: the plan is superseded wherever it states the old behaviour: section 2
+  decision 16 ("Sort = visible Apply, no auto-submit"), the section 3 `SortForm` sentence
+  ("visible Apply button always; no auto-submit"), the progressive-enhancement matrix row
+  "Sort | GET form, visible Apply | same" and the focus table cell "sort Apply -> stays" (now:
+  focus stays on the select). Keyboard users who move through the options with the arrow keys
+  trigger one navigation per step (the browser fires `change` on each); the results announcement
+  and the pending-URL selection keep the control coherent throughout, including after Back and
+  Forward. `CategoryFilter` still keeps its optimistic choice in local state, which shows the
+  stale choice after a Back to the URL it was chosen from; it is a separate fix.
+  `sort-form.test.tsx`, `catalogue.spec.ts`, `search.spec.ts` and `targets.spec.ts` cover the
+  new behaviour; `no-js.spec.ts` keeps proving the GET form.
+
+## D-12 · Buy now is a one-unit order owned by the product route
+
+- **Date / branch**: 2026-09-13 · `fix/28-buy-now-button` (#28)
+- **Context**: issue #28 asked for a "Buy now" button that adds the product to the cart and
+  lands on the cart page. Reviewing the first implementation, the user asked for the intended
+  behaviour instead: Buy now finalises a purchase of the product shown, on its own, without
+  including or touching whatever is already in the cart. `CLAUDE.md` gave the cart route sole
+  ownership of `checkout`.
+- **Decision**: the product route's action owns a second intent, `buy-now`, which is a
+  single-product checkout: the product is verified like `add` (`product-not-found`,
+  `out-of-stock`, same JS / no-JS refusal paths; `cart-full` cannot apply), one unit is priced
+  with `computeTotals` (price + $20 shipping, **no** promo code: the promo belongs to the cart),
+  `lastOrder` is written with `method: "card"` and `itemCount: 1`, and the action answers 303 to
+  `/:lang/checkout/confirmation` with or without JavaScript (the fetcher follows the redirect as
+  a navigation). The `cart` and `promoCode` session slots are left untouched, so the header count
+  and the cart page are unchanged after a Buy now. The cart route keeps `checkout` for the cart.
+- **Consequences**: two actions can write `lastOrder`; the confirmation page reads it the same
+  way. Buy now is the primary call to action of the buy block (first, full-width, `primary`
+  variant) and Add to cart the secondary button below it, so the one-step purchase is the
+  obvious path. Buy now offers no payment choice (one button, card) and no quantity; both are out of
+  scope. The `AddToCartForm` landmark is named `product.buyBlock` ("Purchase options") since it
+  now holds two distinct actions. `cart-session.spec.ts`, `no-js.spec.ts` and
+  `a11y-states.spec.ts` prove the cart survives a Buy now and the promo code is ignored.
+
+## D-13 · Home page (trending products) split from the shop (full catalogue)
+
+- **Date / branch**: 2026-09-13 · `fix/29-split-home-from-shop` (#29)
+- **Context**: `PROJECT_PLAN.md` §2 decision 6 ("Shop → `/` (same route)") and §8 item 22
+  ("Home and Shop link to `/:lang`; only Home gets `aria-current`") made the two header entries
+  point to one page, the full catalogue, so the store had no landing page. The user decided in
+  #29 to give each entry its own page.
+- **Decision**: `/:lang` is a Home page (`app/routes/home.tsx`) that lists the eight best-rated
+  products — one `getProducts({ limit: 8, skip: 0, sortBy: "rating", order: "desc" })` call
+  through `cached` (5 min) — with the catalogue's product cards, a visible `<h1>`
+  ("Trending products") and a "Browse the shop" link; sort, category filter and pagination are
+  not on it. The catalogue moves unchanged to `/:lang/shop` (`app/routes/catalogue.tsx`, URL-as-
+  state rules intact). A request to `/:lang` that still carries a catalogue parameter (`q`,
+  `category`, `sort`, `page`) is answered **301** to `/:lang/shop` with the same search, so links
+  from before the split keep working. Home and Shop are both `NavLink`s (`end` on Home) and each
+  carries `aria-current="page"` on its own page; every "back to the shop" link (empty states,
+  error pages, coming-soon pages, "Continue shopping") targets `/shop`; the brand link keeps
+  targeting the home page.
+- **Consequences**: decisions 6 and 22 of the plan are superseded as stated above. `goal.md`
+  §Homepage asks the page that lists products to also sort, filter and paginate; after the split
+  the home page lists products with a link to each detail page and those three features live one
+  click away on `/shop` — accepted by the user in #29. `ProductGrid` takes an optional
+  `labelledBy` (default `results-heading`) so the home grid is named by its heading.
+  `tests/e2e/routes.ts` scans `/`, `/shop` and the two `/shop?…` states; `home.spec.ts` covers
+  the trending list, the two `aria-current`s, the 301 and the Portuguese page. The Lighthouse
+  figures in `README.md` were measured on the catalogue when it lived at `/en`.
+- **Addendum (2026-09-13, #40)**: the "Browse the shop" link is the main call to action of the
+  landing page, so it is rendered right after the heading block (`<h1>` and intro grouped
+  tightly), aligned to the bottom end of that block and wrapping under it on narrow screens,
+  above the grid; a centred "See more" link to the same shop closes the page after the cards so a
+  visitor who scrolled the grid does not have to scroll back up. `home.spec.ts` and
+  `no-js.spec.ts` assert the DOM order of both.
+
+## D-14 · Content pages replace the "coming soon" placeholders
+
+- **Date / branch**: 2026-09-13 · `fix/30-content-pages` (#30)
+- **Context**: `PROJECT_PLAN.md` §2 decision 6 made About, Contact, Blog and Account translated
+  "coming soon" pages. With the store otherwise complete, four empty pages behind the header and
+  footer links made the demo less credible; the user asked in #30 for real, fictional content.
+- **Decision**: each route renders its own page component (`app/components/pages/`), and
+  `ComingSoon` is deleted. **About**: story, three values and a team of three people who are
+  explicitly fictional (initials avatar, no image). **Contact**: address, e-mail on a `.example`
+  domain, phone and hours — all invented — plus a name / e-mail / message form. **Blog**: three
+  invented posts whose text lives in the locales and whose dates live in `app/content/posts.ts`,
+  formatted in the loader (`formatDate`). **Account**: what the device knows (cart count,
+  `lastOrder` with a link to the confirmation), a fixed demo profile, and a sign-in form. All copy
+  is in `pages.ts` for `en` and `pt` (`satisfies` check); nothing names a real person, address or
+  mailbox. The two forms follow one pattern: a navigation `<Form method="post" noValidate>`,
+  server-side codes per field (`field-required`, `email-invalid`) rendered by `TextField` under
+  the control, a refusal answered **400 with the typed values** (the password is never echoed) and
+  the focus on the first invalid field (`autoFocus` on the no-JS document, `useFocusFirstInvalid`
+  with JavaScript), and a success answered **303 to `?sent=1` / `?demo=1`** — the URL is the state,
+  no session and no flash — where the loader renders a focused `FormNotice` (`role="status"`).
+  Nothing is sent, created or stored, and both forms say so in their copy.
+- **Consequences**: decision 6 of the plan is superseded (the "Coming soon ×4" row of the §3
+  route table with it). The shared building blocks (`lib/forms.ts`, `lib/validation.ts`,
+  `components/forms/`) are also used by the payment page (D-15). `CartNotice` became the generic
+  `FormNotice`, which now focuses itself on mount too: React only honours `autoFocus` on form
+  controls when an element mounts client-side. `Field` exposes a `labelId` so the contact
+  `<textarea>` can carry `aria-labelledby` (the IBM checker does not credit `<label for>` to a
+  textarea). `tests/e2e/routes.ts` scans `/contact?sent=1` and `/account?demo=1`;
+  `pages.spec.ts`, `no-js.spec.ts` and `a11y-states.spec.ts` cover the forms in both modes.
+  `layout.spec.ts` no longer treats `/about` as a short page.
+
+## D-15 · A payment page between the cart and the confirmation
+
+- **Date / branch**: 2026-09-13 · `fix/30-content-pages` (#30)
+- **Context**: the cart's "Check out" / "Or pay with PayPal" buttons (plan §2 decision 8, item 23) and Buy now (D-12) created the order in one click: the store had no payment step at all.
+  The user asked, while #30 was being planned, for a payment page, and chose (a) a checkout step
+  rather than an information page and (b) that Buy now goes through it too.
+- **Decision**: `/:lang/checkout` (`app/routes/checkout.tsx`) is the payment page. **Cart mode**
+  prices the reconciled cart (promo code included); an empty cart is sent back to the cart with
+  `empty-cart` flashed, so the existing focused alert renders there (302 from the loader, 303
+  from the action; the cart route's `handle.initialFocus` targets that alert because the pathname
+  changes). **Product mode** (`?product=<id>`) prices one unit of that product without the promo
+  code — Buy now's semantics, D-12 — and is where the product route's `buy-now` intent now
+  answers 303 instead of writing the order; an unknown product is a 404 and a sold-out one goes
+  back to its page. `?method=paypal` preselects PayPal: the cart's two buttons become two links
+  (`/checkout`, `/checkout?method=paypal`), so the wireframe's summary keeps its two calls to
+  action. The form asks for an e-mail, a shipping address (name, address, postal code, city,
+  country) and the payment method; card fields (name on card, number, MM/YY, security code) are
+  required only for `card` and fold away while the PayPal radio is checked through a CSS `:has()`
+  rule on the form — no JavaScript involved, so the fold follows every native click in both
+  modes (the first cut drove it from React state, which left the fields hidden for a no-JS
+  visitor entering with `?method=paypal`; caught by the PR review). The `place-order` action
+  validates with `lib/validation.ts` (`isEmail`, Luhn `isCardNumber` 13–19 digits, `isCardExpiry`
+  not before the current month, `isCardCode` 3–4 digits) into per-field codes, answers 400 with
+  the typed values (card number, expiry and security code never echoed) or writes `lastOrder`
+  exactly as the cart's
+  `checkout` intent used to (`method`, `totalCents`, `itemCount`, `totalFormatted`), clears
+  `cart` and `promoCode` in cart mode only, and answers 303 to the confirmation. **Card data is
+  format-checked and dropped**: never stored in the cookie, never logged, never sent anywhere;
+  `LastOrder` keeps its shape. The cart route loses the `checkout` intent and its
+  `shouldRevalidate` clause; the checkout route is the only writer of `lastOrder`.
+  In cart mode the loader also passes the cart's reconciliation notice (`items-removed`,
+  `quantities-adjusted`) through, rendered as a focused `FormNotice` above the form
+  (`handle.initialFocus`) so a silently changed total never goes unexplained. Every demo form
+  reads its fields through `readFields`, which caps single-line values at 200 characters
+  (2 000 for the contact message) before validation.
+- **Consequences**: plan §2 decision 8 / item 23 ("Check out / PayPal → mocked confirmation")
+  and D-12's "303 to the confirmation" are superseded as stated above; D-12's cart-untouched and
+  no-promo rules hold. `CartSummary` takes an optional `heading` and a `lines` slot
+  (`OrderLines`, a read-only recap; titles wrap rather than truncate so the page reflows at
+  320 px). `intents.ts` gains `parsePaymentMethod`; `load-cart.server.ts` exports `toLineView` and
+  `toTotalsView` for the product mode. `tests/e2e/routes.ts` scans `/checkout?product=1`;
+  `checkout.spec.ts` covers both modes, the refusals and the PayPal path; `cart.spec.ts`,
+  `cart-session.spec.ts`, `no-js.spec.ts` and `a11y-states.spec.ts` follow the new flow.
+
+## D-16 · Categories fold under the toolbar on phones
+
+- **Date / branch**: 2026-09-13 · `fix/31-mobile-categories-dropdown` (#31)
+- **Context**: plan §3.8 put the category filter after the pagination on phones (DOM order
+  toolbar → grid → pagination → aside) with a "Categories ↓" jump link in the toolbar. Reaching
+  the filter meant scrolling past nine cards and the pagination, then back up after choosing.
+- **Decision**: below `lg` the toolbar's "Categories" control is a `<button aria-expanded
+aria-controls="filters-panel">` that unfolds the filter **in place, under the toolbar**; at
+  `lg+` nothing changes. The filter form stays a single DOM node rendered **after** the products
+  (`CatalogueResults` renders head → body → `filters` and places the panel visually with
+  `max-lg:order-last` on the body), so the desktop tab order — products, pagination, then the 24
+  checkboxes — and the desktop rendering are untouched (verified byte for byte on screenshots at
+  1280 px, `/shop` and `?category=beauty`). At `lg` the wrapper is a grid
+  `grid-cols-[minmax(0,1fr)_16rem] grid-rows-[auto_1fr]`: the head row is its content, the `1fr`
+  body row absorbs an aside taller than the column, so nothing is redistributed between the h1
+  and the toolbar. The plan's `Disclosure` (`<details>`) was not reused: the same node cannot be
+  inside a `<details>` on phones and outside it on desktop, and `<details>` cannot be forced open
+  by CSS. Because the panel sits after the products in the DOM, opening it moves the focus to
+  the `<aside id="categories">` (`preventScroll`: the panel unfolds right under the button, which
+  stays in view) so Tab continues into the visible list; Escape inside the panel closes it and
+  gives the focus back to the button; closing from the button leaves the focus there. Choosing a
+  category behaves exactly as on desktop (navigation, focus on the checkbox, announcement) and the
+  panel stays open — the component stays mounted across search-param changes —; a pathname change
+  starts closed again. **Without JavaScript** the button is not shown (`hidden
+max-lg:[.js_&]:inline-flex`) and the panel is simply visible in place (`max-lg:[.js_&]:hidden`
+  only when closed), the existing Apply button submitting the GET form. The jump link survives as
+  `sr-only focus:not-sr-only` at every width (desktop keyboard users and no-JS phones, where the
+  panel is visually above the grid but after it in the DOM), hidden on phones with JavaScript
+  because its target is folded.
+- **Consequences**: plan §3.8's phone row for the catalogue ("aside below … jump link") is
+  superseded as stated above; `CatalogueResults` takes `filters` instead of `showJumpLink`;
+  `CategoryFilter` no longer carries grid classes; strings `catalogue.filters.toggle` (button) and
+  `catalogue.filters.jump` (link) replace `jump` / `jumpLabel`. `catalogue.spec.ts` unfolds the
+  panel on `mobile-chromium` before touching a checkbox and covers the fold / unfold / Escape flow;
+  `no-js.spec.ts` checks the in-place panel at 412 px; `a11y.spec.ts` scans the unfolded state;
+  `reflow.spec.ts` and `targets.spec.ts` cover the open panel at 320 px and the button height.
+
+## D-17 · The last order stores its lines, not its derived values
+
+- **Date / branch**: 2026-09-13 · `fix/38-confirmation-page-keyboard-strings` (#38)
+- **Context**: the confirmation page had to show what was ordered, but `lastOrder` in the
+  signed `__cart` cookie only carried `number`, `method`, `totalCents`, `itemCount` and a
+  `totalFormatted` string frozen in the locale of the order. The cookie has a 4 KB budget and a
+  50-line cart already serialises under 4000 bytes, so titles, thumbnails or prices per line
+  could not be added.
+- **Decision**: `LastOrder` becomes `{ number, method, totalCents, lines: CartLine[] }`. The
+  lines are the cart's own `{ productId, quantity }` shape: in cart mode `cart` is unset in the
+  same commit as `lastOrder.lines` is written, so the cookie does not grow; in product mode (Buy
+  now, D-12) one line is added. `itemCount` is derived with `countItems(lines)` and the total is
+  formatted in the loaders (`formatPrice(totalCents, locale)`, so a language switch after the
+  order shows it in the current locale, which the frozen string did not). The confirmation
+  loader fetches the products again through the cached client to build `CartLineView`s with
+  `toLineView`; a product gone from the catalogue since the order is skipped, an unavailable API
+  renders the shared "service unavailable" boundary like every other page. A hand-written
+  `sanitiseOrder` guard reads an older cookie (no `lines`) or a malformed one as "no order", so
+  the confirmation redirects to the cart instead of failing.
+- **Consequences**: `buildOrder(view, method)` loses its `totalFormatted` parameter and
+  `CheckoutView` its `itemCount`; `AccountView.lastOrder` narrows to `{ number,
+totalFormatted }` built by the account loader. `cart.test.ts` covers `sanitiseOrder`;
+  `checkout.spec.ts` checks the lines on the confirmation in cart and Buy now modes and the
+  Portuguese total after a language switch.
+
+## D-18 · Motion is a CSS keyframe scale, not View Transitions
+
+- **Date / branch**: 2026-09-13 · `fix/43-motion-safe-transitions` (#43)
+- **Context**: the interface was static apart from three isolated transitions; the issue asked for
+  a page-enter transition on every navigation, with and without JavaScript, and a small set of
+  motion-safe touch points, without a new dependency. Two ways existed for the page enter: React
+  Router's `viewTransition` (View Transitions API) or a CSS animation on the page content.
+- **Decision**: a motion scale in the `@theme` block of `tokens.css` (`--ease-out-quart`, three
+  keyframes `page-enter`, `pop-in`, `fade-in`) applied through Tailwind utilities only, gated by
+  `motion-safe:`, following the vendored `web-animation-design` skill (Emil Kowalski's rules:
+  only `transform` and `opacity`, ease-out entrances, under 300 ms, never from `scale(0)`, animate
+  the child on hover). The page enter is a keyframe on a `<div key={pathname} data-page>` inside
+  `<main>`: the key remounts the wrapper on every pathname change so the animation replays, and
+  as plain CSS it also runs on a full-page load and without JavaScript, which `viewTransition`
+  (JavaScript only, partial browser support, and a second focus/announcement path to reconcile)
+  could not offer. Search-param changes (sort, filter, page) do not replay it: the grid's pending
+  fade already covers them and repeating a page fade on every filter would slow the catalogue
+  down. The landing page alone opens with more motion (`hero-enter`, 500 ms, on the title, the intro
+  and Browse the shop 120 ms apart and on See more; a `card-enter` cascade, 450 ms, one card
+  every 80 ms, through `ProductGrid stagger`): it is the marketing surface, the first thing a
+  visitor sees, where the skill allows longer, more special entrances; the shop grid stays
+  still. A delayed control loses its delay the moment it receives focus (`focus-visible:` /
+  `focus-within:[animation-delay:0s]`, the running animation is not restarted; `animation:
+none` was tried first and replayed the whole entrance on blur) and a small additive
+  `onFocus` handler on the page (`data-entered`) keeps it revealed after blur, so the focus ring
+  is never on an invisible element. The fades
+  do not move the LCP: with the README's Lighthouse method (mobile, simulated throttling), the
+  build before this change and this build give the same scores and LCP on `/`, `/en/shop` and
+  `/en/products/1` (94 / 93 / 93, 2.7 / 2.8 / 2.9 s, two runs each); Chrome dates the LCP at
+  the first painted frame, where the opacity is already above zero. `RouteAnnouncer` and the focus on `main` are untouched (the animation is on a child of
+  `main`, without fill mode, so no stacking context outlives it). Disclosure panels and the cart
+  badge animate their entrance only; exits snap, because a CSS-only exit needs `@starting-style`
+  and `transition-behavior: allow-discrete`, still partially supported.
+- **Consequences**: `Docs/DESIGN_SYSTEM.md` carries the scale and where each entry applies.
+  **The Playwright suite runs under `reducedMotion: "reduce"`** (global `use` in
+  `playwright.config.ts`), where the app is exactly its motionless self: with an entrance
+  running, Playwright's stability check fails and retries the action with a forced scroll, which
+  leaves the page scrolled and trips the IBM `element_tabbable_unobscured` rule on the sticky
+  header; without JavaScript Chromium stops painting once an animation ends and the check never
+  completes, so every click hangs. The motion is verified by tests that opt back in with
+  `page.emulateMedia({ reducedMotion: "no-preference" })`: `layout.spec.ts` checks the computed
+  `animation-name` of the wrapper (`page-enter`, then `none` under reduced motion), that a
+  client-side navigation remounts it with the focus on `main`, and that under reduced motion no
+  element on any route of `tests/e2e/routes.ts` carries a keyframe or runs anything longer than
+  the 0.01 ms kill switch; `no-js.spec.ts` checks the keyframe without JavaScript;
+  `header-actions.test.tsx` checks the badge remount. The two post-navigation focus checks of
+  `keyboard.spec.ts` poll instead of reading `activeElement` once, since the focus moves in an
+  effect after the commit. The skill lives in `.claude/skills/web-animation-design/` (MIT, from
+  `vercel-labs/open-agents`).
+
+## D-19 · Back links point at fixed destinations
+
+- **Date / branch**: 2026-09-13 · `fix/45-back-links` (#45)
+- **Context**: the product page, the cart page and the payment page had no visible way back;
+  the payment page's text-only link sat below the form. A back link can call
+  `history.back()`, read the `Referer`, carry the catalogue URL through the product link, or
+  point at a fixed page.
+- **Decision**: a `BackLink` primitive with fixed destinations — product and cart go to the
+  shop, the payment page goes to the cart or, after Buy now, to the product it sells. A fixed
+  `href` renders and works without JavaScript, survives a deep link (no referrer, no history),
+  and keeps the URL the only state; `history.back()` would need scripts and would leave a
+  visitor arriving from a search engine on the wrong site. Returning to the exact catalogue
+  page (query, category, sort, page) would need the list URL threaded through every product
+  link or a `Referer` read on the server, both out of scope until asked. The strings live in
+  `common.backTo` (the payment page's `cart.checkout.backToCart` / `backToProduct` moved
+  there) so the label is defined once per destination.
+- **Consequences**: the empty cart and the confirmation page keep their "Continue shopping"
+  button (a call to action, not a way back). `Docs/DESIGN_SYSTEM.md` lists the primitive and
+  where it sits on each screen; `Docs/ACCESSIBILITY.md` states that it is the first focusable
+  element of the page content and moves no focus.
+
+## D-20 · Dark theme: a `theme` cookie, two identical token blocks, no script
+
+- **Date / branch**: 2026-09-13 · `fix/47-dark-theme` (#47)
+- **Context**: plan decision 15 left the dark theme for later, on the promise that the
+  three-layer tokens would make it a token remap and never a per-component change. A theme
+  needs three things decided: how the choice is stored, how it reaches the page without a
+  flash, and how the CSS expresses "explicit dark" and "system dark" without repeating itself.
+- **Decision**:
+  - The choice is a `theme` cookie (`light` | `dark`; `httpOnly`, `SameSite=Lax`, one year,
+    unsigned like `lng` and validated on every read), written only by the action-only
+    `set-theme` route (POST `theme` + same-origin `redirectTo`, 303 back, 405 on GET, 400 on
+    anything invalid). Choosing **system deletes the cookie**: the absence of a choice is the
+    default, and a stored "system" would only say "follow the OS" for a year.
+  - The root loader reads the cookie and `root.tsx` renders `data-theme` on `<html>` and a
+    `<meta name="color-scheme">`; nothing runs on the client. `system` leaves the attribute
+    off and the CSS follows `prefers-color-scheme`. The browser paints the canvas in the
+    right colour from the meta before the stylesheet arrives, so no theme flashes.
+  - The dark roles are declared **twice with the same values** —
+    `:root:where([data-theme="dark"])` and
+    `@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) }` — and
+    `contrast.test.ts` fails if the two blocks differ. `:where()` keeps both at the
+    specificity of `:root`, so the `prefers-contrast: more` remap declared later on bare
+    `:root` wins by source order in every theme (the first review of PR #48 caught the
+    (0,2,0) selectors silently disabling it in the dark theme). `light-dark()` would give one block and
+    is the standard answer, but a `light-dark()` inside a custom property cannot be polyfilled
+    by lightningcss (it only rewrites real colour properties) and the function is newer than
+    the Safari 16.4 floor Tailwind v4 already imposes: an unsupported browser would lose every
+    semantic colour at once. Twenty duplicated lines guarded by a test cost less than that.
+  - Three derived palette values (`gray-on-dark`, `green-on-dark`, `error-on-dark`) join
+    `error-text` in the raw palette with the ratio that justifies each; `focus-inner` turns
+    `dark-blue` so the orange ring has 3:1 on both sides around the now-light primary button;
+    the footer stays dark (`dark-blue-lighter`); the header card and the panels gain a 1 px
+    ring through `--elevation-ring` because their shadow disappears on a dark surface.
+  - The switcher mirrors the language switcher (a `<details>` pill with a POST form) but is
+    not a `<nav>`; since the redirect keeps the pathname, the instance that submitted closes
+    its panel, focuses its summary and announces the new theme itself.
+- **Consequences**: a fifth Playwright project `dark-chromium` (`colorScheme: "dark"`) runs
+  the WCAG scan of every route × locale under the system preference; `a11y-states.spec.ts`
+  covers the explicit cookie and forced colours in the dark theme. Adding a theme = one pair
+  of blocks in `tokens.css`, one value in `THEMES`, one icon and three strings. No new
+  dependency; the icons are three more Remix Icon v4.8.0 paths (D-4).
+
+## D-21 · Pagination keeps the scroll and the focus; the window stays at five numbers
+
+- **Date / branch**: 2026-09-13 · `fix/51-pagination-scroll-and-far-pages` (#51)
+- **Context**: the plan (§4 catalogue, announcements table) moved the focus to
+  `#results-heading` on every page change so a vanishing previous/next control never held it.
+  In practice the focus call scrolled the viewport up to the heading and, on top of it, the
+  pagination links had no `preventScrollReset`, so `<ScrollRestoration>` reset the scroll to
+  the top of the document on every push navigation: a visitor reading the pagination was thrown
+  to the top of the grid on every click. The issue also asked for first and last page links
+  around the window (`1 … 7 8 9 10 11 … 22`) because the shop has 22 pages and the wireframe's
+  `1 2 3 4 5 >` only reflects a five-page mock.
+- **Decision**:
+  - A page change moves neither the viewport nor the focus: every pagination link carries
+    `preventScrollReset` and the focus stays on the clicked link. Page links are keyed by
+    number, so a link that survives the window shift keeps its DOM element (and the focus)
+    while becoming the current page. When the clicked control no longer exists — previous/next
+    at the ends, a mouse click in a browser that does not focus links — `CatalogueResults`
+    moves the focus to the current page link with `preventScroll: true`. The focus never lands
+    on a control that is gone; the results announcement is unchanged. Without JavaScript the
+    browser does a full navigation and lands at the top: expected, out of scope.
+  - The row keeps the wireframe's window of five numbers with previous/next. The first and
+    last page links with `aria-hidden` ellipses were implemented, reviewed and then dropped on
+    the same branch: nine items in the row read as noise for a catalogue this size, and the
+    window already slides one page per click. Reaching a far page stays a matter of repeated
+    Next clicks (the focus now stays on Next, so it is one key per page) or of editing `?page`.
+- **Consequences**: `catalogue.spec.ts` and `search.spec.ts` assert `window.scrollY` and the
+  focused link instead of `#results-heading`, plus the window shift and the vanishing-Next
+  handover; `targets.spec.ts` measures the seven pagination links. `#results-heading` keeps
+  `tabIndex={-1}` for the grid's `aria-labelledby` and for any future programmatic focus.
+  `pageWindow` is unchanged. No new dependency, no new icon, no new string.
 
 ## TO VERIFY resolutions
 

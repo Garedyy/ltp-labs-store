@@ -7,7 +7,7 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "icon";
 type ButtonSize = "md" | "sm";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 no-underline font-medium text-tagline motion-safe:transition-colors forced-colors:border";
+  "inline-flex items-center justify-center gap-2 no-underline font-medium text-tagline motion-safe:transition motion-safe:duration-150 active:scale-[0.97] forced-colors:border";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: "rounded-xl bg-primary text-primary-fg hover:bg-primary-hover disabled:bg-fg-muted",
@@ -17,9 +17,10 @@ const VARIANTS: Record<ButtonVariant, string> = {
   icon: "size-11 rounded-xl border border-border-strong bg-surface text-primary hover:bg-surface-muted",
 };
 
+// Both sizes keep the 44 px target; sm only tightens the horizontal padding.
 const SIZES: Record<ButtonSize, string> = {
   md: "min-h-11 px-5 py-2",
-  sm: "min-h-9 px-3 py-1",
+  sm: "min-h-11 px-3 py-1",
 };
 
 function buttonClasses(variant: ButtonVariant, size: ButtonSize, className?: string) {

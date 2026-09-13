@@ -5,7 +5,6 @@ export type CartIntent =
   | { type: "remove"; productId: number }
   | { type: "apply-promo"; code: string }
   | { type: "remove-promo" }
-  | { type: "checkout"; payment: PaymentMethod }
   | { type: "invalid" };
 
 function productIdFrom(form: FormData): number | null {
@@ -20,8 +19,9 @@ export function parseCartIntent(form: FormData): CartIntent {
   switch (intent) {
     case "set-quantity": {
       if (productId === null) return { type: "invalid" };
-      // The text input and the +/- submitter share the name: the submitter (last) wins.
-      const raw = String(form.getAll("quantity").at(-1) ?? "").trim();
+      // A clicked +/- button (`setQuantity`) overrides the typed value. They need distinct names:
+      // the browser serialises the submitter at its DOM position, not last.
+      const raw = String(form.get("setQuantity") ?? form.get("quantity") ?? "").trim();
       const quantity = /^-?\d+$/.test(raw) ? Number(raw) : null;
       return { type: "set-quantity", productId, quantity };
     }
@@ -31,13 +31,21 @@ export function parseCartIntent(form: FormData): CartIntent {
       return { type: "apply-promo", code: String(form.get("code") ?? "") };
     case "remove-promo":
       return { type: "remove-promo" };
-    case "checkout": {
-      const payment = form.get("payment");
-      return { type: "checkout", payment: payment === "paypal" ? "paypal" : "card" };
-    }
     default:
       return { type: "invalid" };
   }
+}
+
+// The product route's intents: add puts one unit in the cart; buy-now orders one unit on its own.
+export type AddIntent = "add" | "buy-now";
+
+export function isAddIntent(value: unknown): value is AddIntent {
+  return value === "add" || value === "buy-now";
+}
+
+// The payment page's method, from the URL (preselection) or the submitted radio; card by default.
+export function parsePaymentMethod(value: unknown): PaymentMethod {
+  return value === "paypal" ? "paypal" : "card";
 }
 
 export function isNoJs(form: FormData): boolean {

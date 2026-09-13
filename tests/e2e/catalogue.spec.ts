@@ -1,19 +1,29 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test, type TestInfo } from "@playwright/test";
 
 const cards = (page: Page) =>
   page.getByRole("list", { name: /Showing|A mostrar/ }).getByRole("article");
 const sortApply = (page: Page) =>
   page.locator("form", { has: page.getByRole("combobox") }).getByRole("button", { name: "Apply" });
+const results = (page: Page) => page.getByRole("status").filter({ hasText: /^Showing \d+ to/ });
+const categoriesToggle = (page: Page) => page.getByRole("button", { name: "Categories" });
+
+// Below lg the categories fold under the toolbar (#31); the phone project unfolds them first.
+async function openCategories(page: Page, testInfo: TestInfo) {
+  if (testInfo.project.name === "mobile-chromium") await categoriesToggle(page).click();
+}
 
 test.describe("catalogue", () => {
-  test("shows nine cards, the summary, the categories and the pagination", async ({ page }) => {
-    await page.goto("/en");
+  test("shows nine cards, the summary, the categories and the pagination", async ({
+    page,
+  }, testInfo) => {
+    await page.goto("/en/shop");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
     await expect(cards(page)).toHaveCount(9);
-    await expect(page.getByText("Showing 1–9 of 194")).toBeVisible();
+    await expect(page.getByText("Showing 1-9 of 194")).toBeVisible();
+    await openCategories(page, testInfo);
     await expect(page.getByRole("checkbox")).toHaveCount(24);
     const pagination = page.getByRole("navigation", { name: "Pagination" });
-    await expect(pagination.getByRole("link", { name: "Page 1" })).toHaveAttribute(
+    await expect(pagination.getByRole("link", { name: "Page 1", exact: true })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -29,58 +39,177 @@ test.describe("catalogue", () => {
     await expect(first.getByRole("link")).toHaveAttribute("href", "/en/products/1");
   });
 
-  test("sorting needs Apply and changes the first title", async ({ page }) => {
-    await page.goto("/en");
-    await page.getByRole("combobox", { name: "Sort by" }).selectOption("price-desc");
-    await expect(page).toHaveURL(/\/en$/);
-    await sortApply(page).click();
-    await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+  test("choosing a sort applies it, keeps the focus on the select and announces", async ({
+    page,
+  }) => {
+    await page.goto("/en/shop?page=2");
+    const sort = page.getByRole("combobox", { name: "Sort by" });
+    await expect(sort).toHaveAccessibleDescription("Results update when you choose");
+    // selectOption does not focus the element the way a user does.
+    await sort.focus();
+    await sort.selectOption("price-desc");
+    await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
     await expect(cards(page).first().getByRole("heading")).toHaveText("Durango SXT RWD");
-    await expect(page.getByRole("combobox", { name: "Sort by" })).toHaveValue("price-desc");
+    await expect(sort).toHaveValue("price-desc");
+    await expect(sort).toBeFocused();
+    await expect(results(page).filter({ hasText: "Showing 1 to 9 of 194" })).toHaveCount(1);
+
+    await sort.selectOption("");
+    await expect(page).toHaveURL(/\/en\/shop$/);
+    await expect(sort).toHaveValue("");
+    await expect(cards(page).first().getByRole("heading")).toHaveText(
+      "Essence Mascara Lash Princess",
+    );
+
+    // The select follows the URL, not the last choice.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
+    await expect(sort).toHaveValue("price-desc");
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\/shop\?page=2$/);
+    await expect(sort).toHaveValue("");
   });
 
-  test("a category filters, changes the title and can be cleared", async ({ page }) => {
-    await page.goto("/en?page=3");
+  test("the sort Apply button is hidden until it receives the focus", async ({ page }) => {
+    await page.goto("/en/shop");
+    await expect(sortApply(page)).toBeAttached();
+    await expect(sortApply(page)).not.toBeInViewport();
+    await page.getByRole("combobox", { name: "Sort by" }).focus();
+    await page.keyboard.press("Tab");
+    await expect(sortApply(page)).toBeFocused();
+    await expect(sortApply(page)).toBeInViewport();
+  });
+
+  test("a category filters, changes the title and can be cleared", async ({ page }, testInfo) => {
+    await page.goto("/en/shop?page=3");
+    await openCategories(page, testInfo);
     const beauty = page.getByRole("checkbox", { name: "Beauty" });
     await beauty.check();
-    await expect(page).toHaveURL(/\/en\?category=beauty$/);
+    await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
     await expect(beauty).toBeFocused();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Beauty");
-    await expect(page).toHaveTitle("Beauty — The Online Store");
-    await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+    await expect(page).toHaveTitle("Beauty - The Online Store");
+    await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Pagination" })).toHaveCount(0);
 
     await page.getByRole("checkbox", { name: "Laptops" }).check();
-    await expect(page).toHaveURL(/\/en\?category=laptops$/);
+    await expect(page).toHaveURL(/\/en\/shop\?category=laptops$/);
     await expect(page.getByRole("checkbox", { name: "Beauty" })).not.toBeChecked();
 
     await page.getByRole("link", { name: "Clear filter" }).click();
-    await expect(page).toHaveURL(/\/en$/);
+    await expect(page).toHaveURL(/\/en\/shop$/);
     await expect(page.locator("fieldset")).toBeFocused();
+  });
+
+  test("on a phone, Categories unfolds the list under the toolbar and Escape folds it back", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-chromium", "phone layout only");
+    await page.goto("/en/shop");
+    const toggle = categoriesToggle(page);
+    const beauty = page.getByRole("checkbox", { name: "Beauty" });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(beauty).toBeHidden();
+    await expect(page.getByRole("link", { name: "Jump to categories" })).toBeHidden();
+
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator("#categories")).toBeFocused();
+    await expect(beauty).toBeVisible();
+    const panelTop = (await page.getByRole("complementary").boundingBox())?.y ?? Infinity;
+    const gridTop = (await cards(page).first().boundingBox())?.y ?? 0;
+    expect(panelTop).toBeLessThan(gridTop);
+
+    // Choosing keeps the list open and the focus on the checkbox, as on desktop.
+    await beauty.check();
+    await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
+    await expect(beauty).toBeFocused();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toBeFocused();
+    await expect(beauty).toBeHidden();
+    await toggle.click();
+    await expect(beauty).toBeVisible();
+    await toggle.click();
+    await expect(beauty).toBeHidden();
+    await expect(toggle).toBeFocused();
+  });
+
+  test("on desktop the categories stay unfolded and the toggle is absent", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop-chromium", "desktop layout only");
+    await page.goto("/en/shop");
+    await expect(categoriesToggle(page)).toBeHidden();
+    await expect(page.getByRole("checkbox", { name: "Beauty" })).toBeVisible();
+    const jump = page.getByRole("link", { name: "Jump to categories" });
+    await expect(jump).not.toBeInViewport();
+    await jump.focus();
+    await expect(jump).toBeInViewport();
   });
 
   test("page 22 renders, page 23 is a 404 inside the shell, an unknown category redirects", async ({
     page,
   }) => {
-    await page.goto("/en?page=22");
-    await expect(page.getByText("Showing 190–194 of 194")).toBeVisible();
-    await expect(page).toHaveTitle("Shop — page 22 — The Online Store");
-    const missing = await page.goto("/en?page=23");
+    await page.goto("/en/shop?page=22");
+    await expect(page.getByText("Showing 190-194 of 194")).toBeVisible();
+    await expect(page).toHaveTitle("Shop - page 22 - The Online Store");
+    const missing = await page.goto("/en/shop?page=23");
     expect(missing?.status()).toBe(404);
     await expect(page.getByRole("banner")).toBeVisible();
-    await page.goto("/en?category=foo&sort=price-asc");
-    await expect(page).toHaveURL(/\/en\?sort=price-asc$/);
+    await page.goto("/en/shop?category=foo&sort=price-asc");
+    await expect(page).toHaveURL(/\/en\/shop\?sort=price-asc$/);
   });
 
-  test("a page change focuses the results heading and announces the range", async ({ page }) => {
-    await page.goto("/en");
-    await page.getByRole("link", { name: "Page 2" }).click();
-    await expect(page).toHaveURL(/\/en\?page=2$/);
-    await expect(page.locator("#results-heading")).toBeFocused();
-    await expect(page.getByText("Showing 10–18 of 194")).toBeVisible();
+  test("a page change keeps the scroll and the focus on the clicked link and announces the range", async ({
+    page,
+  }) => {
+    await page.goto("/en/shop");
+    const pageTwo = page.getByRole("link", { name: "Page 2", exact: true });
+    await pageTwo.scrollIntoViewIfNeeded();
+    const scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBeGreaterThan(0);
+    await pageTwo.click();
+    await expect(page).toHaveURL(/\/en\/shop\?page=2$/);
+    await expect(page.getByText("Showing 10-18 of 194")).toBeVisible();
+    await expect(pageTwo).toHaveAttribute("aria-current", "page");
+    await expect(pageTwo).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
     await expect(
       page.getByRole("status").filter({ hasText: "Showing 10 to 18 of 194 products" }),
     ).toHaveCount(1);
+  });
+
+  test("the window slides with the page and a vanishing Next hands the focus to the current page", async ({
+    page,
+  }) => {
+    await page.goto("/en/shop?page=9");
+    const pagination = page.getByRole("navigation", { name: "Pagination" });
+    await expect(pagination.getByRole("link")).toHaveText([
+      "Previous page",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "Next page",
+    ]);
+
+    const next = pagination.getByRole("link", { name: "Next page" });
+    await next.click();
+    await expect(page).toHaveURL(/\/en\/shop\?page=10$/);
+    await expect(next).toBeFocused();
+    await expect(pagination.getByRole("link", { name: "Page 12", exact: true })).toBeVisible();
+
+    await page.goto("/en/shop?page=21");
+    await next.click();
+    await expect(page).toHaveURL(/\/en\/shop\?page=22$/);
+    await expect(next).toHaveCount(0);
+    await expect(pagination.getByRole("link", { name: "Page 22", exact: true })).toBeFocused();
   });
 
   test("a product service failure renders the 502 page in the shell", async ({ page }) => {
@@ -93,9 +222,9 @@ test.describe("catalogue", () => {
   test("Portuguese: prices use the locale, category names are translated, titles keep lang=en", async ({
     page,
   }) => {
-    await page.goto("/pt?category=beauty");
+    await page.goto("/pt/shop?category=beauty");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Beleza");
-    await expect(page.getByText("A mostrar 1–5 de 5")).toBeVisible();
+    await expect(page.getByText("A mostrar 1-5 de 5")).toBeVisible();
     await expect(cards(page).first()).toContainText("9,99 US$");
     await expect(cards(page).first().getByRole("link")).toHaveAttribute("lang", "en");
   });

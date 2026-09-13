@@ -1,9 +1,14 @@
 export default {
   brand: "The Online Store",
-  tagline: "Coding challenge for LTP Labs — demo store",
+  tagline: "Coding challenge for LTP Labs - demo store",
   skipToContent: "Skip to main content",
   loading: "Loading",
   errorPrefix: "Error:",
+  backTo: {
+    shop: "Back to the shop",
+    cart: "Back to the cart",
+    product: "Back to the product",
+  },
   nav: {
     label: "Main",
     footerLabel: "Footer",
@@ -25,5 +30,13 @@ export default {
     label: "Language",
     current: "{{code}}, {{name}}. Change language",
     switchTo: "Switch to {{name}}",
+  },
+  theme: {
+    label: "Theme",
+    current: "Theme: {{name}}. Change theme",
+    applied: "{{name}} theme applied",
+    system: "System",
+    light: "Light",
+    dark: "Dark",
   },
 };

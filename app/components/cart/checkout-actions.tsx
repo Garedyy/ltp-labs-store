@@ -1,41 +1,30 @@
 import { useTranslation } from "react-i18next";
-import { Form } from "react-router";
+import { href } from "react-router";
 
-import { Button } from "~/components/ui/button";
+import { ButtonLink } from "~/components/ui/button";
+import { useLocale } from "~/i18n/use-locale";
 
-// Both buttons share the checkout intent; the whole form is a full navigation to the confirmation.
+// Both buttons open the payment page; PayPal only preselects the method there (URL as state).
 export function CheckoutActions() {
   const { t } = useTranslation();
+  const lang = useLocale();
+  const checkout = href("/:lang/checkout", { lang });
   return (
-    <Form
-      method="post"
-      noValidate
-      aria-label={t("cart.summary.checkout")}
-      className="flex flex-col gap-3"
-    >
-      <input type="hidden" name="intent" value="checkout" />
-      <Button
-        type="submit"
-        name="payment"
-        value="card"
-        aria-describedby="checkout-demo-note"
-        className="w-full"
-      >
+    <div className="flex flex-col gap-3">
+      <ButtonLink to={checkout} aria-describedby="checkout-demo-note" className="w-full">
         {t("cart.summary.checkout")}
-      </Button>
-      <Button
-        type="submit"
-        name="payment"
-        value="paypal"
+      </ButtonLink>
+      <ButtonLink
+        to={`${checkout}?method=paypal`}
         variant="secondary"
         aria-describedby="checkout-demo-note"
         className="w-full"
       >
         {t("cart.summary.paypal")}
-      </Button>
+      </ButtonLink>
       <p id="checkout-demo-note" className="text-body-sm text-fg-muted">
         {t("cart.summary.demoNote")}
       </p>
-    </Form>
+    </div>
   );
 }

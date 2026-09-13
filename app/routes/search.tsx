@@ -71,15 +71,7 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
 export default function Search({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
   const { q, view } = loaderData;
-
-  if (!view) {
-    return (
-      <div className="flex flex-col gap-6">
-        <h1 className="text-h4 font-medium">{t("catalogue.search.title")}</h1>
-        <SearchForm q={q} hint={t("catalogue.search.prompt")} />
-      </div>
-    );
-  }
+  const prompt = t("catalogue.search.prompt");
 
   return (
     <CatalogueResults
@@ -88,7 +80,8 @@ export default function Search({ loaderData }: Route.ComponentProps) {
       emptyTitle={t("catalogue.search.noResults", { q })}
       emptyBody={t("catalogue.search.hint")}
       announce={{ key: SEARCH_ANNOUNCE, values: { q } }}
-      toolbarStart={<SearchForm q={q} />}
+      emptyAnnouncement={prompt}
+      toolbarStart={<SearchForm q={q} hint={view ? undefined : prompt} />}
     />
   );
 }

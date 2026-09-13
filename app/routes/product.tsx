@@ -1,11 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { data, type ShouldRevalidateFunctionArgs } from "react-router";
+import { data, href, redirect, type ShouldRevalidateFunctionArgs } from "react-router";
 
 import { AddToCartForm, type AddResult } from "~/components/product/add-to-cart-form";
 import { ProductGallery } from "~/components/product/product-gallery";
 import { ProductInfoList } from "~/components/product/product-info-list";
 import { ReviewList } from "~/components/product/review-list";
 import { StockStatus } from "~/components/product/stock-status";
+import { BackLink } from "~/components/ui/back-link";
 import { DiscountBadge } from "~/components/ui/discount-badge";
 import { Price } from "~/components/ui/price";
 import { Rating } from "~/components/ui/rating";
@@ -16,7 +17,7 @@ import { pageMeta } from "~/lib/meta";
 import { buildProductView } from "~/lib/product/view.server";
 import { getInstance, getLocale } from "~/middleware/i18next";
 import { addLine, countItems, MAX_QUANTITY, sanitiseLines } from "~/services/cart/cart";
-import { isNoJs } from "~/services/cart/intents";
+import { isAddIntent, isNoJs } from "~/services/cart/intents";
 import { commitCartSession, getCartSession } from "~/services/cart/session.server";
 import { getProduct } from "~/services/dummyjson/products.server";
 import type { Route } from "./+types/product";
@@ -50,11 +51,17 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
   );
 }
 
-// The product route owns intent=add; the cart route owns every other intent.
-export async function action({ params, request, url }: Route.ActionArgs) {
+// The product route owns intent=add and intent=buy-now; the cart route owns the cart's intents and
+// the checkout route owns place-order. Buy now is a one-unit purchase of this product alone (D-12,
+// D-15): the cart is neither included nor touched, and the action answers 303 to the payment page
+// in product mode with or without JavaScript.
+export async function action({ params, context, request, url }: Route.ActionArgs) {
   const id = productIdFrom(params);
+  const locale = getLocale(context);
+  if (!isLocale(locale)) notFound();
   const form = await request.formData();
-  if (form.get("intent") !== "add") throw data({ code: "invalid-intent" }, { status: 400 });
+  const intent = form.get("intent");
+  if (!isAddIntent(intent)) throw data({ code: "invalid-intent" }, { status: 400 });
 
   const session = await getCartSession(request);
   session.unset("lastOrder");
@@ -66,7 +73,12 @@ export async function action({ params, request, url }: Route.ActionArgs) {
   let result: AddResult;
   if (!product) result = { ok: false, error: "product-not-found" };
   else if (product.stock <= 0) result = { ok: false, error: "out-of-stock" };
-  else {
+  else if (intent === "buy-now") {
+    throw redirect(`${href("/:lang/checkout", { lang: locale })}?product=${id}`, {
+      status: 303,
+      headers: { "Set-Cookie": await commitCartSession(session) },
+    });
+  } else {
     const max = Math.min(MAX_QUANTITY, product.stock);
     const added = addLine(lines, id, max);
     if (added.full) result = { ok: false, error: "cart-full" };
@@ -123,43 +135,49 @@ export default function Product({ loaderData }: Route.ComponentProps) {
   const { view } = loaderData;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12">
-      <ProductGallery title={view.title} images={view.images} />
-      <div className="flex flex-col gap-4">
-        <h1 className="text-h3 font-medium md:text-h2" lang={lang}>
-          {view.title}
-        </h1>
-        <Rating
-          value={view.rating}
-          valueFormatted={view.ratingFormatted}
-          label={t("product.rating.label", {
-            value: view.ratingFormatted,
-            count: view.reviewCount,
-          })}
-        />
-        <div className="flex flex-wrap items-center gap-3">
-          <Price
-            priceFormatted={view.priceFormatted}
-            originalPriceFormatted={view.originalPriceFormatted}
-            labels={{ price: t("product.price.sale"), originalPrice: t("product.price.original") }}
-            className="text-h4"
+    <div className="flex flex-col gap-4">
+      <BackLink to={href("/:lang/shop", { lang: locale })}>{t("common.backTo.shop")}</BackLink>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12">
+        <ProductGallery title={view.title} images={view.images} />
+        <div className="flex flex-col gap-4">
+          <h1 className="text-h3 font-medium md:text-h2" lang={lang}>
+            {view.title}
+          </h1>
+          <Rating
+            value={view.rating}
+            valueFormatted={view.ratingFormatted}
+            label={t("product.rating.label", {
+              value: view.ratingFormatted,
+              count: view.reviewCount,
+            })}
           />
-          {view.discountFormatted && <DiscountBadge percentFormatted={view.discountFormatted} />}
+          <div className="flex flex-wrap items-center gap-3">
+            <Price
+              priceFormatted={view.priceFormatted}
+              originalPriceFormatted={view.originalPriceFormatted}
+              labels={{
+                price: t("product.price.sale"),
+                originalPrice: t("product.price.original"),
+              }}
+              className="text-h4"
+            />
+            {view.discountFormatted && <DiscountBadge percentFormatted={view.discountFormatted} />}
+          </div>
+          <StockStatus stock={view.stock} />
+          <AddToCartForm productId={view.id} inStock={view.inStock} flash={loaderData.flash} />
+          <section aria-labelledby="details-heading" className="border-t border-border pt-4">
+            <h2 id="details-heading" className="text-body-sm font-medium tracking-wide uppercase">
+              {t("product.details.heading")}
+            </h2>
+            <p className="mt-2 text-body-sm" lang={lang}>
+              {view.description}
+            </p>
+          </section>
+          <ProductInfoList items={view.info} tags={view.tags} lang={lang} />
         </div>
-        <StockStatus stock={view.stock} />
-        <AddToCartForm productId={view.id} inStock={view.inStock} flash={loaderData.flash} />
-        <section aria-labelledby="details-heading" className="border-t border-border pt-4">
-          <h2 id="details-heading" className="text-body-sm font-medium tracking-wide uppercase">
-            {t("product.details.heading")}
-          </h2>
-          <p className="mt-2 text-body-sm" lang={lang}>
-            {view.description}
-          </p>
-        </section>
-        <ProductInfoList items={view.info} tags={view.tags} lang={lang} />
-      </div>
-      <div className="lg:col-span-2">
-        <ReviewList reviews={view.reviews} lang={lang} />
+        <div className="lg:col-span-2">
+          <ReviewList reviews={view.reviews} lang={lang} />
+        </div>
       </div>
     </div>
   );

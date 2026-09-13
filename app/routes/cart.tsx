@@ -1,20 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { data, href, redirect, useFetchers } from "react-router";
+import { data, href, useFetchers } from "react-router";
 
 import { CartLineItem } from "~/components/cart/cart-line-item";
-import { CartNotice } from "~/components/cart/cart-notice";
 import { CartSummary } from "~/components/cart/cart-summary";
 import type { CartActionResult } from "~/components/cart/cart-types";
 import { CheckoutActions } from "~/components/cart/checkout-actions";
 import { EmptyCart } from "~/components/cart/empty-cart";
 import { PromoCodeForm } from "~/components/cart/promo-code-form";
+import { FormNotice } from "~/components/forms/form-notice";
 import { useAnnounce } from "~/components/layout/announcer";
 import { Alert } from "~/components/ui/alert";
+import { BackLink } from "~/components/ui/back-link";
 import { isLocale } from "~/i18n/config";
-import { formatPrice } from "~/i18n/format.server";
+import { useLocale } from "~/i18n/use-locale";
 import { ERROR_MESSAGE_KEYS } from "~/lib/error-codes";
-import { notFound, redirectBack, toRouteError } from "~/lib/http";
+import { badRequest, notFound, redirectBack, toRouteError } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
 import { noticeText } from "~/lib/notices";
 import { getInstance, getLocale } from "~/middleware/i18next";
@@ -64,7 +65,7 @@ export async function action(args: Route.ActionArgs) {
 async function act({ context, request, url }: Route.ActionArgs) {
   const locale = getLocale(context);
   if (!isLocale(locale)) notFound();
-  const form = await request.formData();
+  const form = await request.formData().catch(badRequest);
   const intent = parseCartIntent(form);
   const session = await getCartSession(request);
   session.unset("lastOrder");
@@ -122,26 +123,6 @@ async function act({ context, request, url }: Route.ActionArgs) {
       session.unset("promoCode");
       result = { ok: true, notice: "promo-removed" };
       break;
-    case "checkout": {
-      const loaded = await loadCartView(request, locale);
-      if (loaded.view.lines.length === 0) {
-        result = { ok: false, error: "empty-cart" };
-        break;
-      }
-      session.set("lastOrder", {
-        number: `LTP-${Date.now().toString(36).toUpperCase()}`,
-        method: intent.payment,
-        totalCents: loaded.view.totals.totalCents,
-        itemCount: loaded.view.cartCount,
-        totalFormatted: formatPrice(loaded.view.totals.totalCents, locale),
-      });
-      session.unset("cart");
-      session.unset("promoCode");
-      throw redirect(href("/:lang/checkout/confirmation", { lang: locale }), {
-        status: 303,
-        headers: { "Set-Cookie": await commitCartSession(session) },
-      });
-    }
     default:
       result = { ok: false, error: "invalid-intent" };
   }
@@ -163,6 +144,9 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
     brand: matches[0].loaderData.brand,
   });
 }
+
+// Arriving from the payment page with a refusal, the route announcer focuses the alert, not main.
+export const handle = { initialFocus: "#checkout-refused" };
 
 type RemovalTarget = { removed: number; next?: number; previous?: number };
 
@@ -214,11 +198,36 @@ function useCartResults(onResult: (result: CartActionResult) => void) {
   }, [fetchers, onResult]);
 }
 
+// The payment page sends an emptied cart back here with a flashed `empty-cart`. The control that
+// held the focus is gone with the page, so the alert takes it: through `autoFocus` on the no-JS
+// document, through the effect once mounted by JS.
+function CheckoutRefused({ result }: { result?: CartActionResult }) {
+  const { t } = useTranslation();
+  const alert = useRef<HTMLDivElement>(null);
+  const refused = result && !result.ok && result.error === "empty-cart" ? result.error : null;
+  useEffect(() => {
+    if (refused) alert.current?.focus();
+  }, [refused]);
+  if (!refused) return null;
+  return (
+    <Alert
+      ref={alert}
+      id="checkout-refused"
+      prefix={t("common.errorPrefix")}
+      tabIndex={-1}
+      // eslint-disable-next-line jsx-a11y/no-autofocus -- no-JS render hands focus to the error
+      autoFocus
+    >
+      {t(`errors.${ERROR_MESSAGE_KEYS[refused]}.title`)}
+    </Alert>
+  );
+}
+
 export default function Cart({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation();
+  const lang = useLocale();
   const announce = useAnnounce();
   const { view, flash, reconciliation } = loaderData;
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const productIds = view.lines.map((line) => line.productId);
   const planRemovalFocus = useRemovalFocus(productIds);
 
@@ -229,8 +238,6 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
         if (result.notice === "removed" && result.productId !== undefined) {
           planRemovalFocus(result.productId);
         }
-      } else if (result.error === "empty-cart") {
-        setCheckoutError(t(`errors.${ERROR_MESSAGE_KEYS[result.error]}.title`));
       }
     },
     [announce, t, planRemovalFocus],
@@ -242,7 +249,8 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
   if (view.lines.length === 0) {
     return (
       <>
-        {notice?.ok && <CartNotice>{noticeText(t, notice)}</CartNotice>}
+        {notice?.ok && <FormNotice>{noticeText(t, notice)}</FormNotice>}
+        <CheckoutRefused result={flash} />
         <EmptyCart />
       </>
     );
@@ -254,13 +262,12 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12">
       <div className="flex min-w-0 flex-col gap-4">
+        <BackLink to={href("/:lang/shop", { lang })}>{t("common.backTo.shop")}</BackLink>
         <h1 id="cart-heading" tabIndex={-1} className="text-h4 font-medium">
           {t("cart.title")}
         </h1>
-        {notice?.ok && <CartNotice>{noticeText(t, notice)}</CartNotice>}
-        {notice && !notice.ok && notice.error === "empty-cart" && (
-          <Alert prefix={t("common.errorPrefix")}>{t("errors.emptyCart.title")}</Alert>
-        )}
+        {notice?.ok && <FormNotice>{noticeText(t, notice)}</FormNotice>}
+        <CheckoutRefused result={flash} />
         <ul aria-label={t("cart.items.heading")} className="divide-y divide-border">
           {view.lines.map((line) => (
             <CartLineItem key={line.productId} item={line} flash={lineFlash(line.productId)} />
@@ -268,7 +275,6 @@ export default function Cart({ loaderData }: Route.ComponentProps) {
         </ul>
       </div>
       <CartSummary totals={view.totals}>
-        {checkoutError && <Alert prefix={t("common.errorPrefix")}>{checkoutError}</Alert>}
         <CheckoutActions />
         <PromoCodeForm
           promoCode={view.promoCode}

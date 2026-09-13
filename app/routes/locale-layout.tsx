@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { data, Outlet, redirect } from "react-router";
+import { data, Outlet, redirect, useLocation } from "react-router";
 
 import { AnnouncerProvider } from "~/components/layout/announcer";
 import { useNavigationPending } from "~/components/layout/navigation-status";
@@ -51,15 +51,20 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { cartCount: countItems(sanitiseLines(session.get("cart"))) };
 }
 
+// The page wrapper is keyed by pathname so the enter animation replays on every page change
+// (search-param changes keep the in-place pending fade); as plain CSS it also runs without JS.
 function Shell({ cartCount, children }: { cartCount: number; children: React.ReactNode }) {
   const { t } = useTranslation();
   const pending = useNavigationPending();
+  const { pathname } = useLocation();
   return (
     <AnnouncerProvider>
       <SkipLink>{t("common.skipToContent")}</SkipLink>
       <SiteHeader cartCount={cartCount} />
-      <main id="main" tabIndex={-1} aria-busy={pending || undefined} className="py-8">
-        <PageContainer>{children}</PageContainer>
+      <main id="main" tabIndex={-1} aria-busy={pending || undefined} className="grow py-8">
+        <div key={pathname} data-page className="motion-safe:animate-page-enter">
+          <PageContainer>{children}</PageContainer>
+        </div>
       </main>
       <SiteFooter />
       <RouteAnnouncer />

@@ -22,8 +22,8 @@ export function NavigationStatus() {
   return (
     <div
       aria-hidden="true"
-      className={`mx-auto mt-1 h-0.5 max-w-[87rem] rounded-full bg-accent transition-opacity duration-150 ${
-        pending ? "opacity-100 delay-300" : "opacity-0 delay-0"
+      className={`mx-auto mt-1 h-0.5 max-w-[87rem] rounded-full bg-accent motion-safe:transition-[opacity,transform] motion-safe:duration-150 motion-safe:ease-out ${
+        pending ? "translate-y-0 opacity-100 delay-300" : "-translate-y-1 opacity-0 delay-0"
       }`}
     />
   );
