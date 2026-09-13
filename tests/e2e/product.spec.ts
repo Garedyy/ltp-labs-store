@@ -20,6 +20,9 @@ test.describe("product detail", () => {
     const button = page.getByRole("button", { name: "Add to cart" });
     await expect(button).toBeEnabled();
     await expect(button).toHaveAccessibleDescription("In stock");
+    const buyNow = page.getByRole("button", { name: "Buy now" });
+    await expect(buyNow).toBeEnabled();
+    await expect(buyNow).toHaveAccessibleDescription("In stock");
     await expect(page.getByRole("heading", { level: 2, name: "Product details" })).toBeVisible();
     await expect(
       page.getByRole("heading", { level: 2, name: "Practical information" }),
@@ -55,12 +58,14 @@ test.describe("product detail", () => {
     expect(await page.evaluate(() => history.length)).toBe(historyLength);
   });
 
-  test("an out-of-stock product disables Add to cart and says so", async ({ page }) => {
+  test("an out-of-stock product disables Add to cart and Buy now and says so", async ({ page }) => {
     await page.goto("/en/products/117");
     await expect(page.getByText("Out of stock")).toBeVisible();
-    const button = page.getByRole("button", { name: "Add to cart" });
-    await expect(button).toBeDisabled();
-    await expect(button).toHaveAccessibleDescription("Out of stock");
+    for (const name of ["Add to cart", "Buy now"]) {
+      const button = page.getByRole("button", { name });
+      await expect(button).toBeDisabled();
+      await expect(button).toHaveAccessibleDescription("Out of stock");
+    }
   });
 
   test("a low-stock product shows the remaining count and a missing brand hides the row", async ({
@@ -88,6 +93,8 @@ test.describe("product detail", () => {
     await expect(page.getByText("Preço promocional")).toBeAttached();
     await expect(page.getByRole("heading", { level: 1 })).toHaveAttribute("lang", "en");
     await expect(page.getByText("Em stock")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Adicionar ao carrinho" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Comprar agora" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "3 avaliações" })).toBeVisible();
     await expect(page.locator("time").first()).toHaveText(/\d{2}\/\d{2}\/\d{4}/);
   });

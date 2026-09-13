@@ -109,7 +109,8 @@ pathless `locale-errors.tsx` (shared `ErrorBoundary` so leaf errors render insid
 resource route and the **only** writer of the `lng` cookie. Loaders/actions/middleware read `url`
 from their args, never parse `request.url` (client navigations carry `.data` suffixes).
 
-**Action ownership**: the product route owns `intent=add`; the cart route owns
+**Action ownership**: the product route owns `intent=add` and `intent=buy-now` (a one-unit order
+of that product alone, cart untouched, D-12); the cart route owns
 `set-quantity | remove | apply-promo | remove-promo | checkout`. Quantities are always absolute (no
 `+1`/`-1` intents) so rapid clicks are idempotent. Every action clears `lastOrder` and commits the
 session. Error/notice codes are a single union in `app/lib/error-codes.ts` mapped to translation

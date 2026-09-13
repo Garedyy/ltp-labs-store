@@ -56,6 +56,24 @@ test("adding to the cart twice without JavaScript redirects back and a refresh d
   await expect(page.getByRole("status").filter({ hasText: "You now have" })).toHaveCount(0);
 });
 
+test("Buy now without JavaScript lands on the confirmation and keeps the cart", async ({
+  page,
+}) => {
+  await page.goto("/en/products/2");
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Buy now" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+  await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+  await page.goto("/en/cart");
+  await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveCount(1);
+});
+
 test("the cart works without JavaScript: stepper, promo, remove, checkout", async ({ page }) => {
   await page.goto("/en/products/1");
   await page.getByRole("button", { name: "Add to cart" }).click();

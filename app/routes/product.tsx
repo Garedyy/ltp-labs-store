@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { data, type ShouldRevalidateFunctionArgs } from "react-router";
+import { data, href, redirect, type ShouldRevalidateFunctionArgs } from "react-router";
 
 import { AddToCartForm, type AddResult } from "~/components/product/add-to-cart-form";
 import { ProductGallery } from "~/components/product/product-gallery";
@@ -10,14 +10,16 @@ import { DiscountBadge } from "~/components/ui/discount-badge";
 import { Price } from "~/components/ui/price";
 import { Rating } from "~/components/ui/rating";
 import { isLocale } from "~/i18n/config";
+import { formatPrice } from "~/i18n/format.server";
 import { useLocale } from "~/i18n/use-locale";
 import { notFound, redirectBack, toRouteError } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
 import { buildProductView } from "~/lib/product/view.server";
 import { getInstance, getLocale } from "~/middleware/i18next";
 import { addLine, countItems, MAX_QUANTITY, sanitiseLines } from "~/services/cart/cart";
-import { isNoJs } from "~/services/cart/intents";
+import { isAddIntent, isNoJs } from "~/services/cart/intents";
 import { commitCartSession, getCartSession } from "~/services/cart/session.server";
+import { computeTotals, toCents } from "~/services/cart/totals";
 import { getProduct } from "~/services/dummyjson/products.server";
 import type { Route } from "./+types/product";
 
@@ -50,11 +52,16 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
   );
 }
 
-// The product route owns intent=add; the cart route owns every other intent.
-export async function action({ params, request, url }: Route.ActionArgs) {
+// The product route owns intent=add and intent=buy-now; the cart route owns every other intent.
+// Buy now is a one-unit order of this product alone (D-12): the cart is neither included nor
+// touched, and the action answers 303 to the confirmation with or without JavaScript.
+export async function action({ params, context, request, url }: Route.ActionArgs) {
   const id = productIdFrom(params);
+  const locale = getLocale(context);
+  if (!isLocale(locale)) notFound();
   const form = await request.formData();
-  if (form.get("intent") !== "add") throw data({ code: "invalid-intent" }, { status: 400 });
+  const intent = form.get("intent");
+  if (!isAddIntent(intent)) throw data({ code: "invalid-intent" }, { status: 400 });
 
   const session = await getCartSession(request);
   session.unset("lastOrder");
@@ -66,7 +73,20 @@ export async function action({ params, request, url }: Route.ActionArgs) {
   let result: AddResult;
   if (!product) result = { ok: false, error: "product-not-found" };
   else if (product.stock <= 0) result = { ok: false, error: "out-of-stock" };
-  else {
+  else if (intent === "buy-now") {
+    const totals = computeTotals([{ unitCents: toCents(product.price), quantity: 1 }]);
+    session.set("lastOrder", {
+      number: `LTP-${Date.now().toString(36).toUpperCase()}`,
+      method: "card",
+      totalCents: totals.totalCents,
+      itemCount: 1,
+      totalFormatted: formatPrice(totals.totalCents, locale),
+    });
+    throw redirect(href("/:lang/checkout/confirmation", { lang: locale }), {
+      status: 303,
+      headers: { "Set-Cookie": await commitCartSession(session) },
+    });
+  } else {
     const max = Math.min(MAX_QUANTITY, product.stock);
     const added = addLine(lines, id, max);
     if (added.full) result = { ok: false, error: "cart-full" };

@@ -27,6 +27,9 @@ export default {
   },
   addToCart: "Adicionar ao carrinho",
   adding: "A adicionar…",
+  buyNow: "Comprar agora",
+  buyingNow: "A finalizar a compra…",
+  buyBlock: "Opções de compra",
   details: {
     heading: "Detalhes do produto",
   },
