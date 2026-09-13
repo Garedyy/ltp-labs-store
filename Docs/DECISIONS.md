@@ -477,9 +477,13 @@ none` was tried first and replayed the whole entrance on blur) and a small addit
     `<meta name="color-scheme">`; nothing runs on the client. `system` leaves the attribute
     off and the CSS follows `prefers-color-scheme`. The browser paints the canvas in the
     right colour from the meta before the stylesheet arrives, so no theme flashes.
-  - The dark roles are declared **twice with the same values** — `:root[data-theme="dark"]`
-    and `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }` — and
-    `contrast.test.ts` fails if the two blocks differ. `light-dark()` would give one block and
+  - The dark roles are declared **twice with the same values** —
+    `:root:where([data-theme="dark"])` and
+    `@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) }` — and
+    `contrast.test.ts` fails if the two blocks differ. `:where()` keeps both at the
+    specificity of `:root`, so the `prefers-contrast: more` remap declared later on bare
+    `:root` wins by source order in every theme (the first review of PR #48 caught the
+    (0,2,0) selectors silently disabling it in the dark theme). `light-dark()` would give one block and
     is the standard answer, but a `light-dark()` inside a custom property cannot be polyfilled
     by lightningcss (it only rewrites real colour properties) and the function is newer than
     the Safari 16.4 floor Tailwind v4 already imposes: an unsupported browser would lose every

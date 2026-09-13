@@ -43,6 +43,28 @@ test.describe("theme", () => {
     await expect.poll(() => surfaceOf(page)).toBe(LIGHT_SURFACE);
   });
 
+  test("the prefers-contrast remap still applies in the dark theme", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark", contrast: "more" });
+    await page.goto("/en");
+    const roles = () =>
+      page.locator("html").evaluate((html) => {
+        const style = getComputedStyle(html);
+        return {
+          fgMuted: style.getPropertyValue("--fg-muted").trim(),
+          fg: style.getPropertyValue("--fg").trim(),
+          border: style.getPropertyValue("--border").trim(),
+          borderStrong: style.getPropertyValue("--border-strong").trim(),
+        };
+      });
+    // Computed custom properties are substituted: muted text and borders resolve to the
+    // full-contrast dark-theme values, not to the dark-theme muted ones.
+    await expect.poll(async () => (await roles()).fgMuted).toBe("#f4f7f9");
+    const resolved = await roles();
+    expect(resolved.fgMuted).toBe(resolved.fg);
+    expect(resolved.border).toBe(resolved.borderStrong);
+    await expect.poll(() => surfaceOf(page)).toBe(DARK_SURFACE);
+  });
+
   test("an explicit choice is stored, rendered on the server and wins over the system", async ({
     page,
     context,

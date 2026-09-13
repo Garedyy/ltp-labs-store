@@ -155,7 +155,7 @@ DOM, React Router, i18next, react-i18next), `jsx-runtime` 28 KB, the React Route
 12 KB, react-i18next 8 KB, the current locale about 3 KB (locales are split per language and
 fetched by `load-locale.client`), the catalogue route 1.4 KB, plus around 14 KB of small shared
 chunks (layout, results list, primitives, error codes). Other route chunks: product 2.9 KB, cart
-3.9 KB. CSS: 7.7 KB gzip (6.7 KB before the motion scale of #43). The plan's target of less than 90 KB sits below the floor of React 19 +
+3.9 KB. CSS: 8.2 KB gzip (7.7 KB before the dark theme of #47, 6.7 KB before the motion scale of #43). The plan's target of less than 90 KB sits below the floor of React 19 +
 React Router 8 + i18next (`Docs/DECISIONS.md` D-9); what the app adds on top of the framework is
 about 18 KB.
 

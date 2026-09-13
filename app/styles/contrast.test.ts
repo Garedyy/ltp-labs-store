@@ -110,11 +110,17 @@ describe("dark theme", () => {
   });
 
   it("is declared once for the cookie and once for the system preference, identically", () => {
-    const explicit = block(':root[data-theme="dark"]');
-    const system = block(':root:not([data-theme="light"])');
+    const explicit = block(':root:where([data-theme="dark"])');
+    const system = block(':root:where(:not([data-theme="light"]))');
     expect(explicit).toContain("color-scheme: dark;");
     expect(explicit).toContain("--surface: var(--palette-dark-blue);");
     expect(system).toBe(explicit);
+  });
+
+  // The remap for prefers-contrast is declared on bare :root after the dark blocks; it can only
+  // win by source order if the dark selectors stay at the same specificity.
+  it("keeps the dark selectors at the specificity of :root", () => {
+    expect(css).not.toMatch(/:root\[data-theme|:root:not\(/);
   });
 });
 

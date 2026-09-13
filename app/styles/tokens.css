@@ -54,8 +54,9 @@
    cookie, rendered as data-theme on <html>), once for the system preference when nothing is
    chosen. contrast.test.ts checks that the two blocks stay identical and that every pairing
    keeps AA. Orange stays accent and focus only; focus-inner turns dark so the orange ring has
-   3:1 on both sides even around a light primary button. */
-:root[data-theme="dark"] {
+   3:1 on both sides even around a light primary button. :where() keeps both selectors at the
+   specificity of :root, so the prefers-contrast remap below still wins by source order. */
+:root:where([data-theme="dark"]) {
   color-scheme: dark;
   --surface: var(--palette-dark-blue);
   --surface-muted: var(--palette-dark-blue-lighter);
@@ -83,7 +84,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
     --surface: var(--palette-dark-blue);
     --surface-muted: var(--palette-dark-blue-lighter);

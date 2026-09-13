@@ -11,9 +11,11 @@ Three layers, so that components only ever use **semantic** colour utilities:
    `--palette-error-text`). No Tailwind utility is generated from them.
 2. **Semantic roles** — `--surface`, `--fg`, `--primary`, `--accent`, `--focus`… mapped to the
    palette for the light theme, then remapped for the dark theme (#47, D-20) in two identical
-   blocks: `:root[data-theme="dark"]` for an explicit choice and
-   `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }` for the system
-   preference; `contrast.test.ts` fails if the two blocks drift apart. Each block also sets
+   blocks: `:root:where([data-theme="dark"])` for an explicit choice and
+   `@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) }` for the
+   system preference; `contrast.test.ts` fails if the two blocks drift apart or if a selector
+   leaves `:where()` (the `prefers-contrast` remap on bare `:root` must keep winning by source
+   order). Each block also sets
    `color-scheme` so native controls follow. `@media (prefers-contrast: more)` remaps `--border`
    to `--border-strong`, `--fg-muted` to `--fg` and `--surface-muted` to `--surface`, whichever
    theme is active. A high-contrast theme would be one more pair of blocks.
