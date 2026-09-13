@@ -8,6 +8,15 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Home page split from the shop (#29). `/:lang` is now a landing page listing the eight
+  best-rated products (`sortBy=rating&order=desc`, one cached DummyJSON call) with a visible
+  "Trending products" heading and a "Browse the shop" link; the catalogue — sort, category filter,
+  pagination, the same URL parameters — moves to `/:lang/shop`. Old catalogue URLs on `/:lang`
+  that carry `q`, `category`, `sort` or `page` redirect permanently (301) to `/:lang/shop` with
+  the same search. Home and Shop each get `aria-current` on their own page; every "back to the
+  shop" link (empty states, error pages, coming-soon pages, "Continue shopping") targets the shop.
+  Translated in `en` and `pt`; recorded as D-13 in `Docs/DECISIONS.md` (plan decisions 6 and 22
+  superseded); `tests/e2e/routes.ts` scans the new routes and `home.spec.ts` covers the page.
 - Product page: a "Buy now" button next to "Add to cart" (#28). It orders one unit of the
   product shown, on its own — the cart is neither included nor touched, the cart's promo code
   does not apply — through the product route's new `buy-now` intent (same `out-of-stock` /

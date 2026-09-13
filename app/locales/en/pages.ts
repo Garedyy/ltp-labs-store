@@ -1,4 +1,10 @@
 export default {
+  home: {
+    title: "Trending products",
+    description: "Our best-rated products, picked from the whole catalogue.",
+    intro: "Our best-rated products, picked from the whole catalogue.",
+    browse: "Browse the shop",
+  },
   comingSoon: {
     body: "This page is not available yet. Check back soon.",
     backHome: "Back to the shop",

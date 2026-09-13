@@ -2,9 +2,12 @@ import { expect, test } from "@playwright/test";
 
 import { openLanguagePanel } from "./helpers";
 
-test("the catalogue renders without JavaScript", async ({ page }) => {
-  const response = await page.goto("/en");
-  expect(response?.status()).toBe(200);
+test("the home page and the catalogue render without JavaScript", async ({ page }) => {
+  const home = await page.goto("/en");
+  expect(home?.status()).toBe(200);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trending products");
+  const shop = await page.goto("/en/shop");
+  expect(shop?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
 });
 
@@ -17,21 +20,21 @@ test("the language switcher works without JavaScript", async ({ page }) => {
 });
 
 test("sorting and filtering work without JavaScript through the GET forms", async ({ page }) => {
-  await page.goto("/en");
+  await page.goto("/en/shop");
   await page.getByRole("combobox", { name: "Sort by" }).selectOption("price-desc");
   await page
     .locator("form", { has: page.getByRole("combobox") })
     .getByRole("button", { name: "Apply" })
     .click();
-  await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+  await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
   await page.getByRole("checkbox", { name: "Beauty" }).check();
   const applyFilter = page.locator("aside").getByRole("button", { name: "Apply" });
   await expect(applyFilter).toBeVisible();
   await applyFilter.click();
-  await expect(page).toHaveURL(/\/en\?category=beauty&sort=price-desc$/);
+  await expect(page).toHaveURL(/\/en\/shop\?category=beauty&sort=price-desc$/);
   await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
   await page.getByRole("link", { name: "Clear filter" }).click();
-  await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+  await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
 });
 
 test("searching works without JavaScript", async ({ page }) => {

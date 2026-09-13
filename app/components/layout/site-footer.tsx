@@ -14,7 +14,7 @@ export function SiteFooter() {
   const home = href("/:lang", { lang });
   const links = [
     ["home", home],
-    ["shop", home],
+    ["shop", href("/:lang/shop", { lang })],
     ["about", href("/:lang/about", { lang })],
     ["contact", href("/:lang/contact", { lang })],
     ["blog", href("/:lang/blog", { lang })],

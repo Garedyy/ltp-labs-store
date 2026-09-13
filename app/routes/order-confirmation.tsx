@@ -57,7 +57,9 @@ export default function OrderConfirmation({ loaderData }: Route.ComponentProps) 
       <DefinitionList className="mx-auto mt-8 max-w-sm text-start" items={items} />
       <p className="mt-6 text-body-sm text-fg-muted">{t("cart.confirmation.demo")}</p>
       <div className="mt-8">
-        <ButtonLink to={href("/:lang", { lang })}>{t("cart.confirmation.continue")}</ButtonLink>
+        <ButtonLink to={href("/:lang/shop", { lang })}>
+          {t("cart.confirmation.continue")}
+        </ButtonLink>
       </div>
     </div>
   );

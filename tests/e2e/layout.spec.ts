@@ -26,8 +26,8 @@ for (const route of SHORT_ROUTES) {
   });
 }
 
-test("/en: the footer ends with the document on a long page", async ({ page }) => {
-  await page.goto("/en");
+test("/en/shop: the footer ends with the document on a long page", async ({ page }) => {
+  await page.goto("/en/shop");
   const { footerBottom: bottom, viewportHeight, documentHeight } = await footerBottom(page);
   expect(documentHeight).toBeGreaterThan(viewportHeight);
   expect(Math.abs(bottom - documentHeight)).toBeLessThanOrEqual(1);

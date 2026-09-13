@@ -29,7 +29,7 @@ test.describe("accessibility of states", () => {
     await context.route("**/products/categories", (route) =>
       route.continue({ url: route.request().url() + "?fail=1" }),
     );
-    await page.goto("/en");
+    await page.goto("/en/shop");
     await expectAccessible(page, `state-catalogue-error-${testInfo.project.name}`);
   });
 

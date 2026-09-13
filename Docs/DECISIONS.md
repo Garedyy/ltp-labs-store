@@ -219,6 +219,33 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   now holds two distinct actions. `cart-session.spec.ts`, `no-js.spec.ts` and
   `a11y-states.spec.ts` prove the cart survives a Buy now and the promo code is ignored.
 
+## D-13 · Home page (trending products) split from the shop (full catalogue)
+
+- **Date / branch**: 2026-09-13 · `fix/29-split-home-from-shop` (#29)
+- **Context**: `PROJECT_PLAN.md` §2 decision 6 ("Shop → `/` (same route)") and §8 item 22
+  ("Home and Shop link to `/:lang`; only Home gets `aria-current`") made the two header entries
+  point to one page, the full catalogue, so the store had no landing page. The user decided in
+  #29 to give each entry its own page.
+- **Decision**: `/:lang` is a Home page (`app/routes/home.tsx`) that lists the eight best-rated
+  products — one `getProducts({ limit: 8, skip: 0, sortBy: "rating", order: "desc" })` call
+  through `cached` (5 min) — with the catalogue's product cards, a visible `<h1>`
+  ("Trending products") and a "Browse the shop" link; sort, category filter and pagination are
+  not on it. The catalogue moves unchanged to `/:lang/shop` (`app/routes/catalogue.tsx`, URL-as-
+  state rules intact). A request to `/:lang` that still carries a catalogue parameter (`q`,
+  `category`, `sort`, `page`) is answered **301** to `/:lang/shop` with the same search, so links
+  from before the split keep working. Home and Shop are both `NavLink`s (`end` on Home) and each
+  carries `aria-current="page"` on its own page; every "back to the shop" link (empty states,
+  error pages, coming-soon pages, "Continue shopping") targets `/shop`; the brand link keeps
+  targeting the home page.
+- **Consequences**: decisions 6 and 22 of the plan are superseded as stated above. `goal.md`
+  §Homepage asks the page that lists products to also sort, filter and paginate; after the split
+  the home page lists products with a link to each detail page and those three features live one
+  click away on `/shop` — accepted by the user in #29. `ProductGrid` takes an optional
+  `labelledBy` (default `results-heading`) so the home grid is named by its heading.
+  `tests/e2e/routes.ts` scans `/`, `/shop` and the two `/shop?…` states; `home.spec.ts` covers
+  the trending list, the two `aria-current`s, the 301 and the Portuguese page. The Lighthouse
+  figures in `README.md` were measured on the catalogue when it lived at `/en`.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

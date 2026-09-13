@@ -39,10 +39,10 @@ test.describe("locale routing", () => {
     expect(response.headers()["location"]).toBe("/en/nowhere");
   });
 
-  test("a trailing slash after the locale renders the catalogue", async ({ page }) => {
+  test("a trailing slash after the locale renders the home page", async ({ page }) => {
     const response = await page.goto("/en/");
     expect(response?.status()).toBe(200);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trending products");
   });
 
   test("asset-like segments are 404 without a redirect", async ({ page }) => {

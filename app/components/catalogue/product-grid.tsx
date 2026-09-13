@@ -10,11 +10,17 @@ function priorityFor(index: number): "high" | "eager" | "lazy" {
   return index < EAGER_COUNT ? "eager" : "lazy";
 }
 
-export function ProductGrid({ products }: { products: ProductCardView[] }) {
+export function ProductGrid({
+  products,
+  labelledBy = "results-heading",
+}: {
+  products: ProductCardView[];
+  labelledBy?: string;
+}) {
   const pending = useNavigationPending();
   return (
     <ul
-      aria-labelledby="results-heading"
+      aria-labelledby={labelledBy}
       aria-busy={pending || undefined}
       className={cx(
         "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3",

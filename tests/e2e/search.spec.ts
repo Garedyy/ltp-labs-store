@@ -73,7 +73,7 @@ test.describe("search", () => {
     await expect(page.getByText("Products are searched in English.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Show all products" })).toHaveAttribute(
       "href",
-      "/en",
+      "/en/shop",
     );
     await expect(page.getByText("No products found")).toBeVisible();
   });
