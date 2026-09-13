@@ -18,7 +18,7 @@ export function LanguageSwitcher() {
   return (
     <nav aria-label={t("common.language.label")} className="relative">
       <Disclosure
-        summaryClassName="inline-flex min-h-11 items-center gap-1 rounded-xl border border-border px-3 text-tagline font-medium text-primary hover:bg-surface-muted"
+        summaryClassName="inline-flex min-h-11 items-center gap-1 rounded-xl border border-border px-3 text-tagline font-medium text-primary hover:bg-surface-muted motion-safe:transition motion-safe:duration-150 active:scale-[0.97]"
         summary={
           <>
             <span aria-hidden="true">{code}</span>
@@ -35,7 +35,7 @@ export function LanguageSwitcher() {
         <Form
           method="post"
           action={href("/:lang/set-language", { lang: locale })}
-          className="absolute end-0 z-40 mt-2 min-w-40 rounded-xl border border-border bg-surface p-2 shadow-header"
+          className="absolute end-0 z-40 mt-2 min-w-40 origin-top rounded-xl border border-border bg-surface p-2 shadow-header motion-safe:animate-pop-in"
         >
           <input type="hidden" name="redirectTo" value={location.pathname + location.search} />
           <ul className="flex flex-col">

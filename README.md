@@ -136,15 +136,17 @@ Docs/                                brief, wireframes, API contract, plan, prog
 
 ## Performance
 
-Measured on 2026-09-11 with the production build served by `react-router-serve` against the mock
+Measured on 2026-09-13 with the production build served by `react-router-serve` against the mock
 API (Lighthouse 13.4, mobile emulation, simulated throttling, `npx lighthouse <url>
---form-factor=mobile`):
+--form-factor=mobile`), on the motion-safe transitions branch (#43) and, for comparison, on the
+build before it: both give the same numbers, so the entrance animations do not move the LCP
+(Chrome dates it at the first painted frame, where the opacity is already above zero).
 
-| Page                              | Performance | Accessibility | Best practices | SEO | LCP   | CLS | TBT  |
-| --------------------------------- | ----------- | ------------- | -------------- | --- | ----- | --- | ---- |
-| `/en` (catalogue, now `/en/shop`) | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
-| `/en/products/1`                  | 94          | 100           | 100            | 100 | 2.7 s | 0   | 0 ms |
-| `/en/cart`                        | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
+| Page             | Performance | Accessibility | Best practices | SEO | LCP   | CLS | TBT  |
+| ---------------- | ----------- | ------------- | -------------- | --- | ----- | --- | ---- |
+| `/en` (home)     | 94          | 100           | 100            | 92  | 2.7 s | 0   | 0 ms |
+| `/en/shop`       | 93          | 100           | 100            | 100 | 2.8 s | 0   | 0 ms |
+| `/en/products/1` | 93          | 100           | 100            | 100 | 2.9 s | 0   | 0 ms |
 
 Bundle sizes (gzip, measured on 2026-09-12 by gzipping each chunk in `build/client/assets/`): the
 catalogue page downloads about 146 KB of JavaScript in total. `entry.client` weighs 79 KB (React
@@ -152,7 +154,7 @@ DOM, React Router, i18next, react-i18next), `jsx-runtime` 28 KB, the React Route
 12 KB, react-i18next 8 KB, the current locale about 3 KB (locales are split per language and
 fetched by `load-locale.client`), the catalogue route 1.4 KB, plus around 14 KB of small shared
 chunks (layout, results list, primitives, error codes). Other route chunks: product 2.9 KB, cart
-3.9 KB. CSS: 6.7 KB gzip. The plan's target of less than 90 KB sits below the floor of React 19 +
+3.9 KB. CSS: 7.7 KB gzip (6.7 KB before the motion scale of #43). The plan's target of less than 90 KB sits below the floor of React 19 +
 React Router 8 + i18next (`Docs/DECISIONS.md` D-9); what the app adds on top of the framework is
 about 18 KB.
 
@@ -187,3 +189,6 @@ Third-party credits:
 - [Remix Icon](https://remixicon.com) v4.8.0: 15 icon paths, Apache License 2.0
   (`app/components/ui/icon.tsx`). Later Remix Icon releases use a custom licence and are not used.
 - IBM Equal Access [`accessibility-checker`](https://github.com/IBMa/equal-access): Apache-2.0.
+- [`web-animation-design`](https://github.com/vercel-labs/open-agents/tree/main/.agents/skills/web-animation-design):
+  Emil Kowalski's animation rules as a Claude Code skill, MIT, vendored in
+  `.claude/skills/web-animation-design/` (not shipped to the browser).

@@ -79,6 +79,48 @@
   --radius-block: 1.5rem;
   --spacing-header: 3.75rem;
   --spacing-header-lg: 4rem;
+
+  /* Motion scale: only transform and opacity move, entrances ease out, nothing above 200 ms.
+     Every use is gated by motion-safe:, so none of it runs under prefers-reduced-motion. */
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --animate-page-enter: page-enter 200ms var(--ease-out-quart);
+  --animate-pop-in: pop-in 150ms var(--ease-out-quart);
+  --animate-fade-in: fade-in 150ms var(--ease-out-quart);
+  /* Landing page only, a marketing surface where longer entrances are allowed: the header
+     comes in three beats, then the cards cascade (fill both keeps a delayed element invisible
+     until its turn; the delays are set where the utilities are used). */
+  --animate-hero-enter: hero-enter 500ms var(--ease-out-quart) both;
+  --animate-card-enter: card-enter 450ms var(--ease-out-quart) both;
+
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes hero-enter {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem);
+    }
+  }
+  @keyframes card-enter {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem) scale(0.96);
+    }
+  }
 }
 
 @theme inline {

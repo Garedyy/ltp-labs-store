@@ -1,21 +1,42 @@
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { VisuallyHidden } from "~/components/ui/visually-hidden";
 import { useLocale } from "~/i18n/use-locale";
+import { revealOnFocus } from "~/lib/reveal-on-focus";
 import type { ProductCardView } from "~/lib/catalogue/types";
 
-type ProductCardProps = { product: ProductCardView; priority?: "high" | "eager" | "lazy" };
+type ProductCardProps = {
+  product: ProductCardView;
+  priority?: "high" | "eager" | "lazy";
+  // Set by a staggered grid (the landing page): the card enters after this delay. A card focused
+  // before its turn loses the delay (the running animation is not restarted), so the focus ring
+  // is never on an invisible card; `data-entered`, set by the page, keeps it revealed after blur.
+  enterDelayMs?: number;
+};
 
 // The title link is stretched over the whole card; the image is decorative (alt="").
-export function ProductCard({ product, priority = "lazy" }: ProductCardProps) {
+export function ProductCard({ product, priority = "lazy", enterDelayMs }: ProductCardProps) {
   const { t } = useTranslation();
   const locale = useLocale();
   const lang = locale === "en" ? undefined : "en";
 
   return (
-    <li>
-      <article className="relative flex h-full flex-col gap-3 rounded-2xl border border-border p-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus forced-colors:border">
+    <li
+      className={
+        enterDelayMs === undefined
+          ? undefined
+          : "focus-within:[animation-delay:0s] data-entered:[animation-delay:0s] motion-safe:animate-card-enter motion-safe:[animation-delay:var(--enter-delay)]"
+      }
+      style={
+        enterDelayMs === undefined
+          ? undefined
+          : ({ "--enter-delay": `${enterDelayMs}ms` } as CSSProperties)
+      }
+      data-delayed={enterDelayMs === undefined ? undefined : ""}
+    >
+      <article className="group relative flex h-full flex-col gap-3 rounded-2xl border border-border p-3 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus hover:border-border-strong motion-safe:transition-colors motion-safe:duration-200 forced-colors:border">
         <div className="aspect-square overflow-hidden rounded-xl bg-surface-placeholder">
           <img
             src={product.thumbnail}
@@ -25,7 +46,7 @@ export function ProductCard({ product, priority = "lazy" }: ProductCardProps) {
             loading={priority === "lazy" ? "lazy" : "eager"}
             decoding={priority === "lazy" ? "async" : undefined}
             fetchPriority={priority === "high" ? "high" : undefined}
-            className="size-full object-contain"
+            className="size-full object-contain group-hover:scale-[1.04] motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-[ease]"
           />
         </div>
         <h2 className="text-body font-medium">
@@ -34,6 +55,7 @@ export function ProductCard({ product, priority = "lazy" }: ProductCardProps) {
             prefetch="intent"
             lang={lang}
             className="no-underline after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:outline-none"
+            onFocus={enterDelayMs === undefined ? undefined : revealOnFocus}
           >
             {product.title}
           </Link>

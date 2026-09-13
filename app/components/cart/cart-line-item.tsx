@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useFetcher } from "react-router";
 
 import { Icon } from "~/components/ui/icon";
+import { cx } from "~/lib/cx";
 import { VisuallyHidden } from "~/components/ui/visually-hidden";
 import { useLocale } from "~/i18n/use-locale";
 import type { CartLineView } from "~/services/cart/types";
@@ -22,7 +23,10 @@ export function CartLineItem({ item, flash }: CartLineItemProps) {
     <li
       aria-busy={removing || undefined}
       data-product-id={item.productId}
-      className="grid grid-cols-[5rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr_auto]"
+      className={cx(
+        "grid grid-cols-[5rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr_auto]",
+        removing && "motion-safe:opacity-60 motion-safe:transition-opacity",
+      )}
     >
       <img
         src={item.thumbnail}
@@ -68,7 +72,7 @@ export function CartLineItem({ item, flash }: CartLineItemProps) {
             aria-label={t("cart.items.remove", { title: item.title })}
             aria-busy={removing || undefined}
             data-remove={item.productId}
-            className="inline-flex size-11 items-center justify-center rounded-xl border border-border-strong text-primary hover:bg-surface-muted forced-colors:border"
+            className="inline-flex size-11 items-center justify-center rounded-xl border border-border-strong text-primary hover:bg-surface-muted active:scale-[0.97] motion-safe:transition motion-safe:duration-150 forced-colors:border"
           >
             <Icon name="trash" />
           </button>

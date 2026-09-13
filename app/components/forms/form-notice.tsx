@@ -20,7 +20,10 @@ export function FormNotice({ children, className, id }: FormNoticeProps) {
       tabIndex={-1}
       // eslint-disable-next-line jsx-a11y/no-autofocus -- the outcome takes the focus by design
       autoFocus
-      className={cx("rounded-lg border border-border bg-surface-muted p-3", className)}
+      className={cx(
+        "rounded-lg border border-border bg-surface-muted p-3 motion-safe:animate-fade-in",
+        className,
+      )}
     >
       {children}
     </p>

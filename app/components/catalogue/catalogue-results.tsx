@@ -203,7 +203,7 @@ export function CatalogueResults({
           id="filters-panel"
           ref={filtersPanel}
           className={cx(
-            "lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start",
+            "max-lg:motion-safe:animate-fade-in lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start",
             !filtersOpen && "max-lg:[.js_&]:hidden",
           )}
         >

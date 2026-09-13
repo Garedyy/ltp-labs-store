@@ -30,7 +30,7 @@ No `Co-Authored-By` or tool attribution trailers.
 nvm use && npm ci
 npm run dev                 # development server
 npm run check               # typecheck + lint + format:check + check:licenses + unit tests
-npm run test:e2e            # Playwright (builds and serves the app; four Chromium projects)
+npm run test:e2e            # Playwright (builds and serves the app; four Chromium projects, reduced motion)
 ```
 
 Git hooks (Husky): `pre-commit` runs lint-staged (ESLint + Prettier on staged files);
@@ -67,6 +67,8 @@ them; every one stops for approval before writing, branching or pushing):
 - `/merge-pr <n>` — waits for a green CI, merges with the method the base requires, deletes the
   head branch, closes the linked issue, fast-forwards the local base.
 - `/project-review` — see below.
+- `web-animation-design` — a reference skill, not a workflow: Emil Kowalski's animation rules
+  (vendored from `vercel-labs/open-agents`, MIT); Claude loads it whenever motion is touched.
 
 ## Automated review
 

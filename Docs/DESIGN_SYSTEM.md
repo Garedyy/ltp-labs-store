@@ -62,7 +62,46 @@ Breakpoints: Tailwind defaults; every grid collapses to one column at 320 px. `h
 ## Motion and media
 
 - Reduced motion: global kill switch in `base.css` (`animation/transition-duration: 0.01ms`,
-  `scroll-behavior: auto`); components only use `motion-safe:` transitions.
+  `scroll-behavior: auto`); components only use `motion-safe:` transitions and animations, so
+  nothing moves at all under `prefers-reduced-motion: reduce` (the `delay-300` of the navigation
+  bar stays ungated on purpose: it is the anti-flicker delay, not motion).
+- Motion scale (#43, D-18), defined in the `@theme` block of `tokens.css` and following
+  Emil Kowalski's rules (only `transform` and `opacity` move, entrances ease out, hover eases,
+  never from `scale(0)`, the child moves on hover rather than the parent). His budget is 300 ms
+  for product UI; this project keeps the product pages at 200 ms or less and, on the landing
+  page only, uses the longer entrances he allows for marketing surfaces (up to 500 ms per element):
+
+  | Token / utility                                        | Value                                                                                        | Applies to                                                                                                        |
+  | ------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+  | `--ease-out-quart`                                     | `cubic-bezier(0.165, 0.84, 0.44, 1)`                                                         | every entrance below                                                                                              |
+  | `animate-page-enter`                                   | opacity 0 → 1, `translateY(0.5rem)` → 0, 200 ms                                              | the page wrapper inside `<main>` (`data-page`), keyed by pathname                                                 |
+  | `animate-pop-in`                                       | opacity 0 → 1, `scale(0.97)` → 1, 150 ms                                                     | language panel and mobile menu (`origin-top`), the header cart badge (keyed by count)                             |
+  | `animate-fade-in`                                      | opacity 0 → 1, 150 ms                                                                        | `FormNotice`, `Alert`, the unfolded categories panel on phones                                                    |
+  | `animate-hero-enter`                                   | opacity 0 → 1, `translateY(1.5rem)` → 0, 500 ms, fill both                                   | the landing page header in three beats (title, intro at 120 ms, Browse the shop at 240 ms) and See more at 900 ms |
+  | `animate-card-enter`                                   | opacity 0 → 1, `translateY(1.5rem) scale(0.96)` → 1, 450 ms, fill both, one card every 80 ms | the eight trending cards (`ProductGrid stagger`); the shop grid stays still                                       |
+  | `transition duration-150 active:scale-[0.97]`          | colours + press, Tailwind default easing                                                     | `Button` / `ButtonLink`, header icon links, the two disclosure summaries, the cart remove button                  |
+  | `transition-colors duration-200`                       | border colour on hover                                                                       | product card (`hover:border-border-strong`)                                                                       |
+  | `transition-transform duration-200 ease-[ease]`        | `group-hover:scale-[1.04]`                                                                   | product card image, inside its `overflow-hidden` frame                                                            |
+  | `transition-[opacity,transform] duration-150 ease-out` | fade + 0.25 rem slide                                                                        | navigation progress bar                                                                                           |
+  | `opacity-60 transition-opacity`                        | pending state                                                                                | product grid while results load, cart line while it is removed                                                    |
+
+  The landing page is the one place with more motion than the rest (a marketing surface, the
+  first thing a visitor sees): its header comes in three beats, its cards cascade and See more
+  follows, the whole sequence about 1.3 s; it replays on every arrival on `/`. A delayed element
+  is held invisible until its turn (fill both), so every focusable one - Browse the shop, the
+  cards, See more - loses its delay the moment it receives focus (`focus-visible:` /
+  `focus-within:[animation-delay:0s]`; the delay is a `--enter-delay` custom property on the
+  cards): the running animation is not restarted, unlike `animation: none`, which would replay
+  the whole entrance on blur. A small additive handler on the page (`data-entered`) keeps the
+  reveal once the focus leaves; without JavaScript, only a focus that leaves before the original
+  delay has elapsed lets the element wait for its turn again. Exits are not animated (closing a `<details>` panel or removing a cart line snaps): a CSS-only
+  exit needs `@starting-style` / `transition-behavior: allow-discrete` on `display`, whose support
+  is still partial. Value changes (quantities, totals) are not animated either: they are repeated
+  actions and motion would slow them down. The fades do not move the LCP: Chrome dates it at the
+  first painted frame, where the opacity is already above zero. Measured with the README's
+  Lighthouse method (mobile, simulated throttling) on this build and on the build before the
+  branch: same scores and same LCP on `/`, `/en/shop` and `/en/products/1` (README table).
+
 - Forced colours: `forced-colors:border` on buttons, badges and cards; focus outline uses
   `Highlight`.
 - `prefers-contrast: more`: stronger borders, muted text becomes full-contrast text.

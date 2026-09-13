@@ -389,6 +389,56 @@ totalFormatted }` built by the account loader. `cart.test.ts` covers `sanitiseOr
   `checkout.spec.ts` checks the lines on the confirmation in cart and Buy now modes and the
   Portuguese total after a language switch.
 
+## D-18 · Motion is a CSS keyframe scale, not View Transitions
+
+- **Date / branch**: 2026-09-13 · `fix/43-motion-safe-transitions` (#43)
+- **Context**: the interface was static apart from three isolated transitions; the issue asked for
+  a page-enter transition on every navigation, with and without JavaScript, and a small set of
+  motion-safe touch points, without a new dependency. Two ways existed for the page enter: React
+  Router's `viewTransition` (View Transitions API) or a CSS animation on the page content.
+- **Decision**: a motion scale in the `@theme` block of `tokens.css` (`--ease-out-quart`, three
+  keyframes `page-enter`, `pop-in`, `fade-in`) applied through Tailwind utilities only, gated by
+  `motion-safe:`, following the vendored `web-animation-design` skill (Emil Kowalski's rules:
+  only `transform` and `opacity`, ease-out entrances, under 300 ms, never from `scale(0)`, animate
+  the child on hover). The page enter is a keyframe on a `<div key={pathname} data-page>` inside
+  `<main>`: the key remounts the wrapper on every pathname change so the animation replays, and
+  as plain CSS it also runs on a full-page load and without JavaScript, which `viewTransition`
+  (JavaScript only, partial browser support, and a second focus/announcement path to reconcile)
+  could not offer. Search-param changes (sort, filter, page) do not replay it: the grid's pending
+  fade already covers them and repeating a page fade on every filter would slow the catalogue
+  down. The landing page alone opens with more motion (`hero-enter`, 500 ms, on the title, the intro
+  and Browse the shop 120 ms apart and on See more; a `card-enter` cascade, 450 ms, one card
+  every 80 ms, through `ProductGrid stagger`): it is the marketing surface, the first thing a
+  visitor sees, where the skill allows longer, more special entrances; the shop grid stays
+  still. A delayed control loses its delay the moment it receives focus (`focus-visible:` /
+  `focus-within:[animation-delay:0s]`, the running animation is not restarted; `animation:
+none` was tried first and replayed the whole entrance on blur) and a small additive
+  `onFocus` handler on the page (`data-entered`) keeps it revealed after blur, so the focus ring
+  is never on an invisible element. The fades
+  do not move the LCP: with the README's Lighthouse method (mobile, simulated throttling), the
+  build before this change and this build give the same scores and LCP on `/`, `/en/shop` and
+  `/en/products/1` (94 / 93 / 93, 2.7 / 2.8 / 2.9 s, two runs each); Chrome dates the LCP at
+  the first painted frame, where the opacity is already above zero. `RouteAnnouncer` and the focus on `main` are untouched (the animation is on a child of
+  `main`, without fill mode, so no stacking context outlives it). Disclosure panels and the cart
+  badge animate their entrance only; exits snap, because a CSS-only exit needs `@starting-style`
+  and `transition-behavior: allow-discrete`, still partially supported.
+- **Consequences**: `Docs/DESIGN_SYSTEM.md` carries the scale and where each entry applies.
+  **The Playwright suite runs under `reducedMotion: "reduce"`** (global `use` in
+  `playwright.config.ts`), where the app is exactly its motionless self: with an entrance
+  running, Playwright's stability check fails and retries the action with a forced scroll, which
+  leaves the page scrolled and trips the IBM `element_tabbable_unobscured` rule on the sticky
+  header; without JavaScript Chromium stops painting once an animation ends and the check never
+  completes, so every click hangs. The motion is verified by tests that opt back in with
+  `page.emulateMedia({ reducedMotion: "no-preference" })`: `layout.spec.ts` checks the computed
+  `animation-name` of the wrapper (`page-enter`, then `none` under reduced motion), that a
+  client-side navigation remounts it with the focus on `main`, and that under reduced motion no
+  element on any route of `tests/e2e/routes.ts` carries a keyframe or runs anything longer than
+  the 0.01 ms kill switch; `no-js.spec.ts` checks the keyframe without JavaScript;
+  `header-actions.test.tsx` checks the badge remount. The two post-navigation focus checks of
+  `keyboard.spec.ts` poll instead of reading `activeElement` once, since the focus moves in an
+  effect after the commit. The skill lives in `.claude/skills/web-animation-design/` (MIT, from
+  `vercel-labs/open-agents`).
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

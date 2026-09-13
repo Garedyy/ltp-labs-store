@@ -26,6 +26,76 @@ test.describe("home", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
   });
 
+  // The landing page opens with more motion than the other pages (#43, D-18): the header comes
+  // in three beats, the cards cascade in, See more follows. The suite runs under reduced motion;
+  // this test opts back in.
+  test("the header, the trending cards and See more enter in sequence, except under reduced motion", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/en");
+    const hero = page.getByRole("heading", { level: 1 });
+    const main = page.getByRole("main");
+    const cards = page.getByRole("list", { name: "Trending products" }).getByRole("listitem");
+    const timing = (el: Element) => {
+      const style = getComputedStyle(el);
+      return `${style.animationName} ${style.animationDelay}`;
+    };
+    expect(await hero.evaluate(timing)).toBe("hero-enter 0s");
+    expect(await main.getByText("Our best-rated products", { exact: false }).evaluate(timing)).toBe(
+      "hero-enter 0.12s",
+    );
+    expect(await main.getByRole("link", { name: "Browse the shop" }).evaluate(timing)).toBe(
+      "hero-enter 0.24s",
+    );
+    expect(
+      await cards.evaluateAll((items) =>
+        items.map((item) => getComputedStyle(item).animationDelay),
+      ),
+    ).toEqual(["0s", "0.08s", "0.16s", "0.24s", "0.32s", "0.4s", "0.48s", "0.56s"]);
+    // fill-mode both keeps a finished card animation listed: wait until none is still running.
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => document.getAnimations().filter((a) => a.playState !== "finished").length,
+          ),
+        { timeout: 3000 },
+      )
+      .toBe(0);
+    await expect(cards.last()).toBeVisible();
+    await expect(main.getByRole("link", { name: "See more" })).toBeVisible();
+    // A control focused before its turn loses its delay (never an invisible focus target) and
+    // stays revealed after the focus leaves; a late focus and blur never hide it again.
+    await page.goto("/en");
+    const seeMore = main.getByRole("link", { name: "See more" });
+    const seeMoreBox = seeMore.locator("xpath=..");
+    await seeMore.focus();
+    expect(await seeMoreBox.evaluate(timing)).toBe("hero-enter 0s");
+    await cards.last().getByRole("link").focus();
+    expect(await cards.last().evaluate(timing)).toBe("card-enter 0s");
+    expect(await seeMoreBox.evaluate(timing)).toBe("hero-enter 0s");
+    await hero.evaluate((el) => {
+      el.setAttribute("tabindex", "-1");
+      (el as HTMLElement).focus();
+    });
+    expect(await cards.last().evaluate(timing)).toBe("card-enter 0s");
+    await expect
+      .poll(() => seeMoreBox.evaluate((el) => getComputedStyle(el).opacity), { timeout: 3000 })
+      .toBe("1");
+    await seeMore.focus();
+    await hero.evaluate((el) => (el as HTMLElement).focus());
+    await page.waitForTimeout(100);
+    expect(await seeMoreBox.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    expect(await hero.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
+    expect(
+      await cards.evaluateAll((items) =>
+        items.every((item) => getComputedStyle(item).animationName === "none"),
+      ),
+    ).toBe(true);
+  });
+
   test("Home and Shop each carry aria-current on their own page", async ({ page }) => {
     await page.goto("/en");
     const menuToggle = page.getByLabel("Open menu");
