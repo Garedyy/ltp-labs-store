@@ -83,6 +83,6 @@ test("client navigation announces the new title and focuses main", async ({ page
   await expect(page).toHaveURL(/\/en\/contact$/);
   expect(await activeElementId(page)).toBe("main");
   await expect(
-    page.getByRole("status").filter({ hasText: "Contact — The Online Store" }),
+    page.getByRole("status").filter({ hasText: "Contact - The Online Store" }),
   ).toHaveCount(1);
 });

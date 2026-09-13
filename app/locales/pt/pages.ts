@@ -65,7 +65,7 @@ export default {
       email: "Endereço de e-mail",
       message: "Mensagem",
       submit: "Enviar mensagem",
-      sending: "A enviar…",
+      sending: "A enviar...",
       note: "Esta é uma loja de demonstração: a mensagem é verificada mas não é enviada para lado nenhum.",
     },
     sent: {
@@ -120,7 +120,7 @@ export default {
       email: "Endereço de e-mail",
       password: "Palavra-passe",
       submit: "Iniciar sessão",
-      signingIn: "A iniciar sessão…",
+      signingIn: "A iniciar sessão...",
       note: "Qualquer endereço e palavra-passe passam na verificação; nenhuma conta é criada.",
       demo: "O início de sessão é uma demonstração: nenhuma conta foi criada e nada foi guardado. O seu carrinho e a sua última encomenda vivem num cookie neste dispositivo.",
     },

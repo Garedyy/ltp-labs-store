@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("home", () => {
   test("lists the eight best-rated products and links to the shop", async ({ page }) => {
     await page.goto("/en");
-    await expect(page).toHaveTitle("Trending products — The Online Store");
+    await expect(page).toHaveTitle("Trending products - The Online Store");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trending products");
     const grid = page.getByRole("list", { name: "Trending products" });
     const cards = grid.getByRole("listitem");
@@ -46,14 +46,14 @@ test.describe("home", () => {
     expect(response.headers().location).toBe("/en/shop?category=beauty&sort=price-asc&page=2");
     await page.goto("/pt?page=2");
     await expect(page).toHaveURL(/\/pt\/shop\?page=2$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Loja — página 2");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Loja - página 2");
   });
 
   test("Portuguese: the home page is translated and product titles keep lang=en", async ({
     page,
   }) => {
     await page.goto("/pt");
-    await expect(page).toHaveTitle("Produtos em destaque — The Online Store");
+    await expect(page).toHaveTitle("Produtos em destaque - The Online Store");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Produtos em destaque");
     await expect(page.getByRole("link", { name: "Ver a loja" })).toHaveAttribute(
       "href",

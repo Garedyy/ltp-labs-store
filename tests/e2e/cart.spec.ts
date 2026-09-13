@@ -30,7 +30,7 @@ test.describe("cart page", () => {
       "/en/shop",
     );
     await expect(page.getByRole("link", { name: "Check out" })).toHaveCount(0);
-    await expect(page).toHaveTitle("Your cart — The Online Store");
+    await expect(page).toHaveTitle("Your cart - The Online Store");
     await page.goto("/en/checkout/confirmation");
     await expect(page).toHaveURL(/\/en\/cart$/);
   });
@@ -43,7 +43,7 @@ test.describe("cart page", () => {
     await page.getByRole("link", { name: "Cart, 3 items" }).click();
     await expect(page).toHaveURL(/\/en\/cart$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart");
-    await expect(page).toHaveTitle("Shopping cart (3 units) — The Online Store");
+    await expect(page).toHaveTitle("Shopping cart (3 units) - The Online Store");
     const items = page.getByRole("list", { name: "Items" }).getByRole("listitem");
     await expect(items).toHaveCount(2);
     await expect(
@@ -137,7 +137,7 @@ test.describe("cart page", () => {
     await page.getByRole("button", { name: "Apply" }).click();
     await expect(page.getByText("Code LTP10 applied", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Remove code" })).toBeFocused();
-    await expect(row(page, /^Discount \(LTP10\)$/)).toHaveText("−$1.00");
+    await expect(row(page, /^Discount \(LTP10\)$/)).toHaveText("-$1.00");
     await expect(row(page, /^Total$/)).toHaveText("$28.99");
     await expect(page.getByRole("status").filter({ hasText: "Total updated: $28.99" })).toHaveCount(
       1,

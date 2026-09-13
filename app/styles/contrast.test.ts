@@ -48,6 +48,7 @@ const COMPONENT_PAIRS: [string, string, string, number][] = [
   ["border-strong on surface", palette("dark-gray"), white, 3],
   ["error-border on surface", palette("error"), white, 3],
   ["focus-inner ring on surface", palette("medium-blue"), white, 3],
+  ["fg-inverse icon on success (confirmation disc)", white, palette("light-green"), 3],
   ["focus ring against primary button", palette("orange"), palette("medium-blue"), 3],
 ];
 

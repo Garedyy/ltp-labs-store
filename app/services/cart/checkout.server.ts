@@ -12,7 +12,6 @@ import type { CartLineView, LastOrder, PaymentMethod, TotalsView } from "./types
 export type CheckoutView = {
   lines: CartLineView[];
   totals: TotalsView;
-  itemCount: number;
   // Set when the page prices one unit of a product on its own (Buy now, D-12): the cart is
   // neither included nor touched and the promo code does not apply.
   productId?: number;
@@ -40,10 +39,10 @@ export async function loadCheckout(
 ): Promise<LoadedCheckout> {
   if (productId === null) {
     const loaded = await loadCartView(request, locale);
-    const { lines, totals, cartCount } = loaded.view;
+    const { lines, totals } = loaded.view;
     return {
       session: loaded.session,
-      view: lines.length > 0 ? { lines, totals, itemCount: cartCount } : null,
+      view: lines.length > 0 ? { lines, totals } : null,
       changed: loaded.changed,
       notice: loaded.notice,
     };
@@ -61,7 +60,6 @@ export async function loadCheckout(
     view: {
       lines: [toLineView(product, 1, locale)],
       totals: toTotalsView(totals, locale),
-      itemCount: 1,
       productId,
     },
     changed: false,
@@ -81,12 +79,11 @@ export async function redirectToEmptyCart(
   });
 }
 
-export function buildOrder(view: CheckoutView, method: PaymentMethod, totalFormatted: string) {
+export function buildOrder(view: CheckoutView, method: PaymentMethod): LastOrder {
   return {
     number: `LTP-${Date.now().toString(36).toUpperCase()}`,
     method,
     totalCents: view.totals.totalCents,
-    itemCount: view.itemCount,
-    totalFormatted,
-  } satisfies LastOrder;
+    lines: view.lines.map(({ productId, quantity }) => ({ productId, quantity })),
+  };
 }

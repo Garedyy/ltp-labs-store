@@ -6,7 +6,7 @@ test.describe("content pages", () => {
   }) => {
     await page.goto("/en/about");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("About us");
-    await expect(page).toHaveTitle("About us — The Online Store");
+    await expect(page).toHaveTitle("About us - The Online Store");
     await expect(page.getByRole("heading", { level: 2 })).toHaveText([
       "Our story",
       "What we stand for",
@@ -57,7 +57,7 @@ test.describe("content pages", () => {
     await form.getByRole("textbox", { name: "Message" }).fill("Hello");
     await form.getByRole("button", { name: "Send message" }).click();
     await expect(page).toHaveURL(/\/en\/contact\?sent=1$/);
-    await expect(page).toHaveTitle("Message received — The Online Store");
+    await expect(page).toHaveTitle("Message received - The Online Store");
     const status = page.getByRole("status").filter({ hasText: "nothing was sent or stored" });
     await expect(status).toBeFocused();
     await expect(page.getByRole("form", { name: "Send us a message" })).toHaveCount(0);
@@ -119,6 +119,6 @@ test.describe("content pages", () => {
       page.getByRole("definition").filter({ hasText: /LTP-[A-Z0-9]+, \$29\.99/ }),
     ).toBeVisible();
     await page.getByRole("link", { name: "View the confirmation" }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Thank you for your order");
   });
 });

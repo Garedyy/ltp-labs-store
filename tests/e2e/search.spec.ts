@@ -20,10 +20,10 @@ test.describe("search", () => {
     await page.getByRole("button", { name: "Search" }).click();
     await expect(page).toHaveURL(/\/en\/search\?q=phone$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Search");
-    await expect(page).toHaveTitle(/Search: “phone” \(\d+ results\) — The Online Store/);
+    await expect(page).toHaveTitle(/Search: "phone" \(\d+ results\) - The Online Store/);
     await expect(page.getByRole("searchbox", { name: "Search products" })).toHaveValue("phone");
-    await expect(page.getByText(/Showing 1–9 of \d+/)).toBeVisible();
-    const announcement = page.getByRole("status").filter({ hasText: /\d+ results for “phone”/ });
+    await expect(page.getByText(/Showing 1-9 of \d+/)).toBeVisible();
+    const announcement = page.getByRole("status").filter({ hasText: /\d+ results for "phone"/ });
     await expect(announcement).toHaveCount(1);
     await page.getByRole("link", { name: "Page 2" }).click();
     await expect(page).toHaveURL(/\/en\/search\?q=phone&page=2$/);
@@ -41,9 +41,9 @@ test.describe("search", () => {
     await sort.selectOption("price-asc");
     await expect(page).toHaveURL(/\/en\/search\?q=phone&sort=price-asc$/);
     await expect(sort).toBeFocused();
-    await expect(page.getByText(/Showing 1–9 of \d+/)).toBeVisible();
+    await expect(page.getByText(/Showing 1-9 of \d+/)).toBeVisible();
     await expect(
-      page.getByRole("status").filter({ hasText: /\d+ results for “phone”/ }),
+      page.getByRole("status").filter({ hasText: /\d+ results for "phone"/ }),
     ).toHaveCount(1);
   });
 
@@ -62,14 +62,14 @@ test.describe("search", () => {
 
   test("a single hit uses the singular title", async ({ page }) => {
     await page.goto("/en/search?q=mascara");
-    await expect(page).toHaveTitle("Search: “mascara” (1 result) — The Online Store");
-    await expect(page.getByText("Showing 1–1 of 1")).toBeVisible();
+    await expect(page).toHaveTitle('Search: "mascara" (1 result) - The Online Store');
+    await expect(page.getByText("Showing 1-1 of 1")).toBeVisible();
   });
 
   test("no results shows the empty state with the English hint", async ({ page }) => {
     await page.goto("/en/search?q=zzzzzz");
-    await expect(page).toHaveTitle("Search: “zzzzzz” (no results) — The Online Store");
-    await expect(page.getByRole("heading", { level: 2 })).toHaveText("No results for “zzzzzz”");
+    await expect(page).toHaveTitle('Search: "zzzzzz" (no results) - The Online Store');
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText('No results for "zzzzzz"');
     await expect(page.getByText("Products are searched in English.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Show all products" })).toHaveAttribute(
       "href",

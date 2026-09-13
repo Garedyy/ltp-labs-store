@@ -3,7 +3,7 @@ import type en from "~/locales/en/catalogue";
 export default {
   title: "Loja",
   description: "Explore os nossos produtos, ordene-os e filtre por categoria.",
-  pageTitle: "{{title}} — página {{page}}",
+  pageTitle: "{{title}} - página {{page}}",
   search: {
     title: "Pesquisar",
     description: "Pesquise no catálogo por palavra-chave.",
@@ -30,13 +30,13 @@ export default {
     options: {
       "price-asc": "Preço: do mais baixo ao mais alto",
       "price-desc": "Preço: do mais alto ao mais baixo",
-      "title-asc": "Nome: A–Z",
-      "title-desc": "Nome: Z–A",
+      "title-asc": "Nome: A-Z",
+      "title-desc": "Nome: Z-A",
       "rating-desc": "Melhor avaliação",
     },
   },
   results: {
-    showing: "A mostrar {{from}}–{{to}} de {{total}}",
+    showing: "A mostrar {{from}}-{{to}} de {{total}}",
     none: "Nenhum produto encontrado",
     announce_one: "A mostrar {{from}} a {{to}} de {{total}} produto",
     announce_many: "A mostrar {{from}} a {{to}} de {{total}} produtos",
@@ -45,7 +45,7 @@ export default {
   },
   filters: {
     heading: "Categorias",
-    hint: "Escolha uma categoria — os resultados atualizam-se ao escolher",
+    hint: "Escolha uma categoria - os resultados atualizam-se ao escolher",
     apply: "Aplicar",
     clear: "Limpar filtro",
     toggle: "Categorias",

@@ -8,7 +8,6 @@ import { Button } from "~/components/ui/button";
 import { DefinitionList } from "~/components/ui/definition-list";
 import { useLocale } from "~/i18n/use-locale";
 import { fieldProps, type FormFailure } from "~/lib/forms";
-import type { LastOrder } from "~/services/cart/types";
 import { PageHeader } from "./page-header";
 
 export const SIGN_IN_FIELDS = ["email", "password"] as const;
@@ -17,7 +16,7 @@ export type SignInResult = FormFailure<SignInField>;
 
 export type AccountView = {
   cartCount: number;
-  lastOrder?: LastOrder;
+  lastOrder?: { number: string; totalFormatted: string };
   sinceFormatted: string;
   languageName: string;
 };

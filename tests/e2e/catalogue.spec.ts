@@ -19,7 +19,7 @@ test.describe("catalogue", () => {
     await page.goto("/en/shop");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
     await expect(cards(page)).toHaveCount(9);
-    await expect(page.getByText("Showing 1–9 of 194")).toBeVisible();
+    await expect(page.getByText("Showing 1-9 of 194")).toBeVisible();
     await openCategories(page, testInfo);
     await expect(page.getByRole("checkbox")).toHaveCount(24);
     const pagination = page.getByRole("navigation", { name: "Pagination" });
@@ -88,8 +88,8 @@ test.describe("catalogue", () => {
     await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
     await expect(beauty).toBeFocused();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Beauty");
-    await expect(page).toHaveTitle("Beauty — The Online Store");
-    await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+    await expect(page).toHaveTitle("Beauty - The Online Store");
+    await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Pagination" })).toHaveCount(0);
 
     await page.getByRole("checkbox", { name: "Laptops" }).check();
@@ -126,7 +126,7 @@ test.describe("catalogue", () => {
     await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
     await expect(beauty).toBeFocused();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+    await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
 
     await page.keyboard.press("Escape");
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -156,8 +156,8 @@ test.describe("catalogue", () => {
     page,
   }) => {
     await page.goto("/en/shop?page=22");
-    await expect(page.getByText("Showing 190–194 of 194")).toBeVisible();
-    await expect(page).toHaveTitle("Shop — page 22 — The Online Store");
+    await expect(page.getByText("Showing 190-194 of 194")).toBeVisible();
+    await expect(page).toHaveTitle("Shop - page 22 - The Online Store");
     const missing = await page.goto("/en/shop?page=23");
     expect(missing?.status()).toBe(404);
     await expect(page.getByRole("banner")).toBeVisible();
@@ -170,7 +170,7 @@ test.describe("catalogue", () => {
     await page.getByRole("link", { name: "Page 2" }).click();
     await expect(page).toHaveURL(/\/en\/shop\?page=2$/);
     await expect(page.locator("#results-heading")).toBeFocused();
-    await expect(page.getByText("Showing 10–18 of 194")).toBeVisible();
+    await expect(page.getByText("Showing 10-18 of 194")).toBeVisible();
     await expect(
       page.getByRole("status").filter({ hasText: "Showing 10 to 18 of 194 products" }),
     ).toHaveCount(1);
@@ -188,7 +188,7 @@ test.describe("catalogue", () => {
   }) => {
     await page.goto("/pt/shop?category=beauty");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Beleza");
-    await expect(page.getByText("A mostrar 1–5 de 5")).toBeVisible();
+    await expect(page.getByText("A mostrar 1-5 de 5")).toBeVisible();
     await expect(cards(page).first()).toContainText("9,99 US$");
     await expect(cards(page).first().getByRole("link")).toHaveAttribute("lang", "en");
   });

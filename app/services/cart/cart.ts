@@ -1,4 +1,4 @@
-import type { CartLine } from "./types";
+import type { CartLine, LastOrder, PaymentMethod } from "./types";
 
 export const MAX_LINES = 50;
 export const MAX_QUANTITY = 99;
@@ -22,6 +22,26 @@ export function sanitiseLines(value: unknown): CartLine[] {
     lines.push({ productId, quantity: clampQuantity(quantity, MAX_QUANTITY) });
   }
   return lines;
+}
+
+const ORDER_NUMBER = /^LTP-[A-Z0-9]{1,16}$/;
+
+function isPaymentMethod(value: unknown): value is PaymentMethod {
+  return value === "card" || value === "paypal";
+}
+
+// A stale or tampered lastOrder (an older cookie without lines, for instance) reads as no order.
+export function sanitiseOrder(value: unknown): LastOrder | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  const { number, method, totalCents, lines } = value as Record<string, unknown>;
+  if (typeof number !== "string" || !ORDER_NUMBER.test(number)) return undefined;
+  if (!isPaymentMethod(method)) return undefined;
+  if (typeof totalCents !== "number" || !Number.isInteger(totalCents) || totalCents < 0) {
+    return undefined;
+  }
+  const safeLines = sanitiseLines(lines);
+  if (safeLines.length === 0) return undefined;
+  return { number, method, totalCents, lines: safeLines };
 }
 
 export type AddResult = { lines: CartLine[]; capped: boolean; full: boolean };

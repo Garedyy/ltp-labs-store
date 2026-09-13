@@ -81,6 +81,19 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Order confirmation: the page was a bare title, one sentence and three definitions, with no
+  sign that the order succeeded and nothing about the products ordered (#38). It now opens on a
+  green check disc, "Thank you for your order", the order number set apart, then an "Order
+  summary" card listing every ordered line (thumbnail, title, quantity, line price) above the
+  items / payment method / total. `lastOrder` stores the order's `{ productId, quantity }` lines
+  (D-17) instead of a frozen item count and formatted total: the confirmation prices them again
+  from the cached catalogue, and the account page and the confirmation format the total in the
+  current locale. An older cookie without lines reads as no order (`sanitiseOrder`).
+- UI strings: about thirty English and Portuguese strings, the `<title>` separator and the
+  discount sign used the em dash, the en dash, the ellipsis, curly quotes, the multiplication
+  sign or the minus sign, none of which a Portuguese keyboard types (#38). They now use `-`,
+  `...`, `"` and `x`; `locales.test.ts` rejects any other character and `Docs/I18N.md` records
+  the rule.
 - Product page: the main image was a square as wide as its column, about 800 px tall on desktop
   and tablet, so the thumbnails and, in one column, the buy block fell out of the first screen
   (#27). The image box now takes the wireframe's 5:3 landscape ratio from `md` (`md:aspect-[5/3]`),

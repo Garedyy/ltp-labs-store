@@ -33,7 +33,7 @@ test.describe("payment page", () => {
     await page.getByRole("link", { name: "Or pay with PayPal" }).click();
     await expect(page).toHaveURL(/\/en\/checkout\?method=paypal$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Payment");
-    await expect(page).toHaveTitle("Payment — The Online Store");
+    await expect(page).toHaveTitle("Payment - The Online Store");
     await expect(page.getByRole("radio", { name: "PayPal" })).toBeChecked();
     // With JavaScript the card fields fold away for PayPal and come back for Card.
     await expect(page.getByRole("textbox", { name: "Card number" })).toBeHidden();
@@ -83,16 +83,27 @@ test.describe("payment page", () => {
     await expect(page.getByRole("button", { name: "Pay $9.99" })).toBeVisible();
     await payByCard(page);
     await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      /Thank you — order LTP-[A-Z0-9]+/,
-    );
-    await expect(page.getByRole("definition").filter({ hasText: "Card" })).toBeVisible();
-    await expect(page.getByRole("definition").filter({ hasText: "$9.99" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Thank you for your order");
+    await expect(page).toHaveTitle(/^Order LTP-[A-Z0-9]+ confirmed - The Online Store$/);
+    await expect(page.getByText(/^LTP-[A-Z0-9]+$/)).toBeVisible();
+    const summary = page.getByRole("region", { name: "Order summary" });
+    await expect(
+      summary.getByRole("list", { name: "Items" }).getByRole("listitem").filter({
+        hasText: "Essence Mascara Lash Princess",
+      }),
+    ).toContainText("Qty 1");
+    await expect(summary.getByRole("definition").filter({ hasText: /^1$/ })).toBeVisible();
+    await expect(summary.getByRole("definition").filter({ hasText: "Card" })).toBeVisible();
+    await expect(summary.getByRole("definition").filter({ hasText: "$9.99" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Cart, empty" })).toBeVisible();
     await page.reload();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Thank you/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Thank you for your order");
     await page.goto("/pt/checkout/confirmation");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Obrigado — encomenda LTP-/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Obrigado pela sua encomenda");
+    await expect(page).toHaveTitle(/^Encomenda LTP-[A-Z0-9]+ confirmada - The Online Store$/);
+    await expect(page.getByRole("region", { name: "Resumo da encomenda" })).toContainText(
+      "9,99 US$",
+    );
   });
 
   test("PayPal needs no card details", async ({ page }) => {
@@ -167,6 +178,9 @@ test.describe("payment page", () => {
     );
     await payByCard(page);
     await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+    await expect(page.getByRole("list", { name: "Items" }).getByRole("listitem")).toHaveText([
+      /Essence Mascara Lash Princess.*Qty 1/,
+    ]);
     await expect(page.getByRole("definition").filter({ hasText: /^1$/ })).toBeVisible();
     await expect(page.getByRole("definition").filter({ hasText: "$29.99" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();

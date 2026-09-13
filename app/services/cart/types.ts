@@ -2,12 +2,13 @@ export type CartLine = { productId: number; quantity: number };
 
 export type PaymentMethod = "card" | "paypal";
 
+// The lines let the confirmation list what was ordered; the count and the formatted total are
+// derived in loaders (D-17).
 export type LastOrder = {
   number: string;
   method: PaymentMethod;
   totalCents: number;
-  itemCount: number;
-  totalFormatted: string;
+  lines: CartLine[];
 };
 
 export type CartSessionData = { cart: CartLine[]; promoCode?: string; lastOrder?: LastOrder };

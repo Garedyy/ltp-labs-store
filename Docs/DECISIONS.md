@@ -358,6 +358,31 @@ max-lg:[.js_&]:inline-flex`) and the panel is simply visible in place (`max-lg:[
   `no-js.spec.ts` checks the in-place panel at 412 px; `a11y.spec.ts` scans the unfolded state;
   `reflow.spec.ts` and `targets.spec.ts` cover the open panel at 320 px and the button height.
 
+## D-17 · The last order stores its lines, not its derived values
+
+- **Date / branch**: 2026-09-13 · `fix/38-confirmation-page-keyboard-strings` (#38)
+- **Context**: the confirmation page had to show what was ordered, but `lastOrder` in the
+  signed `__cart` cookie only carried `number`, `method`, `totalCents`, `itemCount` and a
+  `totalFormatted` string frozen in the locale of the order. The cookie has a 4 KB budget and a
+  50-line cart already serialises under 4000 bytes, so titles, thumbnails or prices per line
+  could not be added.
+- **Decision**: `LastOrder` becomes `{ number, method, totalCents, lines: CartLine[] }`. The
+  lines are the cart's own `{ productId, quantity }` shape: in cart mode `cart` is unset in the
+  same commit as `lastOrder.lines` is written, so the cookie does not grow; in product mode (Buy
+  now, D-12) one line is added. `itemCount` is derived with `countItems(lines)` and the total is
+  formatted in the loaders (`formatPrice(totalCents, locale)`, so a language switch after the
+  order shows it in the current locale, which the frozen string did not). The confirmation
+  loader fetches the products again through the cached client to build `CartLineView`s with
+  `toLineView`; a product gone from the catalogue since the order is skipped, an unavailable API
+  renders the shared "service unavailable" boundary like every other page. A hand-written
+  `sanitiseOrder` guard reads an older cookie (no `lines`) or a malformed one as "no order", so
+  the confirmation redirects to the cart instead of failing.
+- **Consequences**: `buildOrder(view, method)` loses its `totalFormatted` parameter and
+  `CheckoutView` its `itemCount`; `AccountView.lastOrder` narrows to `{ number,
+totalFormatted }` built by the account loader. `cart.test.ts` covers `sanitiseOrder`;
+  `checkout.spec.ts` checks the lines on the confirmation in cart and Buy now modes and the
+  Portuguese total after a language switch.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

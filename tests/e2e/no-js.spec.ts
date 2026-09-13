@@ -34,7 +34,7 @@ test("sorting and filtering work without JavaScript through the GET forms", asyn
   await expect(applyFilter).toBeVisible();
   await applyFilter.click();
   await expect(page).toHaveURL(/\/en\/shop\?category=beauty&sort=price-desc$/);
-  await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+  await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
   await page.getByRole("link", { name: "Clear filter" }).click();
   await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
 });
@@ -48,7 +48,7 @@ test("on a phone the categories are shown in place under the toolbar without Jav
   const beauty = page.getByRole("checkbox", { name: "Beauty" });
   await expect(beauty).toBeVisible();
   const toolbarBottom = await page
-    .getByText("Showing 1–9 of 194")
+    .getByText("Showing 1-9 of 194")
     .boundingBox()
     .then((box) => (box ? box.y + box.height : Infinity));
   const panelTop = (await page.getByRole("complementary").boundingBox())?.y ?? 0;
@@ -58,7 +58,7 @@ test("on a phone the categories are shown in place under the toolbar without Jav
   await beauty.check();
   await page.locator("aside").getByRole("button", { name: "Apply" }).click();
   await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
-  await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+  await expect(page.getByText("Showing 1-5 of 5")).toBeVisible();
 });
 
 test("searching works without JavaScript", async ({ page }) => {
@@ -66,7 +66,7 @@ test("searching works without JavaScript", async ({ page }) => {
   await page.getByRole("searchbox", { name: "Search products" }).fill("laptop");
   await page.getByRole("button", { name: "Search" }).click();
   await expect(page).toHaveURL(/\/en\/search\?q=laptop$/);
-  await expect(page.getByText(/Showing 1–\d+ of \d+/)).toBeVisible();
+  await expect(page.getByText(/Showing 1-\d+ of \d+/)).toBeVisible();
 });
 
 test("adding to the cart twice without JavaScript redirects back and a refresh does not re-add", async ({
