@@ -35,9 +35,11 @@ export function ProductGallery({ title, images }: ProductGalleryProps) {
     return search ? `?${search}` : "?";
   }
 
+  // Landscape box from md (the wireframe's 5:3) so the gallery and the buy block share the first
+  // screen; the square image is centred inside it (#27).
   return (
     <figure className="flex flex-col gap-3">
-      <div className="aspect-square overflow-hidden rounded-2xl bg-surface-placeholder">
+      <div className="aspect-square overflow-hidden rounded-2xl bg-surface-placeholder md:aspect-[5/3]">
         <img
           src={current}
           alt={t("product.gallery.imageAlt", { title, index: imageIndex, total })}

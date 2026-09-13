@@ -19,6 +19,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Product page: the main image was a square as wide as its column, about 800 px tall on desktop
+  and tablet, so the thumbnails and, in one column, the buy block fell out of the first screen
+  (#27). The image box now takes the wireframe's 5:3 landscape ratio from `md` (`md:aspect-[5/3]`),
+  as wide as its column with the square image centred inside, so its height never exceeds ~540 px
+  on desktop; phones keep the full-width square, `preload` and `fetchPriority="high"` are
+  unchanged. `tests/e2e/product.spec.ts` checks the box at 1280 x 800 and 820 x 1180 and the
+  square on a phone.
 - Shell: on short pages (coming soon, 404, empty cart, order confirmation) the footer stopped
   right after the content and left the page background visible below it (#26). `<body>` is now a
   `min-h-svh` flex column and `<main>` grows, so the footer sits on the bottom edge of the viewport
