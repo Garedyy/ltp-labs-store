@@ -65,3 +65,59 @@ describe("CatalogueResults announcements", () => {
     expect(statusText()).toBe("|");
   });
 });
+
+describe("CatalogueResults filters disclosure", () => {
+  function renderWithFilters() {
+    return renderWithProviders(
+      <AnnouncerProvider>
+        <CatalogueResults
+          view={RESULTS}
+          filters={
+            <aside id="categories" tabIndex={-1} aria-label="Categories">
+              <input type="checkbox" aria-label="Beauty" />
+            </aside>
+          }
+        />
+      </AnnouncerProvider>,
+      { path: "/en/shop" },
+    );
+  }
+
+  it("renders no toggle and no jump link without filters", () => {
+    renderWithProviders(<Harness initial={RESULTS} />, { path: "/en/search?q=phone" });
+    expect(screen.queryByRole("button", { name: "Categories" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Jump to categories" })).not.toBeInTheDocument();
+  });
+
+  it("opens the panel, moves the focus into it and closes on Escape back to the button", async () => {
+    renderWithFilters();
+    const toggle = screen.getByRole("button", { name: "Categories" });
+    const panel = document.getElementById("filters-panel");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).toHaveAttribute("aria-controls", "filters-panel");
+    expect(panel?.className).toContain("max-lg:[.js_&]:hidden");
+    expect(screen.getByRole("link", { name: "Jump to categories" })).toHaveAttribute(
+      "href",
+      "#categories",
+    );
+
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(panel?.className).not.toContain("max-lg:[.js_&]:hidden");
+    expect(screen.getByRole("complementary", { name: "Categories" })).toHaveFocus();
+
+    await userEvent.keyboard("{Escape}");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(panel?.className).toContain("max-lg:[.js_&]:hidden");
+    expect(toggle).toHaveFocus();
+  });
+
+  it("closes from the button without moving the focus", async () => {
+    renderWithFilters();
+    const toggle = screen.getByRole("button", { name: "Categories" });
+    await userEvent.click(toggle);
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).toHaveFocus();
+  });
+});

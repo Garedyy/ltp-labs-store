@@ -48,8 +48,8 @@ export default {
     hint: "Escolha uma categoria — os resultados atualizam-se ao escolher",
     apply: "Aplicar",
     clear: "Limpar filtro",
-    jump: "Categorias",
-    jumpLabel: "Ir para as categorias",
+    toggle: "Categorias",
+    jump: "Ir para as categorias",
   },
   card: {
     price: "Preço",

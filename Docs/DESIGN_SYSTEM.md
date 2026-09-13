@@ -76,7 +76,7 @@ and pass `eslint-plugin-i18next/no-literal-string`. Each has a role/name test ne
 | ---------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | `Button`         | `variant: primary \| secondary \| ghost \| icon`, `size: md \| sm`, `pending`, `pendingLabel`   | `type="button"` by default; pending keeps the button enabled with `aria-busy`; `disabled` only for out-of-stock |
 | `ButtonLink`     | same variants, React Router `Link` props                                                        | never `aria-disabled` — blocked states omit the control                                                         |
-| `Icon`           | `name: IconName`, SVG props                                                                     | `aria-hidden focusable="false" fill="currentColor"`, 16 Remix Icon paths                                        |
+| `Icon`           | `name: IconName`, SVG props                                                                     | `aria-hidden focusable="false" fill="currentColor"`, 15 Remix Icon paths                                        |
 | `VisuallyHidden` | `as?`, `children`                                                                               | `sr-only`                                                                                                       |
 | `Field`          | `name`, `label`, `hideLabel?`, `hint?`, `error?`, `errorPrefix`, `children: (ids) => ReactNode` | render-prop instead of `cloneElement`; error is `role="alert"` with icon + sr prefix                            |
 | `useFieldIds`    | `name`, `{ hint, error }`                                                                       | `{ inputId, hintId, errorId, describedBy }`                                                                     |
@@ -91,7 +91,7 @@ and pass `eslint-plugin-i18next/no-literal-string`. Each has a role/name test ne
 
 ### Icons
 
-16 paths from **Remix Icon v4.8.0** — the last release published under the Apache License 2.0
+15 paths from **Remix Icon v4.8.0** — the last release published under the Apache License 2.0
 (later releases use the custom "Remix Icon License v1.0", which is not on the licence allow-list;
 see `DECISIONS.md` D-4). Path data is copied verbatim into `icon.tsx`; attribution in the README.
 Icons never carry meaning alone: every icon-only control has an accessible name and every status
@@ -124,13 +124,18 @@ icon sits next to text.
 - **Home** (`/`): the catalogue's results column alone — `flex min-w-0 flex-col gap-6`, h1
   `text-h4`, intro `text-body-sm text-fg-muted`, the same product grid (8 cards) and a `primary`
   `ButtonLink` to the shop; no toolbar, no aside.
-- **Catalogue** (`/shop`): `grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]`; results column
-  `flex min-w-0 flex-col gap-6` (h1 `text-h4`, toolbar `flex flex-wrap items-center justify-between gap-4`
-  with the sort form's hint on its own line `basis-full text-body-sm text-fg-muted` and its Apply
-  button `sr-only` until focused when scripts run,
-  grid `grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3`, pagination `flex-wrap justify-center sm:justify-end`);
-  aside `lg:col-start-2 lg:row-start-1 lg:self-start` (not sticky — 24 rows exceed a tablet
-  viewport), card `rounded-2xl border border-border p-4`, one 44 px checkbox row per category.
+- **Catalogue** (`/shop`): `CatalogueResults` is a grid `gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]
+lg:grid-rows-[auto_1fr] lg:gap-x-8` of three items — head (h1 `text-h4`, toolbar
+  `flex flex-wrap items-center justify-between gap-4` with the sort form's hint on its own line
+  `basis-full text-body-sm text-fg-muted`, its Apply button `sr-only` until focused when scripts
+  run, and the "Categories" button `min-h-11` with a chevron that rotates when open, shown only
+  below `lg` with scripts), body (grid `grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3`,
+  pagination `flex-wrap justify-center sm:justify-end`; `max-lg:order-last`) and the filters
+  panel, last in the DOM, `lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start` (not sticky
+  — 24 rows exceed a tablet viewport) and, below `lg`, placed between head and body, folded
+  (`max-lg:[.js_&]:hidden`) until the button unfolds it (D-16, #31). The `1fr` body row absorbs
+  an aside taller than the column. Card `rounded-2xl border border-border p-4`, one 44 px checkbox
+  row per category.
   Product card: `rounded-2xl border p-3`, `aspect-square rounded-xl bg-surface-placeholder object-contain`
   image, `focus-within` ring. First three images eager (first `fetchPriority="high"`), rest lazy.
 - **Product**: `grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12`; gallery image

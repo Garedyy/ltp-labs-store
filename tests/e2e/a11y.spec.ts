@@ -26,6 +26,14 @@ for (const locale of LOCALES) {
 // The open panel overlays the page by user action; it closes on Escape, outside click, focus
 // leaving and navigation (keyboard.spec.ts), which is what SC 2.4.11 asks for. The engine cannot
 // know that, so element_tabbable_unobscured is reviewed manually for this state only.
+test("the unfolded categories pass WCAG 2.2 on a phone", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-chromium", "phone layout only");
+  await page.goto("/en/shop", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "Categories" }).click();
+  await expect(page.getByRole("checkbox", { name: "Beauty" })).toBeVisible();
+  await expectAccessible(page, `en-shop-categories-open-${testInfo.project.name}`);
+});
+
 test("the open mobile menu passes WCAG 2.2", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "mobile-chromium", "mobile layout only");
   await page.goto("/en");

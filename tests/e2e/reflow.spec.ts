@@ -39,3 +39,11 @@ test("a filled cart reflows at 320 px", async ({ page }, testInfo) => {
   await page.getByLabel("Open menu").click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 });
+
+test("the unfolded categories reflow at 320 px", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "one project is enough");
+  await page.goto("/en/shop");
+  await page.getByRole("button", { name: "Categories" }).click();
+  await expect(page.getByRole("checkbox", { name: "Beauty" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});

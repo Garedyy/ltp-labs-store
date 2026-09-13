@@ -1,17 +1,26 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page, test, type TestInfo } from "@playwright/test";
 
 const cards = (page: Page) =>
   page.getByRole("list", { name: /Showing|A mostrar/ }).getByRole("article");
 const sortApply = (page: Page) =>
   page.locator("form", { has: page.getByRole("combobox") }).getByRole("button", { name: "Apply" });
 const results = (page: Page) => page.getByRole("status").filter({ hasText: /^Showing \d+ to/ });
+const categoriesToggle = (page: Page) => page.getByRole("button", { name: "Categories" });
+
+// Below lg the categories fold under the toolbar (#31); the phone project unfolds them first.
+async function openCategories(page: Page, testInfo: TestInfo) {
+  if (testInfo.project.name === "mobile-chromium") await categoriesToggle(page).click();
+}
 
 test.describe("catalogue", () => {
-  test("shows nine cards, the summary, the categories and the pagination", async ({ page }) => {
+  test("shows nine cards, the summary, the categories and the pagination", async ({
+    page,
+  }, testInfo) => {
     await page.goto("/en/shop");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
     await expect(cards(page)).toHaveCount(9);
     await expect(page.getByText("Showing 1–9 of 194")).toBeVisible();
+    await openCategories(page, testInfo);
     await expect(page.getByRole("checkbox")).toHaveCount(24);
     const pagination = page.getByRole("navigation", { name: "Pagination" });
     await expect(pagination.getByRole("link", { name: "Page 1" })).toHaveAttribute(
@@ -71,8 +80,9 @@ test.describe("catalogue", () => {
     await expect(sortApply(page)).toBeInViewport();
   });
 
-  test("a category filters, changes the title and can be cleared", async ({ page }) => {
+  test("a category filters, changes the title and can be cleared", async ({ page }, testInfo) => {
     await page.goto("/en/shop?page=3");
+    await openCategories(page, testInfo);
     const beauty = page.getByRole("checkbox", { name: "Beauty" });
     await beauty.check();
     await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
@@ -89,6 +99,57 @@ test.describe("catalogue", () => {
     await page.getByRole("link", { name: "Clear filter" }).click();
     await expect(page).toHaveURL(/\/en\/shop$/);
     await expect(page.locator("fieldset")).toBeFocused();
+  });
+
+  test("on a phone, Categories unfolds the list under the toolbar and Escape folds it back", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "mobile-chromium", "phone layout only");
+    await page.goto("/en/shop");
+    const toggle = categoriesToggle(page);
+    const beauty = page.getByRole("checkbox", { name: "Beauty" });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(beauty).toBeHidden();
+    await expect(page.getByRole("link", { name: "Jump to categories" })).toBeHidden();
+
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator("#categories")).toBeFocused();
+    await expect(beauty).toBeVisible();
+    const panelTop = (await page.getByRole("complementary").boundingBox())?.y ?? Infinity;
+    const gridTop = (await cards(page).first().boundingBox())?.y ?? 0;
+    expect(panelTop).toBeLessThan(gridTop);
+
+    // Choosing keeps the list open and the focus on the checkbox, as on desktop.
+    await beauty.check();
+    await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
+    await expect(beauty).toBeFocused();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toBeFocused();
+    await expect(beauty).toBeHidden();
+    await toggle.click();
+    await expect(beauty).toBeVisible();
+    await toggle.click();
+    await expect(beauty).toBeHidden();
+    await expect(toggle).toBeFocused();
+  });
+
+  test("on desktop the categories stay unfolded and the toggle is absent", async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop-chromium", "desktop layout only");
+    await page.goto("/en/shop");
+    await expect(categoriesToggle(page)).toBeHidden();
+    await expect(page.getByRole("checkbox", { name: "Beauty" })).toBeVisible();
+    const jump = page.getByRole("link", { name: "Jump to categories" });
+    await expect(jump).not.toBeInViewport();
+    await jump.focus();
+    await expect(jump).toBeInViewport();
   });
 
   test("page 22 renders, page 23 is a 404 inside the shell, an unknown category redirects", async ({

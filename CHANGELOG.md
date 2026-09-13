@@ -51,6 +51,11 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Shop: on phones the category filter folds under the toolbar behind a "Categories" button
+  (`aria-expanded`; opening moves the focus into the list, Escape folds it back) instead of
+  sitting after the pagination behind a jump link; choosing a category behaves as before and
+  keeps the list open. Without JavaScript the list is shown in place. Desktop rendering and tab
+  order are unchanged (#31, D-16).
 - Cart: "Check out" and "Or pay with PayPal" are links to the payment page (`?method=paypal`
   preselects PayPal); the cart action no longer accepts `intent=checkout`. An empty cart reaching
   the payment page is sent back to the cart with the focused "Your cart is empty" alert (#30,

@@ -39,6 +39,28 @@ test("sorting and filtering work without JavaScript through the GET forms", asyn
   await expect(page).toHaveURL(/\/en\/shop\?sort=price-desc$/);
 });
 
+test("on a phone the categories are shown in place under the toolbar without JavaScript", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto("/en/shop");
+  await expect(page.getByRole("button", { name: "Categories" })).toBeHidden();
+  const beauty = page.getByRole("checkbox", { name: "Beauty" });
+  await expect(beauty).toBeVisible();
+  const toolbarBottom = await page
+    .getByText("Showing 1–9 of 194")
+    .boundingBox()
+    .then((box) => (box ? box.y + box.height : Infinity));
+  const panelTop = (await page.getByRole("complementary").boundingBox())?.y ?? 0;
+  const gridTop = (await page.getByRole("article").first().boundingBox())?.y ?? 0;
+  expect(panelTop).toBeGreaterThan(toolbarBottom);
+  expect(panelTop).toBeLessThan(gridTop);
+  await beauty.check();
+  await page.locator("aside").getByRole("button", { name: "Apply" }).click();
+  await expect(page).toHaveURL(/\/en\/shop\?category=beauty$/);
+  await expect(page.getByText("Showing 1–5 of 5")).toBeVisible();
+});
+
 test("searching works without JavaScript", async ({ page }) => {
   await page.goto("/en/search");
   await page.getByRole("searchbox", { name: "Search products" }).fill("laptop");
