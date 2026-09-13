@@ -23,6 +23,7 @@ export default {
   sort: {
     label: "Sort by",
     defaultOrder: "Default order",
+    hint: "Results update when you choose",
     apply: "Apply",
     options: {
       "price-asc": "Price: low to high",

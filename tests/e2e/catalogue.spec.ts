@@ -4,6 +4,7 @@ const cards = (page: Page) =>
   page.getByRole("list", { name: /Showing|A mostrar/ }).getByRole("article");
 const sortApply = (page: Page) =>
   page.locator("form", { has: page.getByRole("combobox") }).getByRole("button", { name: "Apply" });
+const results = (page: Page) => page.getByRole("status").filter({ hasText: /^Showing \d+ to/ });
 
 test.describe("catalogue", () => {
   test("shows nine cards, the summary, the categories and the pagination", async ({ page }) => {
@@ -29,14 +30,45 @@ test.describe("catalogue", () => {
     await expect(first.getByRole("link")).toHaveAttribute("href", "/en/products/1");
   });
 
-  test("sorting needs Apply and changes the first title", async ({ page }) => {
-    await page.goto("/en");
-    await page.getByRole("combobox", { name: "Sort by" }).selectOption("price-desc");
-    await expect(page).toHaveURL(/\/en$/);
-    await sortApply(page).click();
+  test("choosing a sort applies it, keeps the focus on the select and announces", async ({
+    page,
+  }) => {
+    await page.goto("/en?page=2");
+    const sort = page.getByRole("combobox", { name: "Sort by" });
+    await expect(sort).toHaveAccessibleDescription("Results update when you choose");
+    // selectOption does not focus the element the way a user does.
+    await sort.focus();
+    await sort.selectOption("price-desc");
     await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
     await expect(cards(page).first().getByRole("heading")).toHaveText("Durango SXT RWD");
-    await expect(page.getByRole("combobox", { name: "Sort by" })).toHaveValue("price-desc");
+    await expect(sort).toHaveValue("price-desc");
+    await expect(sort).toBeFocused();
+    await expect(results(page).filter({ hasText: "Showing 1 to 9 of 194" })).toHaveCount(1);
+
+    await sort.selectOption("");
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(sort).toHaveValue("");
+    await expect(cards(page).first().getByRole("heading")).toHaveText(
+      "Essence Mascara Lash Princess",
+    );
+
+    // The select follows the URL, not the last choice.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+    await expect(sort).toHaveValue("price-desc");
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\?page=2$/);
+    await expect(sort).toHaveValue("");
+  });
+
+  test("the sort Apply button is hidden until it receives the focus", async ({ page }) => {
+    await page.goto("/en");
+    await expect(sortApply(page)).toBeAttached();
+    await expect(sortApply(page)).not.toBeInViewport();
+    await page.getByRole("combobox", { name: "Sort by" }).focus();
+    await page.keyboard.press("Tab");
+    await expect(sortApply(page)).toBeFocused();
+    await expect(sortApply(page)).toBeInViewport();
   });
 
   test("a category filters, changes the title and can be cleared", async ({ page }) => {

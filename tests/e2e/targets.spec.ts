@@ -23,9 +23,15 @@ test("header and footer controls are at least 44 px tall", async ({ page }) => {
   await expectTallEnough(page.getByRole("contentinfo").locator(CONTROLS).filter({ visible: true }));
 });
 
+// With JavaScript the sort Apply button is sr-only until focused, so it is measured focused.
 test("the sort Apply button is at least 44 px tall", async ({ page }) => {
   await page.goto("/en");
-  await expectTallEnough(page.getByRole("button", { name: "Apply" }));
+  const apply = page
+    .locator("form", { has: page.getByRole("combobox") })
+    .getByRole("button", { name: "Apply" });
+  await apply.focus();
+  await expect(apply).toBeFocused();
+  await expectTallEnough(apply);
 });
 
 test("the Remove code button is at least 44 px tall", async ({ page }) => {
