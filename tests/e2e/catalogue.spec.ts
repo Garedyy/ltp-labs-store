@@ -184,39 +184,31 @@ test.describe("catalogue", () => {
     ).toHaveCount(1);
   });
 
-  test("the first and last pages are one click away and a vanishing Next hands the focus to the current page", async ({
+  test("the window slides with the page and a vanishing Next hands the focus to the current page", async ({
     page,
   }) => {
     await page.goto("/en/shop?page=9");
     const pagination = page.getByRole("navigation", { name: "Pagination" });
     await expect(pagination.getByRole("link")).toHaveText([
       "Previous page",
-      "1",
       "7",
       "8",
       "9",
       "10",
       "11",
-      "22",
       "Next page",
     ]);
-    await expect(pagination.getByText("…")).toHaveCount(2);
 
-    const last = pagination.getByRole("link", { name: "Page 22", exact: true });
-    await last.click();
-    await expect(page).toHaveURL(/\/en\/shop\?page=22$/);
-    await expect(last).toBeFocused();
-    await expect(pagination.getByRole("link", { name: "Next page" })).toHaveCount(0);
-    await expect(pagination.getByText("…")).toHaveCount(1);
-
-    await pagination.getByRole("link", { name: "Page 1", exact: true }).click();
-    await expect(page).toHaveURL(/\/en\/shop$/);
-    await expect(pagination.getByRole("link", { name: "Page 1", exact: true })).toBeFocused();
-    await expect(pagination.getByRole("link", { name: "Previous page" })).toHaveCount(0);
+    const next = pagination.getByRole("link", { name: "Next page" });
+    await next.click();
+    await expect(page).toHaveURL(/\/en\/shop\?page=10$/);
+    await expect(next).toBeFocused();
+    await expect(pagination.getByRole("link", { name: "Page 12", exact: true })).toBeVisible();
 
     await page.goto("/en/shop?page=21");
-    await pagination.getByRole("link", { name: "Next page" }).click();
+    await next.click();
     await expect(page).toHaveURL(/\/en\/shop\?page=22$/);
+    await expect(next).toHaveCount(0);
     await expect(pagination.getByRole("link", { name: "Page 22", exact: true })).toBeFocused();
   });
 

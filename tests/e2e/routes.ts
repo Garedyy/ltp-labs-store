@@ -6,7 +6,6 @@ export const ROUTES: readonly string[] = [
   "/shop",
   "/shop?category=beauty&sort=price-asc",
   "/shop?page=2",
-  "/shop?page=9",
   "/products/1",
   "/products/117",
   "/products/117?image=2",

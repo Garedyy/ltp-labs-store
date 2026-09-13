@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router";
 import { Icon } from "~/components/ui/icon";
 import { VisuallyHidden } from "~/components/ui/visually-hidden";
 import { buildSearch } from "~/lib/catalogue/query";
-import { pageItems } from "~/lib/catalogue/pagination";
+import { pageWindow } from "~/lib/catalogue/pagination";
 import { cx } from "~/lib/cx";
 
 const ITEM =
@@ -12,7 +12,6 @@ const ITEM =
 // The current page is not a navigation target, so only the other links get hover feedback.
 const PAGE_LINK = cx(ITEM, "hover:bg-surface-muted");
 const CURRENT_PAGE = cx(ITEM, "bg-primary text-primary-fg forced-colors:underline");
-const GAP = cx(ITEM, "text-fg-muted");
 
 type PaginationProps = { page: number; pageCount: number };
 
@@ -43,26 +42,20 @@ export function Pagination({ page, pageCount }: PaginationProps) {
             </Link>
           </li>
         )}
-        {pageItems(page, pageCount).map((item) =>
-          typeof item === "number" ? (
-            <li key={item}>
-              <Link
-                to={to(item)}
-                aria-label={t("catalogue.pagination.page", { page: item })}
-                aria-current={item === page ? "page" : undefined}
-                className={item === page ? CURRENT_PAGE : PAGE_LINK}
-                prefetch="intent"
-                preventScrollReset
-              >
-                {item}
-              </Link>
-            </li>
-          ) : (
-            <li key={item} aria-hidden="true" className={GAP}>
-              …
-            </li>
-          ),
-        )}
+        {pageWindow(page, pageCount).map((number) => (
+          <li key={number}>
+            <Link
+              to={to(number)}
+              aria-label={t("catalogue.pagination.page", { page: number })}
+              aria-current={number === page ? "page" : undefined}
+              className={number === page ? CURRENT_PAGE : PAGE_LINK}
+              prefetch="intent"
+              preventScrollReset
+            >
+              {number}
+            </Link>
+          </li>
+        ))}
         {page < pageCount && (
           <li>
             <Link
