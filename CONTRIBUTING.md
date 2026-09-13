@@ -70,15 +70,19 @@ them; every one stops for approval before writing, branching or pushing):
 
 ## Automated review
 
-`/project-review [all | pr <n> | diff | branch | <path>] [--no-verify] [--post]` (Claude Code
-skill in `.claude/skills/project-review/`) runs one read-only reviewer agent per perspective -
-correctness, conventions, security, accessibility, i18n, architecture, data layer, design
-system, dependencies, testing, performance, docs and git (branch and PR scopes only) - each
-armed with the rules of `CLAUDE.md`, `Docs/PROJECT_PLAN.md`, `Docs/DECISIONS.md` and this file.
-Critical and major findings are challenged by a verifier agent before the synthesis table;
-`--post` comments the table on the PR. Verdicts: `PASS` (nothing above info), `WARN` (minor
-findings only), `FAIL` (a critical or major finding survived verification). It complements
-CI and the PR checklist; it never replaces the keyboard, VoiceOver and 320 px walkthroughs.
+`/project-review [all | pr <n> | diff | branch | <path>] [--no-verify] [--post] [--full]`
+(Claude Code skill in `.claude/skills/project-review/`) runs one read-only reviewer agent per
+perspective - correctness, conventions, security, accessibility, i18n, architecture, data
+layer, design system, dependencies, testing, performance, docs and git (branch and PR scopes
+only) - each armed with a checklist distilled from `CLAUDE.md`, `Docs/PROJECT_PLAN.md`,
+`Docs/DECISIONS.md` and this file. To keep the token cost low, a perspective is launched only
+when the scope touches its files (`--full` launches all of them), mechanical perspectives run
+on Haiku, judgement-heavy ones on Sonnet, correctness and security on Opus, every agent has a
+turn cap, and agents never read the docs in full. Critical and major findings are challenged
+by one verifier agent per perspective before the synthesis table; `--post` comments the table
+on the PR. Verdicts: `PASS` (nothing above info), `WARN` (minor findings only), `FAIL` (a
+critical or major finding survived verification). It complements CI and the PR checklist; it
+never replaces the keyboard, VoiceOver and 320 px walkthroughs.
 
 ## Dependency and licence policy
 
