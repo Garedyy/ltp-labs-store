@@ -321,6 +321,43 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   `checkout.spec.ts` covers both modes, the refusals and the PayPal path; `cart.spec.ts`,
   `cart-session.spec.ts`, `no-js.spec.ts` and `a11y-states.spec.ts` follow the new flow.
 
+## D-16 · Categories fold under the toolbar on phones
+
+- **Date / branch**: 2026-09-13 · `fix/31-mobile-categories-dropdown` (#31)
+- **Context**: plan §3.8 put the category filter after the pagination on phones (DOM order
+  toolbar → grid → pagination → aside) with a "Categories ↓" jump link in the toolbar. Reaching
+  the filter meant scrolling past nine cards and the pagination, then back up after choosing.
+- **Decision**: below `lg` the toolbar's "Categories" control is a `<button aria-expanded
+aria-controls="filters-panel">` that unfolds the filter **in place, under the toolbar**; at
+  `lg+` nothing changes. The filter form stays a single DOM node rendered **after** the products
+  (`CatalogueResults` renders head → body → `filters` and places the panel visually with
+  `max-lg:order-last` on the body), so the desktop tab order — products, pagination, then the 24
+  checkboxes — and the desktop rendering are untouched (verified byte for byte on screenshots at
+  1280 px, `/shop` and `?category=beauty`). At `lg` the wrapper is a grid
+  `grid-cols-[minmax(0,1fr)_16rem] grid-rows-[auto_1fr]`: the head row is its content, the `1fr`
+  body row absorbs an aside taller than the column, so nothing is redistributed between the h1
+  and the toolbar. The plan's `Disclosure` (`<details>`) was not reused: the same node cannot be
+  inside a `<details>` on phones and outside it on desktop, and `<details>` cannot be forced open
+  by CSS. Because the panel sits after the products in the DOM, opening it moves the focus to
+  the `<aside id="categories">` (`preventScroll`: the panel unfolds right under the button, which
+  stays in view) so Tab continues into the visible list; Escape inside the panel closes it and
+  gives the focus back to the button; closing from the button leaves the focus there. Choosing a
+  category behaves exactly as on desktop (navigation, focus on the checkbox, announcement) and the
+  panel stays open — the component stays mounted across search-param changes —; a pathname change
+  starts closed again. **Without JavaScript** the button is not shown (`hidden
+max-lg:[.js_&]:inline-flex`) and the panel is simply visible in place (`max-lg:[.js_&]:hidden`
+  only when closed), the existing Apply button submitting the GET form. The jump link survives as
+  `sr-only focus:not-sr-only` at every width (desktop keyboard users and no-JS phones, where the
+  panel is visually above the grid but after it in the DOM), hidden on phones with JavaScript
+  because its target is folded.
+- **Consequences**: plan §3.8's phone row for the catalogue ("aside below … jump link") is
+  superseded as stated above; `CatalogueResults` takes `filters` instead of `showJumpLink`;
+  `CategoryFilter` no longer carries grid classes; strings `catalogue.filters.toggle` (button) and
+  `catalogue.filters.jump` (link) replace `jump` / `jumpLabel`. `catalogue.spec.ts` unfolds the
+  panel on `mobile-chromium` before touching a checkbox and covers the fold / unfold / Escape flow;
+  `no-js.spec.ts` checks the in-place panel at 412 px; `a11y.spec.ts` scans the unfolded state;
+  `reflow.spec.ts` and `targets.spec.ts` cover the open panel at 320 px and the button height.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

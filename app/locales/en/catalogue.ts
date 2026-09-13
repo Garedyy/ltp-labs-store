@@ -46,8 +46,8 @@ export default {
     hint: "Choose one category — results update when you choose",
     apply: "Apply",
     clear: "Clear filter",
-    jump: "Categories",
-    jumpLabel: "Jump to categories",
+    toggle: "Categories",
+    jump: "Jump to categories",
   },
   card: {
     price: "Price",

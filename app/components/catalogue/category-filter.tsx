@@ -36,12 +36,7 @@ export function CategoryFilter({ view }: { view: CatalogueView }) {
   }
 
   return (
-    <aside
-      id="categories"
-      tabIndex={-1}
-      aria-labelledby="filters-heading"
-      className="lg:col-start-2 lg:row-start-1 lg:self-start"
-    >
+    <aside id="categories" tabIndex={-1} aria-labelledby="filters-heading">
       <form method="get" noValidate className="rounded-2xl border border-border p-4">
         {view.query.q && <input type="hidden" name="q" value={view.query.q} />}
         <fieldset ref={fieldset} tabIndex={-1} aria-describedby="filters-hint">

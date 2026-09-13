@@ -31,7 +31,12 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
   adds Escape (closes, focus back to the summary, does not bubble to a parent disclosure), outside
   pointer-down, and **closing when focus leaves** so an open panel never covers the element that
   receives focus (SC 2.4.11). `base.css` hides closed `<details>` content with `display: none`
-  (Chromium keeps layout boxes otherwise).
+  (Chromium keeps layout boxes otherwise). **In-place disclosures** (the catalogue's categories
+  below `lg`, D-16) are a `<button aria-expanded aria-controls>` folding a panel that sits _after_
+  the products in the DOM: opening moves the focus into the panel (`preventScroll`) so Tab follows
+  the visible order, Escape closes and refocuses the button; nothing closes on focus leaving,
+  since an in-flow panel covers nothing. Without JavaScript the button is absent and the panel is
+  shown.
 - **Targets**: every control is at least 44 × 44 px (`min-h-11`, `size-11`).
 - **Forms**: `noValidate`; the server validates and returns codes; on error the invalid control gets
   focus (`autoFocus` on no-JS renders); `Field` wires `aria-describedby` / `aria-invalid` and an
@@ -72,6 +77,8 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
 | search-param change on `/shop` (sort, category, page; `CatalogueResults`, once `navigation.state` is idle)                            | `catalogue.results.announce`                                          | unchanged (`#results-heading` when only the page changed)                                                                                                        |
 | sort chosen in the `<select>` (`SortForm`, navigates on change behind the `#sort-hint` description, D-11)                             | `catalogue.results.announce` / `catalogue.search.announce`            | unchanged (the select)                                                                                                                                           |
 | "Clear filter" in the category fieldset                                                                                               | `catalogue.results.announce`                                          | the category `<fieldset>`                                                                                                                                        |
+| "Categories" button on `/shop` below `lg` (with JS, D-16): unfold                                                                     | —                                                                     | the `<aside id="categories">` (named "Categories", `preventScroll`)                                                                                              |
+| Escape inside the unfolded categories panel; the button pressed again                                                                 | —                                                                     | the "Categories" button (Escape) / unchanged (the button)                                                                                                        |
 | gallery image change (`?image`, `ProductGallery`)                                                                                     | `product.gallery.shown`                                               | unchanged                                                                                                                                                        |
 | add to cart, with JS (`AddToCartForm` fetcher settles)                                                                                | `cart.notice.added` / `addedCapped` via the `role="status"` paragraph | the Add to cart button                                                                                                                                           |
 | add to cart, without JS (303 back to the product, flash)                                                                              | same paragraph                                                        | the status paragraph (`autoFocus`)                                                                                                                               |
