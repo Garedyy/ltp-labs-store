@@ -1,22 +1,27 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Form, useNavigate, useSearchParams } from "react-router";
+import { Form, useLocation, useNavigate, useNavigation, useSearchParams } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import { Select } from "~/components/ui/select";
 import { buildSearch, type CatalogueQuery } from "~/lib/catalogue/query";
 import { isSortKey, SORT_KEYS, type SortKey } from "~/lib/catalogue/sort-options";
 
+function sortFrom(search: string): SortKey | undefined {
+  const value = new URLSearchParams(search).get("sort");
+  return isSortKey(value) ? value : undefined;
+}
+
 // A GET form whose select navigates on change (D-11): the hint announces it beforehand
 // (SC 3.2.2) and the Apply button submits without JS (with JS it only shows on focus).
 export function SortForm({ query }: { query: CatalogueQuery }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const navigation = useNavigation();
+  const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
-  const active = query.sort;
-  // Optimistic selection while the navigation is pending; discarded once the loader answers.
-  const [choice, setChoice] = useState<{ base: SortKey | undefined; value: SortKey | undefined }>();
-  const selected = choice && choice.base === active ? choice.value : active;
+  // Optimistic selection read from the pending navigation itself, so nothing outlives it.
+  const pending = navigation.location?.pathname === pathname ? navigation.location : undefined;
+  const selected = pending ? sortFrom(pending.search) : query.sort;
   const options = [
     { value: "", label: t("catalogue.sort.defaultOrder") },
     ...SORT_KEYS.map((key) => ({ value: key, label: t(`catalogue.sort.options.${key}`) })),
@@ -24,7 +29,6 @@ export function SortForm({ query }: { query: CatalogueQuery }) {
 
   function onChange(value: string) {
     const sort = isSortKey(value) ? value : undefined;
-    setChoice({ base: active, value: sort });
     void navigate(buildSearch(searchParams, { sort }) || "?", { preventScrollReset: true });
   }
 
@@ -45,7 +49,7 @@ export function SortForm({ query }: { query: CatalogueQuery }) {
         type="submit"
         variant="secondary"
         size="sm"
-        className="[.js_&]:sr-only [.js_&]:focus:not-sr-only"
+        className="[.js_&]:sr-only [.js_&]:focus:not-sr-only [.js_&]:focus:px-3"
       >
         {t("catalogue.sort.apply")}
       </Button>

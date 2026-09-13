@@ -175,17 +175,25 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   extra click made re-sorting the catalogue and the search results slower than the category
   filter, which already navigates on change behind a hint.
 - **Decision**: choosing a sort option navigates at once (`useNavigate` + `buildSearch`, `page`
-  dropped, `preventScrollReset`), the select is controlled with an optimistic selection like
-  `CategoryFilter`, and a visible hint ("Results update when you choose") is linked to the select
-  with `aria-describedby`, which is how SC 3.2.2 stays satisfied: the user is told of the
-  behaviour before using the control. The Apply button is kept as the form's submit: visible
-  without JavaScript, `sr-only` until focused with it (same pattern as the category form, D-6).
-- **Consequences**: the plan's "visible Apply button always; no auto-submit" sentence is
-  superseded. Keyboard users who move through the options with the arrow keys trigger one
-  navigation per step (the browser fires `change` on each); the results announcement and the
-  optimistic selection keep the control coherent throughout. `sort-form.test.tsx`,
-  `catalogue.spec.ts`, `search.spec.ts` and `targets.spec.ts` cover the new behaviour;
-  `no-js.spec.ts` keeps proving the GET form.
+  dropped, `preventScrollReset`); the select is controlled and, while a navigation to the same
+  pathname is pending, shows the `sort` of that pending URL (`useNavigation().location`) so the
+  optimistic value is read from the navigation itself and cannot outlive it; a visible hint
+  ("Results update when you choose") is linked to the select with `aria-describedby`, which is
+  how SC 3.2.2 stays satisfied: the user is told of the behaviour before using the control. The
+  Apply button is kept as the form's submit: visible without JavaScript, `sr-only` until focused
+  with it (same pattern as the category form, D-6; `px-3` restored on focus because
+  `not-sr-only` resets the padding).
+- **Consequences**: the plan is superseded wherever it states the old behaviour: section 2
+  decision 16 ("Sort = visible Apply, no auto-submit"), the section 3 `SortForm` sentence
+  ("visible Apply button always; no auto-submit"), the progressive-enhancement matrix row
+  "Sort | GET form, visible Apply | same" and the focus table cell "sort Apply -> stays" (now:
+  focus stays on the select). Keyboard users who move through the options with the arrow keys
+  trigger one navigation per step (the browser fires `change` on each); the results announcement
+  and the pending-URL selection keep the control coherent throughout, including after Back and
+  Forward. `CategoryFilter` still keeps its optimistic choice in local state, which shows the
+  stale choice after a Back to the URL it was chosen from; it is a separate fix.
+  `sort-form.test.tsx`, `catalogue.spec.ts`, `search.spec.ts` and `targets.spec.ts` cover the
+  new behaviour; `no-js.spec.ts` keeps proving the GET form.
 
 ## TO VERIFY resolutions
 

@@ -51,6 +51,14 @@ test.describe("catalogue", () => {
     await expect(cards(page).first().getByRole("heading")).toHaveText(
       "Essence Mascara Lash Princess",
     );
+
+    // The select follows the URL, not the last choice.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\?sort=price-desc$/);
+    await expect(sort).toHaveValue("price-desc");
+    await page.goBack();
+    await expect(page).toHaveURL(/\/en\?page=2$/);
+    await expect(sort).toHaveValue("");
   });
 
   test("the sort Apply button is hidden until it receives the focus", async ({ page }) => {

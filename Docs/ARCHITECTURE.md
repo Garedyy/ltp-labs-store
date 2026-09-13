@@ -81,10 +81,11 @@ boundary renders 404 or 502 inside the shell. Titles: "Shop" or the translated c
 
 Client-side behaviour is owned by `CatalogueResults`: on every search-param change it announces
 `catalogue.results.announce` and, when only `page` changed, focuses `#results-heading`.
-`CategoryFilter` and `SortForm` navigate on change with `buildSearch` and keep an optimistic
-selection while the navigation is pending (D-11 for the sort); the filter focuses its fieldset
-after "Clear filter". Both are plain GET forms underneath (hidden inputs ordered so native submits
-also produce `q, category, sort`), their Apply buttons `sr-only` until focused once scripts run.
+`CategoryFilter` and `SortForm` navigate on change with `buildSearch` and show an optimistic
+selection while the navigation is pending (the sort reads it from the pending URL, D-11); the
+filter focuses its fieldset after "Clear filter". Both are plain GET forms underneath (hidden
+inputs ordered so native submits also produce `q, category, sort`), their Apply buttons `sr-only`
+until focused once scripts run.
 
 ### Search (`app/routes/search.tsx`)
 

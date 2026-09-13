@@ -122,7 +122,9 @@ icon sits next to text.
 ## Layout per screen
 
 - **Home / catalogue**: `grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]`; results column
-  `flex min-w-0 flex-col gap-6` (h1 `text-h4`, toolbar `flex flex-wrap items-center justify-between gap-4`,
+  `flex min-w-0 flex-col gap-6` (h1 `text-h4`, toolbar `flex flex-wrap items-center justify-between gap-4`
+  with the sort form's hint on its own line `basis-full text-body-sm text-fg-muted` and its Apply
+  button `sr-only` until focused when scripts run,
   grid `grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3`, pagination `flex-wrap justify-center sm:justify-end`);
   aside `lg:col-start-2 lg:row-start-1 lg:self-start` (not sticky — 24 rows exceed a tablet
   viewport), card `rounded-2xl border border-border p-4`, one 44 px checkbox row per category.
@@ -145,13 +147,14 @@ icon sits next to text.
 
 ## Deviations from ltplabs.com and the wireframes
 
-| Deviation                                                                                | Reason                                                                                                                                           |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Header `sticky` instead of `fixed`, static under 30 rem viewport height                  | no content hidden under the bar at 400 % zoom (reflow)                                                                                           |
-| Outlined medium-blue icon buttons instead of orange squares                              | orange is 2.9:1; icons must reach 3:1                                                                                                            |
-| `<nav><ul>` of links instead of ltplabs' `<div>` of `<button aria-haspopup>`             | navigation semantics, `aria-current`                                                                                                             |
-| Manrope logo instead of a condensed cut                                                  | licence (Bw Modelica is commercial)                                                                                                              |
-| Wireframe's thin header border replaced by the floating card shadow                      | ltplabs identity                                                                                                                                 |
-| Visible page `<h1>` and minimal footer, absent from the wireframes                       | heading structure, footer landmark and language links                                                                                            |
-| Closed `<details>` content hidden with `display: none`                                   | Chromium keeps layout boxes for closed panels, which overlap other content                                                                       |
-| Product image box square on phones, 5:3 from `md` (the wireframe shows the 5:3 box only) | a square box as wide as its column is ~800 px tall on tablet and desktop, pushing the thumbnails and the buy block out of the first screen (#27) |
+| Deviation                                                                                                                                               | Reason                                                                                                                                           |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Header `sticky` instead of `fixed`, static under 30 rem viewport height                                                                                 | no content hidden under the bar at 400 % zoom (reflow)                                                                                           |
+| Outlined medium-blue icon buttons instead of orange squares                                                                                             | orange is 2.9:1; icons must reach 3:1                                                                                                            |
+| `<nav><ul>` of links instead of ltplabs' `<div>` of `<button aria-haspopup>`                                                                            | navigation semantics, `aria-current`                                                                                                             |
+| Manrope logo instead of a condensed cut                                                                                                                 | licence (Bw Modelica is commercial)                                                                                                              |
+| Wireframe's thin header border replaced by the floating card shadow                                                                                     | ltplabs identity                                                                                                                                 |
+| Visible page `<h1>` and minimal footer, absent from the wireframes                                                                                      | heading structure, footer landmark and language links                                                                                            |
+| Closed `<details>` content hidden with `display: none`                                                                                                  | Chromium keeps layout boxes for closed panels, which overlap other content                                                                       |
+| Product image box square on phones, 5:3 from `md` (the wireframe shows the 5:3 box only)                                                                | a square box as wide as its column is ~800 px tall on tablet and desktop, pushing the thumbnails and the buy block out of the first screen (#27) |
+| Visible "Results update when you choose" hint under the sort select, Apply button `sr-only` until focused with JS (the wireframe shows the bare select) | the sort applies on selection (#25, D-11); SC 3.2.2 needs the user told before the change of context, and the form keeps a submit for every user |

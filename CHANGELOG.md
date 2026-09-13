@@ -10,7 +10,8 @@ All notable changes to this project are documented here. The format follows
 
 - Catalogue and search: choosing a "Sort by" option applies the sort at once instead of waiting
   for the Apply button (#25). The select navigates on change like the category checkboxes, keeps
-  the focus and an optimistic selection, and a visible hint linked with `aria-describedby` tells
+  the focus, shows the pending URL's sort while the navigation is in flight (so Back and Forward
+  always show the URL's sort), and a visible hint linked with `aria-describedby` tells
   the user beforehand that the results update on selection (WCAG 2.2 SC 3.2.2). The Apply button
   remains the form's submit, visible without JavaScript and shown on focus with it. Recorded as
   D-11 in `Docs/DECISIONS.md`; it supersedes the plan's "no auto-submit" sentence.
