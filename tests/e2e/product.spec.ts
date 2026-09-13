@@ -92,8 +92,8 @@ test.describe("product detail", () => {
     await expect(page.locator("time").first()).toHaveText(/\d{2}\/\d{2}\/\d{4}/);
   });
 
-  // The gallery is bounded by the viewport height (#27): the square image never exceeds 60 % of
-  // it, so the thumbnails stay in the first screen and the buy block beside them on desktop.
+  // The image box keeps the column width but takes the wireframe's 5:3 ratio from md, so the
+  // thumbnails stay in the first screen and the buy block beside them on desktop (#27).
   test.describe("gallery size", () => {
     async function galleryBoxes(page: Page) {
       await page.goto("/en/products/117");
@@ -107,7 +107,7 @@ test.describe("product detail", () => {
         image: await box(page.getByRole("img", { name: "Sportbike Motorcycle, image 1 of 4" })),
         thumbnails: await box(page.getByRole("list", { name: "Product images" })),
         button: await box(page.getByRole("button", { name: "Add to cart" })),
-        column: await box(page.getByRole("heading", { level: 1 }).locator("..")),
+        column: await box(page.getByRole("figure")),
       };
     }
 
@@ -118,11 +118,13 @@ test.describe("product detail", () => {
       test.describe(name, () => {
         test.use({ viewport });
 
-        test("the image is capped by the viewport height", async ({ page }, testInfo) => {
+        test("the image box is a 5:3 landscape as wide as its column", async ({
+          page,
+        }, testInfo) => {
           test.skip(testInfo.project.name !== "desktop-chromium", "one project is enough");
-          const { image, thumbnails, button } = await galleryBoxes(page);
-          expect(Math.abs(image.width - image.height)).toBeLessThanOrEqual(1);
-          expect(image.height).toBeLessThanOrEqual(viewport.height * 0.6 + 1);
+          const { image, thumbnails, button, column } = await galleryBoxes(page);
+          expect(Math.abs(image.width - column.width)).toBeLessThanOrEqual(1);
+          expect(Math.abs(image.height - image.width * 0.6)).toBeLessThanOrEqual(1);
           expect(thumbnails.y + thumbnails.height).toBeLessThanOrEqual(viewport.height);
           if (name === "desktop") {
             expect(button.y + button.height).toBeLessThanOrEqual(viewport.height);
@@ -131,10 +133,11 @@ test.describe("product detail", () => {
       });
     }
 
-    test("the image keeps the full column width on a phone", async ({ page }, testInfo) => {
+    test("the image stays a full-width square on a phone", async ({ page }, testInfo) => {
       test.skip(testInfo.project.name !== "mobile-chromium", "phone layout only");
       const { image, column } = await galleryBoxes(page);
       expect(Math.abs(image.width - column.width)).toBeLessThanOrEqual(1);
+      expect(Math.abs(image.width - image.height)).toBeLessThanOrEqual(1);
     });
   });
 });

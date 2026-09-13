@@ -128,11 +128,10 @@ icon sits next to text.
   viewport), card `rounded-2xl border border-border p-4`, one 44 px checkbox row per category.
   Product card: `rounded-2xl border p-3`, `aspect-square rounded-xl bg-surface-placeholder object-contain`
   image, `focus-within` ring. First three images eager (first `fetchPriority="high"`), rest lazy.
-- **Product**: `grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12`; gallery
-  `<figure>` `mx-auto w-full max-w-[min(100%,max(20rem,60svh))]` (the square image is bounded by
-  60 % of the viewport height, 20 rem floor, and centred in its column so the thumbnails and the
-  buy block share the first screen, #27), image box `aspect-square rounded-2xl
-bg-surface-placeholder object-contain`, thumbnails
+- **Product**: `grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12`; gallery image
+  box `aspect-square md:aspect-[5/3] rounded-2xl bg-surface-placeholder object-contain` (the
+  wireframe's landscape box from `md`, as wide as its column, so the thumbnails and the buy block
+  share the first screen; the square image is centred inside it, #27), thumbnails
   `flex gap-2 overflow-x-auto size-16 rounded-lg border-2`; title `text-h3 md:text-h2 font-medium`,
   rating, price `text-h4` + badge, stock line, full-width Add to cart, "Product details" uppercase
   label + `text-body-sm` description, practical `<dl>`, tags; reviews `lg:col-span-2`.
@@ -146,12 +145,13 @@ bg-surface-placeholder object-contain`, thumbnails
 
 ## Deviations from ltplabs.com and the wireframes
 
-| Deviation                                                                    | Reason                                                                     |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Header `sticky` instead of `fixed`, static under 30 rem viewport height      | no content hidden under the bar at 400 % zoom (reflow)                     |
-| Outlined medium-blue icon buttons instead of orange squares                  | orange is 2.9:1; icons must reach 3:1                                      |
-| `<nav><ul>` of links instead of ltplabs' `<div>` of `<button aria-haspopup>` | navigation semantics, `aria-current`                                       |
-| Manrope logo instead of a condensed cut                                      | licence (Bw Modelica is commercial)                                        |
-| Wireframe's thin header border replaced by the floating card shadow          | ltplabs identity                                                           |
-| Visible page `<h1>` and minimal footer, absent from the wireframes           | heading structure, footer landmark and language links                      |
-| Closed `<details>` content hidden with `display: none`                       | Chromium keeps layout boxes for closed panels, which overlap other content |
+| Deviation                                                                                | Reason                                                                                                                                           |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Header `sticky` instead of `fixed`, static under 30 rem viewport height                  | no content hidden under the bar at 400 % zoom (reflow)                                                                                           |
+| Outlined medium-blue icon buttons instead of orange squares                              | orange is 2.9:1; icons must reach 3:1                                                                                                            |
+| `<nav><ul>` of links instead of ltplabs' `<div>` of `<button aria-haspopup>`             | navigation semantics, `aria-current`                                                                                                             |
+| Manrope logo instead of a condensed cut                                                  | licence (Bw Modelica is commercial)                                                                                                              |
+| Wireframe's thin header border replaced by the floating card shadow                      | ltplabs identity                                                                                                                                 |
+| Visible page `<h1>` and minimal footer, absent from the wireframes                       | heading structure, footer landmark and language links                                                                                            |
+| Closed `<details>` content hidden with `display: none`                                   | Chromium keeps layout boxes for closed panels, which overlap other content                                                                       |
+| Product image box square on phones, 5:3 from `md` (the wireframe shows the 5:3 box only) | a square box as wide as its column is ~800 px tall on tablet and desktop, pushing the thumbnails and the buy block out of the first screen (#27) |
