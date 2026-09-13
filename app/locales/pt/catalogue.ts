@@ -25,6 +25,7 @@ export default {
   sort: {
     label: "Ordenar por",
     defaultOrder: "Ordem predefinida",
+    hint: "Os resultados atualizam-se ao escolher",
     apply: "Aplicar",
     options: {
       "price-asc": "Preço: do mais baixo ao mais alto",

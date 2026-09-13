@@ -167,6 +167,26 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   git section stands. Issue fixes follow `fix/<N>-<slug>` from `development` (the `fix-issue`
   skill), hotfixes keep `fix/<slug>` from `main`.
 
+## D-11 · Sort applies on selection; the Apply button shows on focus
+
+- **Date / branch**: 2026-09-13 · `fix/25-sort-on-selection` (#25)
+- **Context**: `PROJECT_PLAN.md` §3 specified the sort as a GET form with a visible Apply button and
+  no auto-submit, so that choosing an option never changes the context (SC 3.2.2). In use the
+  extra click made re-sorting the catalogue and the search results slower than the category
+  filter, which already navigates on change behind a hint.
+- **Decision**: choosing a sort option navigates at once (`useNavigate` + `buildSearch`, `page`
+  dropped, `preventScrollReset`), the select is controlled with an optimistic selection like
+  `CategoryFilter`, and a visible hint ("Results update when you choose") is linked to the select
+  with `aria-describedby`, which is how SC 3.2.2 stays satisfied: the user is told of the
+  behaviour before using the control. The Apply button is kept as the form's submit: visible
+  without JavaScript, `sr-only` until focused with it (same pattern as the category form, D-6).
+- **Consequences**: the plan's "visible Apply button always; no auto-submit" sentence is
+  superseded. Keyboard users who move through the options with the arrow keys trigger one
+  navigation per step (the browser fires `change` on each); the results announcement and the
+  optimistic selection keep the control coherent throughout. `sort-form.test.tsx`,
+  `catalogue.spec.ts`, `search.spec.ts` and `targets.spec.ts` cover the new behaviour;
+  `no-js.spec.ts` keeps proving the GET form.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

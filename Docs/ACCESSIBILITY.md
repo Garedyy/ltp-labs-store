@@ -70,6 +70,7 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
 | query cleared on `/search`                                                                                                            | `catalogue.search.prompt`                                             | unchanged                                                              |
 | arrival on `/search` (pathname change)                                                                                                | `document.title`                                                      | `#search-q` (`handle.initialFocus`)                                    |
 | search-param change on `/` (sort, category, page; `CatalogueResults`, once `navigation.state` is idle)                                | `catalogue.results.announce`                                          | unchanged (`#results-heading` when only the page changed)              |
+| sort chosen in the `<select>` (`SortForm`, navigates on change behind the `#sort-hint` description, D-11)                             | `catalogue.results.announce` / `catalogue.search.announce`            | unchanged (the select)                                                 |
 | "Clear filter" in the category fieldset                                                                                               | `catalogue.results.announce`                                          | the category `<fieldset>`                                              |
 | gallery image change (`?image`, `ProductGallery`)                                                                                     | `product.gallery.shown`                                               | unchanged                                                              |
 | add to cart, with JS (`AddToCartForm` fetcher settles)                                                                                | `cart.notice.added` / `addedCapped` via the `role="status"` paragraph | the Add to cart button                                                 |
@@ -106,8 +107,9 @@ not by a final pass. Specification: `PROJECT_PLAN.md` §3.6.
   the language panel restores focus; mobile menu Escape restores focus; navigating from the menu
   closes it and focuses `main`; client navigation announces the title.
 - **Targets** (`targets.spec.ts`): every visible link, button and summary in the header and the
-  footer, the sort Apply button and the promo "Remove code" button measure at least 44 px tall
-  (desktop and mobile). Stretched card links and links inside sentences are the exceptions.
+  footer, the sort Apply button (measured focused: with JavaScript it is `sr-only` until then)
+  and the promo "Remove code" button measure at least 44 px tall (desktop and mobile). Stretched
+  card links and links inside sentences are the exceptions.
 - **Static**: `eslint-plugin-jsx-a11y` strict with the design-system primitives mapped to their
   native elements; `eslint-plugin-i18next` keeps UI text out of components.
 - **Unit**: role/name tests for every primitive and shell component (`aria-current`, cart link
@@ -160,14 +162,15 @@ Run before each release and after any change to the shell or a page structure:
 
 ## Manual audit log
 
-| Date       | Tool / AT                                   | Scope                                                                                                         | Result                                           |
-| ---------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus                                                          | pass (automated stand-in; VoiceOver run pending) |
-| 2026-09-11 | Playwright specs                            | catalogue, search, product, cart focus handoffs and announcements                                             | pass                                             |
-| 2026-09-12 | Playwright specs (desktop, mobile)          | first search and cleared query announced; 44 px targets in the shell, sort Apply and "Remove code"            | pass                                             |
-| 2026-09-12 | Playwright specs (4 projects) + IBM checker | cart focus after Enter, Apply and a refused checkout, with and without JavaScript; `empty-cart` state scanned | pass                                             |
-| —          | VoiceOver + Safari                          | —                                                                                                             | not run yet (branch 12)                          |
-| —          | NVDA + Firefox                              | —                                                                                                             | not run yet (no Windows machine)                 |
+| Date       | Tool / AT                                   | Scope                                                                                                             | Result                                           |
+| ---------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| 2026-09-11 | Playwright keyboard specs (desktop, mobile) | shell: skip link, tab order, menus, navigation focus                                                              | pass (automated stand-in; VoiceOver run pending) |
+| 2026-09-11 | Playwright specs                            | catalogue, search, product, cart focus handoffs and announcements                                                 | pass                                             |
+| 2026-09-12 | Playwright specs (desktop, mobile)          | first search and cleared query announced; 44 px targets in the shell, sort Apply and "Remove code"                | pass                                             |
+| 2026-09-12 | Playwright specs (4 projects) + IBM checker | cart focus after Enter, Apply and a refused checkout, with and without JavaScript; `empty-cart` state scanned     | pass                                             |
+| 2026-09-13 | Playwright specs (4 projects) + IBM checker | sort on selection: focus kept on the select, results announced, Apply shown on focus, GET form without JavaScript | pass                                             |
+| —          | VoiceOver + Safari                          | —                                                                                                                 | not run yet (branch 12)                          |
+| —          | NVDA + Firefox                              | —                                                                                                                 | not run yet (no Windows machine)                 |
 
 ## Known limitations
 

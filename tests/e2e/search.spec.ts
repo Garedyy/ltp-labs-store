@@ -32,6 +32,21 @@ test.describe("search", () => {
     await expect(announcement).toHaveCount(2);
   });
 
+  test("choosing a sort keeps the query, drops the page and announces the results", async ({
+    page,
+  }) => {
+    await page.goto("/en/search?q=phone&page=2");
+    const sort = page.getByRole("combobox", { name: "Sort by" });
+    await sort.focus();
+    await sort.selectOption("price-asc");
+    await expect(page).toHaveURL(/\/en\/search\?q=phone&sort=price-asc$/);
+    await expect(sort).toBeFocused();
+    await expect(page.getByText(/Showing 1–9 of \d+/)).toBeVisible();
+    await expect(
+      page.getByRole("status").filter({ hasText: /\d+ results for “phone”/ }),
+    ).toHaveCount(1);
+  });
+
   test("clearing the query announces the prompt again", async ({ page }) => {
     await page.goto("/en/search?q=phone");
     const prompt = page
