@@ -248,7 +248,7 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
 - **Addendum (2026-09-13, #40)**: the "Browse the shop" link is the main call to action of the
   landing page, so it is rendered right after the heading block (`<h1>` and intro grouped
   tightly), aligned to the bottom end of that block and wrapping under it on narrow screens,
-  above the grid; a "See more" link to the same shop closes the page after the cards so a
+  above the grid; a centred "See more" link to the same shop closes the page after the cards so a
   visitor who scrolled the grid does not have to scroll back up. `home.spec.ts` and
   `no-js.spec.ts` assert the DOM order of both.
 
