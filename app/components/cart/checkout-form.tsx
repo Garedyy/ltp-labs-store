@@ -35,9 +35,10 @@ type CheckoutFormProps = {
 const RADIO = "flex min-h-11 items-center gap-3";
 const RADIO_INPUT = "size-5 shrink-0 accent-primary";
 
-// A navigation form: the action answers 303 to the confirmation or 400 with the field codes. With
-// JavaScript the card fields fold away when PayPal is chosen; without it they stay visible and
-// the server ignores them for PayPal.
+// A navigation form: the action answers 303 to the confirmation or 400 with the field codes. The
+// card fields fold away while the PayPal radio is checked through a CSS `:has()` rule on the form,
+// so the fold works without JavaScript and follows every native click; the server ignores the
+// card fields for PayPal anyway.
 export function CheckoutForm({
   totalFormatted,
   initialMethod,
@@ -60,7 +61,7 @@ export function CheckoutForm({
       method="post"
       noValidate
       aria-labelledby="payment-heading"
-      className="flex flex-col gap-8"
+      className="group/pay flex flex-col gap-8"
     >
       <input type="hidden" name="intent" value="place-order" />
       {productId !== undefined && <input type="hidden" name="product" value={productId} />}
@@ -132,7 +133,7 @@ export function CheckoutForm({
           <p className="text-body-sm text-fg-muted">{t("cart.checkout.paypalNote")}</p>
         )}
       </fieldset>
-      <fieldset hidden={method === "paypal"} className="flex flex-col gap-4">
+      <fieldset className="flex flex-col gap-4 group-has-[input[name=method][value=paypal]:checked]/pay:hidden">
         <legend className="mb-4 text-h5 font-medium">{t("cart.checkout.cardDetails")}</legend>
         <TextField
           {...fields.cardName}

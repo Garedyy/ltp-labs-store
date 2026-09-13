@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { data, href, Link, redirect } from "react-router";
 
 import { CartSummary } from "~/components/cart/cart-summary";
+import { FormNotice } from "~/components/forms/form-notice";
 import {
   CHECKOUT_FIELDS,
   CheckoutForm,
@@ -13,6 +14,7 @@ import { useLocale } from "~/i18n/use-locale";
 import { type FieldErrors, hasErrors, readFields } from "~/lib/forms";
 import { badRequest, notFound, toRouteError } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
+import { noticeText } from "~/lib/notices";
 import { isCardCode, isCardExpiry, isCardNumber, isEmail } from "~/lib/validation";
 import { getInstance, getLocale } from "~/middleware/i18next";
 import {
@@ -28,6 +30,10 @@ import type { PaymentMethod } from "~/services/cart/types";
 import type { Route } from "./+types/checkout";
 
 const PAYMENT_HEADING = "payment-heading";
+const NOTICE_ID = "checkout-notice";
+
+// A reconciliation notice, when present, takes the focus the route announcer would give main.
+export const handle = { initialFocus: `#${NOTICE_ID}` };
 
 export async function loader(args: Route.LoaderArgs) {
   try {
@@ -51,6 +57,7 @@ async function load({ context, request, url }: Route.LoaderArgs) {
   return data(
     {
       view,
+      notice: loaded.notice,
       method: parsePaymentMethod(url.searchParams.get("method")),
       title: t("cart.checkout.title"),
       description: t("cart.checkout.description"),
@@ -104,7 +111,7 @@ async function act({ context, request }: Route.ActionArgs) {
   values.country = parseCountry(values.country);
   const errors = validate(values, method);
   if (hasErrors(errors)) {
-    const echoed = { ...values, cardCode: "" };
+    const echoed = { ...values, cardNumber: "", cardExpiry: "", cardCode: "" };
     return data({ ok: false, errors, values: echoed, method } satisfies CheckoutResult, {
       status: 400,
     });
@@ -136,7 +143,7 @@ export function meta({ loaderData, matches }: Route.MetaArgs) {
 export default function Checkout({ loaderData, actionData }: Route.ComponentProps) {
   const { t } = useTranslation();
   const lang = useLocale();
-  const { view, method } = loaderData;
+  const { view, method, notice } = loaderData;
   const back =
     view.productId === undefined
       ? { to: href("/:lang/cart", { lang }), label: t("cart.checkout.backToCart") }
@@ -157,6 +164,7 @@ export default function Checkout({ loaderData, actionData }: Route.ComponentProp
             <p className="text-body-sm">{t("cart.checkout.buyNowNote")}</p>
           )}
         </div>
+        {notice && <FormNotice id={NOTICE_ID}>{noticeText(t, { ok: true, notice })}</FormNotice>}
         <CheckoutForm
           totalFormatted={view.totals.totalFormatted}
           initialMethod={method}

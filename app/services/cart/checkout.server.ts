@@ -1,6 +1,7 @@
 import { href, redirect } from "react-router";
 
 import type { Locale } from "~/i18n/config";
+import type { NoticeCode } from "~/lib/error-codes";
 import { notFound } from "~/lib/http";
 import { getProduct } from "~/services/dummyjson/products.server";
 import { loadCartView, toLineView, toTotalsView } from "./load-cart.server";
@@ -21,6 +22,8 @@ export type LoadedCheckout = {
   session: Awaited<ReturnType<typeof getCartSession>>;
   view: CheckoutView | null;
   changed: boolean;
+  // Cart mode: the reconciliation the cart page would show (`items-removed`, `quantities-adjusted`).
+  notice?: NoticeCode;
 };
 
 export function productIdFrom(value: unknown): number | null {
@@ -42,6 +45,7 @@ export async function loadCheckout(
       session: loaded.session,
       view: lines.length > 0 ? { lines, totals, itemCount: cartCount } : null,
       changed: loaded.changed,
+      notice: loaded.notice,
     };
   }
   const [session, product] = await Promise.all([getCartSession(request), getProduct(productId)]);

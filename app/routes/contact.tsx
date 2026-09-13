@@ -9,6 +9,8 @@ import { isEmail } from "~/lib/validation";
 import { getInstance, getLocale } from "~/middleware/i18next";
 import type { Route } from "./+types/contact";
 
+const MAX_MESSAGE_LENGTH = 2000;
+
 // ?sent=1 is the state after a submission (Post/Redirect/Get): no session, no flash.
 export function loader({ context, url }: Route.LoaderArgs) {
   const t = getInstance(context).t;
@@ -27,7 +29,7 @@ export async function action({ context, request }: Route.ActionArgs) {
   if (!isLocale(locale)) notFound();
   const form = await request.formData().catch(badRequest);
   if (form.get("intent") !== "send") throw data({ code: "invalid-intent" }, { status: 400 });
-  const values = readFields(form, CONTACT_FIELDS);
+  const values = readFields(form, CONTACT_FIELDS, { message: MAX_MESSAGE_LENGTH });
   const errors: FieldErrors<(typeof CONTACT_FIELDS)[number]> = {};
   if (!values.name) errors.name = "field-required";
   if (!values.email) errors.email = "field-required";

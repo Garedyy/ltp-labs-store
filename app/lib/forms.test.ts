@@ -10,6 +10,15 @@ describe("readFields", () => {
     form.set("name", "  Ana ");
     expect(readFields(form, FIELDS)).toEqual({ name: "Ana", email: "" });
   });
+
+  it("caps every field at 200 characters unless a caller raises the limit", () => {
+    const form = new FormData();
+    form.set("name", "a".repeat(250));
+    form.set("email", "b".repeat(250));
+    const values = readFields(form, FIELDS, { email: 220 });
+    expect(values.name).toHaveLength(200);
+    expect(values.email).toHaveLength(220);
+  });
 });
 
 describe("firstInvalid and hasErrors", () => {

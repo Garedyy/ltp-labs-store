@@ -70,7 +70,6 @@ test("Buy now without JavaScript opens the payment page, then the confirmation, 
   await page.goto("/en/products/1");
   await page.getByRole("button", { name: "Buy now" }).click();
   await expect(page).toHaveURL(/\/en\/checkout\?product=1$/);
-  // Without JavaScript the card fields stay visible whatever the method.
   await expect(page.getByRole("textbox", { name: "Card number" })).toBeVisible();
   await payByCard(page);
   await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
@@ -125,7 +124,9 @@ test("the cart works without JavaScript: stepper, promo, remove, checkout", asyn
   await expect(cardNumber).toBeFocused();
   await expect(cardNumber).toHaveAccessibleDescription(/Enter a valid card number/);
   await expect(page.getByRole("textbox", { name: "Full name" })).toHaveValue("Ana Demo");
-  // The security code is never echoed back by the server.
+  // The card number, expiry and security code are never echoed back by the server.
+  await expect(page.getByRole("textbox", { name: "Card number" })).toHaveValue("");
+  await expect(page.getByRole("textbox", { name: "Expiry date (MM/YY)" })).toHaveValue("");
   await expect(page.getByRole("textbox", { name: "Security code" })).toHaveValue("");
   await payByCard(page);
   await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
@@ -169,4 +170,21 @@ test("the contact and sign-in forms work without JavaScript", async ({ page }) =
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/en\/account\?demo=1$/);
   await expect(page.getByRole("status").filter({ hasText: "Sign-in is a demo" })).toBeFocused();
+});
+
+test("the card fields fold and unfold with the payment method without JavaScript", async ({
+  page,
+}) => {
+  await page.goto("/en/products/1");
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await page.goto("/en/cart");
+  await page.getByRole("link", { name: "Or pay with PayPal" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\?method=paypal$/);
+  await expect(page.getByRole("radio", { name: "PayPal" })).toBeChecked();
+  await expect(page.getByRole("textbox", { name: "Card number" })).toBeHidden();
+  await page.getByRole("radio", { name: "Card" }).check();
+  await expect(page.getByRole("textbox", { name: "Card number" })).toBeVisible();
+  await payByCard(page);
+  await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+  await expect(page.getByRole("definition").filter({ hasText: "Card" })).toBeVisible();
 });

@@ -6,7 +6,8 @@ import { renderWithProviders } from "../../../tests/helpers/render";
 import { CheckoutForm } from "./checkout-form";
 
 describe("CheckoutForm", () => {
-  it("names the form, preselects the method and folds the card fields away for PayPal", async () => {
+  // The fold itself is a CSS :has() rule (asserted in checkout.spec.ts); jsdom applies no styles.
+  it("names the form, preselects the method and explains PayPal once chosen", async () => {
     const user = userEvent.setup();
     renderWithProviders(
       <>
@@ -20,7 +21,6 @@ describe("CheckoutForm", () => {
     expect(screen.getByRole("button", { name: "Pay $29.99" })).toHaveAttribute("type", "submit");
     await user.click(screen.getByRole("radio", { name: "PayPal" }));
     expect(screen.getByRole("radio", { name: "PayPal" })).toBeChecked();
-    expect(screen.queryByRole("textbox", { name: "Card number" })).not.toBeInTheDocument();
     expect(screen.getByText(/A real store would send you to PayPal/)).toBeVisible();
   });
 

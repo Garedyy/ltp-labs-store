@@ -11,12 +11,19 @@ export type FormFailure<Name extends string> = {
   values: FieldValues<Name>;
 };
 
+// Single-line fields are cut at 200 characters; a caller raises the cap per field (a message).
+export const MAX_FIELD_LENGTH = 200;
+
 export function readFields<Name extends string>(
   form: FormData,
   names: readonly Name[],
+  limits: Partial<Record<Name, number>> = {},
 ): FieldValues<Name> {
   const values = {} as FieldValues<Name>;
-  for (const name of names) values[name] = String(form.get(name) ?? "").trim();
+  for (const name of names) {
+    const raw = String(form.get(name) ?? "").trim();
+    values[name] = raw.slice(0, limits[name] ?? MAX_FIELD_LENGTH);
+  }
   return values;
 }
 
