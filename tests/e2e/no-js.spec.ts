@@ -7,10 +7,10 @@ test("the home page and the catalogue render without JavaScript", async ({ page 
   expect(home?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Trending products");
   const browse = page.getByRole("main").getByRole("link", { name: "Browse the shop" });
+  const seeMore = page.getByRole("main").getByRole("link", { name: "See more" });
   const grid = page.getByRole("list", { name: "Trending products" });
-  await expect(browse).toHaveCount(2);
-  expect(await precedes(browse.first(), grid)).toBe(true);
-  expect(await precedes(grid, browse.last())).toBe(true);
+  expect(await precedes(browse, grid)).toBe(true);
+  expect(await precedes(grid, seeMore)).toBe(true);
   const shop = await page.goto("/en/shop");
   expect(shop?.status()).toBe(200);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");

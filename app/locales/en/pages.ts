@@ -4,6 +4,7 @@ export default {
     description: "Our best-rated products, picked from the whole catalogue.",
     intro: "Our best-rated products, picked from the whole catalogue.",
     browse: "Browse the shop",
+    seeMore: "See more",
   },
   about: {
     title: "About us",
