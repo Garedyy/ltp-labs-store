@@ -12,10 +12,10 @@ All notable changes to this project are documented here. The format follows
   product shown, on its own — the cart is neither included nor touched, the cart's promo code
   does not apply — through the product route's new `buy-now` intent (same `out-of-stock` /
   `product-not-found` refusals as "Add to cart"), writes the order (card, one item, price +
-  shipping) and answers 303 to the confirmation page, with and without JavaScript (D-12). Both
-  buttons share the one fetcher form (landmark "Purchase options") as submit buttons named
-  `intent`, are described by the stock status, disabled when sold out and stack under 640 px
-  (`Docs/DESIGN_SYSTEM.md`). Translated in `en` and `pt`; `isAddIntent` unit-tested; covered in
+  shipping) and answers 303 to the confirmation page, with and without JavaScript (D-12). Buy now
+  is the primary, full-width call to action and Add to cart the secondary button below it; both
+  share the one fetcher form (landmark "Purchase options") as submit buttons named `intent`, are
+  described by the stock status and disabled when sold out (`Docs/DESIGN_SYSTEM.md`). Translated in `en` and `pt`; `isAddIntent` unit-tested; covered in
   the `desktop-chromium`, `mobile-chromium`, `pt` and `no-js` Playwright projects and by an IBM
   scan of the confirmation reached through Buy now.
 

@@ -19,8 +19,9 @@ type AddToCartFormProps = {
   flash?: AddResult;
 };
 
-// One fetcher for both buttons: the user stays on the page (Add to cart) or follows the action's
-// redirect to the order confirmation (Buy now); submits are ignored while one is pending.
+// One fetcher for both buttons: Buy now is the primary call to action and follows the action's
+// redirect to the order confirmation; Add to cart keeps the user on the page. Submits are
+// ignored while one is pending.
 export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps) {
   const { t } = useTranslation();
   const lang = useLocale();
@@ -56,39 +57,37 @@ export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps)
       <noscript>
         <input type="hidden" name="noJs" value="1" />
       </noscript>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Button
-          ref={(element) => {
-            buttons.current.add = element;
-          }}
-          type="submit"
-          name="intent"
-          value="add"
-          disabled={!inStock}
-          pending={pendingIntent === "add"}
-          pendingLabel={t("product.adding")}
-          aria-describedby="stock-status"
-          className="w-full"
-        >
-          {t("product.addToCart")}
-        </Button>
-        <Button
-          ref={(element) => {
-            buttons.current["buy-now"] = element;
-          }}
-          type="submit"
-          name="intent"
-          value="buy-now"
-          variant="secondary"
-          disabled={!inStock}
-          pending={pendingIntent === "buy-now"}
-          pendingLabel={t("product.buyingNow")}
-          aria-describedby="stock-status"
-          className="w-full"
-        >
-          {t("product.buyNow")}
-        </Button>
-      </div>
+      <Button
+        ref={(element) => {
+          buttons.current["buy-now"] = element;
+        }}
+        type="submit"
+        name="intent"
+        value="buy-now"
+        disabled={!inStock}
+        pending={pendingIntent === "buy-now"}
+        pendingLabel={t("product.buyingNow")}
+        aria-describedby="stock-status"
+        className="w-full"
+      >
+        {t("product.buyNow")}
+      </Button>
+      <Button
+        ref={(element) => {
+          buttons.current.add = element;
+        }}
+        type="submit"
+        name="intent"
+        value="add"
+        variant="secondary"
+        disabled={!inStock}
+        pending={pendingIntent === "add"}
+        pendingLabel={t("product.adding")}
+        aria-describedby="stock-status"
+        className="w-full"
+      >
+        {t("product.addToCart")}
+      </Button>
       {result?.ok && (
         // Without JavaScript the page reloads: autoFocus is the only way to hand focus to the
         // outcome (plan §3.6); with JavaScript the effect above focuses the button instead.

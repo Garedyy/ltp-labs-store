@@ -212,7 +212,9 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   a navigation). The `cart` and `promoCode` session slots are left untouched, so the header count
   and the cart page are unchanged after a Buy now. The cart route keeps `checkout` for the cart.
 - **Consequences**: two actions can write `lastOrder`; the confirmation page reads it the same
-  way. Buy now offers no payment choice (one button, card) and no quantity; both are out of
+  way. Buy now is the primary call to action of the buy block (first, full-width, `primary`
+  variant) and Add to cart the secondary button below it, so the one-step purchase is the
+  obvious path. Buy now offers no payment choice (one button, card) and no quantity; both are out of
   scope. The `AddToCartForm` landmark is named `product.buyBlock` ("Purchase options") since it
   now holds two distinct actions. `cart-session.spec.ts`, `no-js.spec.ts` and
   `a11y-states.spec.ts` prove the cart survives a Buy now and the promo code is ignored.
