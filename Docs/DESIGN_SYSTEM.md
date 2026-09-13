@@ -135,8 +135,10 @@ icon sits next to text.
   wireframe's landscape box from `md`, as wide as its column, so the thumbnails and the buy block
   share the first screen; the square image is centred inside it, #27), thumbnails
   `flex gap-2 overflow-x-auto size-16 rounded-lg border-2`; title `text-h3 md:text-h2 font-medium`,
-  rating, price `text-h4` + badge, stock line, full-width Add to cart, "Product details" uppercase
-  label + `text-body-sm` description, practical `<dl>`, tags; reviews `lg:col-span-2`.
+  rating, price `text-h4` + badge, stock line, the buy block — Add to cart (primary) and Buy now
+  (secondary, #28) as full-width buttons in a `grid gap-3 sm:grid-cols-2`, stacked under 640 px —
+  "Product details" uppercase label + `text-body-sm` description, practical `<dl>`, tags; reviews
+  `lg:col-span-2`.
 - **Cart**: `grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12`; `<ul class="divide-y divide-border">`,
   line `grid grid-cols-[5rem_1fr] gap-4 py-6 sm:grid-cols-[7rem_1fr_auto]`, thumbnail `size-20 sm:size-28`,
   stepper `inline-flex rounded-lg border` with 44 px buttons; summary card

@@ -14,7 +14,8 @@ All notable changes to this project are documented here. The format follows
   JavaScript, where the "Added to your cart" notice is shown (and focused without JavaScript);
   the existing Check out button completes the order. Both buttons share the one fetcher form as
   submit buttons named `intent`, are described by the stock status, disabled when sold out and
-  stack under 640 px. Translated in `en` and `pt`; covered in the `desktop-chromium`,
+  stack under 640 px (`Docs/DESIGN_SYSTEM.md`). Translated in `en` and `pt`; `isAddIntent`
+  unit-tested; covered in the `desktop-chromium`,
   `mobile-chromium`, `pt` and `no-js` Playwright projects and by an IBM scan of the cart reached
   through Buy now.
 

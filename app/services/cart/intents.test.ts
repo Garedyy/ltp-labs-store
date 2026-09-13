@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isNoJs, parseCartIntent } from "./intents";
+import { isAddIntent, isNoJs, parseCartIntent } from "./intents";
 
 const form = (entries: Record<string, string>) => {
   const data = new FormData();
@@ -60,5 +60,16 @@ describe("parseCartIntent", () => {
   it("detects the no-JS marker", () => {
     expect(isNoJs(form({ noJs: "1" }))).toBe(true);
     expect(isNoJs(form({}))).toBe(false);
+  });
+});
+
+describe("isAddIntent", () => {
+  it("accepts the two product-route intents only", () => {
+    expect(isAddIntent("add")).toBe(true);
+    expect(isAddIntent("buy-now")).toBe(true);
+    expect(isAddIntent("increment")).toBe(false);
+    expect(isAddIntent("checkout")).toBe(false);
+    expect(isAddIntent(null)).toBe(false);
+    expect(isAddIntent(undefined)).toBe(false);
   });
 });
