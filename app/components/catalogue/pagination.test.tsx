@@ -30,6 +30,15 @@ describe("Pagination", () => {
     );
   });
 
+  it("gives hover feedback to every link except the current page", () => {
+    renderWithProviders(<Pagination page={2} pageCount={5} />, { path: "/en?page=2" });
+    const current = screen.getByRole("link", { name: "Page 2" });
+    expect(current).toHaveClass("bg-primary", "text-primary-fg");
+    expect(current.className).not.toMatch(/hover:/);
+    expect(screen.getByRole("link", { name: "Page 3" })).toHaveClass("hover:bg-surface-muted");
+    expect(screen.getByRole("link", { name: "Next page" })).toHaveClass("hover:bg-surface-muted");
+  });
+
   it("renders nothing for a single page", () => {
     renderWithProviders(<Pagination page={1} pageCount={1} />);
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();

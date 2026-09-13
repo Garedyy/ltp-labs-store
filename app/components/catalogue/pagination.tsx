@@ -8,7 +8,10 @@ import { pageWindow } from "~/lib/catalogue/pagination";
 import { cx } from "~/lib/cx";
 
 const ITEM =
-  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-tagline font-medium text-primary no-underline hover:bg-surface-muted";
+  "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-tagline font-medium text-primary no-underline";
+// The current page is not a navigation target, so only the other links get hover feedback.
+const PAGE_LINK = cx(ITEM, "hover:bg-surface-muted");
+const CURRENT_PAGE = cx(ITEM, "bg-primary text-primary-fg forced-colors:underline");
 
 type PaginationProps = { page: number; pageCount: number };
 
@@ -25,7 +28,7 @@ export function Pagination({ page, pageCount }: PaginationProps) {
       <ul className="flex flex-wrap justify-center gap-1 sm:justify-end">
         {page > 1 && (
           <li>
-            <Link to={to(page - 1)} rel="prev" className={ITEM} prefetch="intent">
+            <Link to={to(page - 1)} rel="prev" className={PAGE_LINK} prefetch="intent">
               <Icon name="chevronLeft" />
               <VisuallyHidden>{t("catalogue.pagination.previous")}</VisuallyHidden>
             </Link>
@@ -37,11 +40,7 @@ export function Pagination({ page, pageCount }: PaginationProps) {
               to={to(number)}
               aria-label={t("catalogue.pagination.page", { page: number })}
               aria-current={number === page ? "page" : undefined}
-              className={cx(
-                ITEM,
-                number === page &&
-                  "bg-primary text-primary-fg hover:bg-primary-hover forced-colors:underline",
-              )}
+              className={number === page ? CURRENT_PAGE : PAGE_LINK}
               prefetch="intent"
             >
               {number}
@@ -50,7 +49,7 @@ export function Pagination({ page, pageCount }: PaginationProps) {
         ))}
         {page < pageCount && (
           <li>
-            <Link to={to(page + 1)} rel="next" className={ITEM} prefetch="intent">
+            <Link to={to(page + 1)} rel="next" className={PAGE_LINK} prefetch="intent">
               <Icon name="chevronRight" />
               <VisuallyHidden>{t("catalogue.pagination.next")}</VisuallyHidden>
             </Link>
