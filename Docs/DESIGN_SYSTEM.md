@@ -121,7 +121,10 @@ icon sits next to text.
 
 ## Layout per screen
 
-- **Home / catalogue**: `grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]`; results column
+- **Home** (`/`): the catalogue's results column alone — `flex min-w-0 flex-col gap-6`, h1
+  `text-h4`, intro `text-body-sm text-fg-muted`, the same product grid (8 cards) and a `primary`
+  `ButtonLink` to the shop; no toolbar, no aside.
+- **Catalogue** (`/shop`): `grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]`; results column
   `flex min-w-0 flex-col gap-6` (h1 `text-h4`, toolbar `flex flex-wrap items-center justify-between gap-4`
   with the sort form's hint on its own line `basis-full text-body-sm text-fg-muted` and its Apply
   button `sr-only` until focused when scripts run,

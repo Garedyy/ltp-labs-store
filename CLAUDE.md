@@ -104,7 +104,8 @@ Tailwind CSS v4 (`@tailwindcss/vite`), remix-i18next 8 + i18next 26 + react-i18n
 → `locale-layout.tsx` (middleware validates the locale *before* any loader: asset-like segments 404,
 upper-case 301, unknown 302 to detected locale; loader supplies `cartCount`; renders the shell) →
 pathless `locale-errors.tsx` (shared `ErrorBoundary` so leaf errors render inside the mounted shell)
-→ leaves: catalogue (index), `search`, `products/:productId`, `cart`, `checkout/confirmation`,
+→ leaves: home (index, trending products; catalogue params → 301 to `shop`), `shop` (catalogue),
+`search`, `products/:productId`, `cart`, `checkout/confirmation`,
 `about|contact|blog|account` (translated "coming soon"), `*` (404). `set-language` is an action-only
 resource route and the **only** writer of the `lng` cookie. Loaders/actions/middleware read `url`
 from their args, never parse `request.url` (client navigations carry `.data` suffixes).

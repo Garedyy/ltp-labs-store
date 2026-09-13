@@ -12,7 +12,7 @@ export function ComingSoon({ title }: { title: string }) {
       <h1 className="text-h2 md:text-h1">{title}</h1>
       <p className="mt-4">{t("pages.comingSoon.body")}</p>
       <div className="mt-8">
-        <ButtonLink to={href("/:lang", { lang })}>{t("pages.comingSoon.backHome")}</ButtonLink>
+        <ButtonLink to={href("/:lang/shop", { lang })}>{t("pages.comingSoon.backHome")}</ButtonLink>
       </div>
     </div>
   );

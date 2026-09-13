@@ -5,20 +5,33 @@ import { renderWithProviders } from "../../../tests/helpers/render";
 import { SiteHeader } from "./site-header";
 
 describe("SiteHeader", () => {
-  it("marks Home as current on the catalogue but not Shop, and names every control", () => {
+  it("marks Home as current on the home page but not Shop, and names every control", () => {
     renderWithProviders(<SiteHeader cartCount={0} />);
     const [mainNav] = screen.getAllByRole("navigation", { name: "Main" });
     const home = within(mainNav!).getByRole("link", { name: "Home" });
     expect(home).toHaveAttribute("aria-current", "page");
-    expect(within(mainNav!).getByRole("link", { name: "Shop" })).not.toHaveAttribute(
-      "aria-current",
-    );
+    expect(home).toHaveAttribute("href", "/en");
+    const shop = within(mainNav!).getByRole("link", { name: "Shop" });
+    expect(shop).not.toHaveAttribute("aria-current");
+    expect(shop).toHaveAttribute("href", "/en/shop");
     expect(screen.getAllByRole("link", { name: "Search" })[0]).toHaveAttribute(
       "href",
       "/en/search",
     );
     expect(screen.getByRole("link", { name: "Cart, empty" })).toHaveAttribute("href", "/en/cart");
     expect(screen.getByLabelText("Open menu")).toBeInTheDocument();
+  });
+
+  it("marks Shop as current on the shop page but not Home", () => {
+    renderWithProviders(<SiteHeader cartCount={0} />, { path: "/en/shop" });
+    const [mainNav] = screen.getAllByRole("navigation", { name: "Main" });
+    expect(within(mainNav!).getByRole("link", { name: "Shop" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(within(mainNav!).getByRole("link", { name: "Home" })).not.toHaveAttribute(
+      "aria-current",
+    );
   });
 
   it("puts the item count in the cart link name", () => {

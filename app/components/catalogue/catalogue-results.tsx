@@ -122,7 +122,9 @@ export function CatalogueResults({
           title={emptyTitle ?? t("catalogue.empty.title")}
           body={emptyBody}
           action={
-            <ButtonLink to={href("/:lang", { lang })}>{t("catalogue.empty.action")}</ButtonLink>
+            <ButtonLink to={href("/:lang/shop", { lang })}>
+              {t("catalogue.empty.action")}
+            </ButtonLink>
           }
         />
       )}

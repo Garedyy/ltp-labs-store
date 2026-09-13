@@ -22,7 +22,8 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
 /:lang                     locale-layout.tsx     middleware + shell
   set-language             set-language.tsx      action only (lng cookie), GET → 405
   (pathless)               locale-errors.tsx     shared ErrorBoundary inside the shell
-    index                  catalogue.tsx         loader: categories → query → products → CatalogueView
+    index                  home.tsx              loader: 8 best-rated products (trending); catalogue params → 301 to shop
+    shop                   catalogue.tsx         loader: categories → query → products → CatalogueView
     products/:productId    product.tsx           loader: getProduct → ProductView; ?image read client-side
     search                 search.tsx            ?q → searchProducts; empty q renders the prompt without fetching
     cart                   cart.tsx              loader: loadCartView; action: set-quantity | remove | apply-promo | remove-promo | checkout
@@ -70,7 +71,16 @@ Contract: [`dummyjson-openapi.yaml`](dummyjson-openapi.yaml). Code: `app/service
 - **Rate-limit strategy**: cache + de-duplication, `select` to shrink payloads, one list call per
   page, categories cached for an hour, no fan-out beyond the cart's product lookups.
 
-### Catalogue loader (`app/routes/catalogue.tsx`)
+### Home loader (`app/routes/home.tsx`)
+
+`/:lang` is the landing page since D-13 (#29): `getProducts({ limit: 8, skip: 0, sortBy: "rating",
+order: "desc" })` through `cached` (5 min, one DummyJSON call shared by every visitor) →
+`toCardView` per product (`formatPrice` in the loader) → `ProductGrid` named by the `<h1>` and a
+"Browse the shop" link. No sort, filter or pagination: those live on `/shop`. A request that
+carries any catalogue parameter (`q`, `category`, `sort`, `page`) — a link from before the
+split — is answered **301 to `/:lang/shop` with the same search**.
+
+### Catalogue loader (`app/routes/catalogue.tsx`, served at `/:lang/shop`)
 
 `getCategories()` (1 h cache) → `parseCatalogueQuery(url.searchParams, slugs)` → unknown category
 → 302 to the canonical URL → `getProductsByCategory` / `getProducts` with `listParamsFor(query)`

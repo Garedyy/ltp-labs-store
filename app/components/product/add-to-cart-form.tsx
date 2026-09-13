@@ -106,7 +106,7 @@ export function AddToCartForm({ productId, inStock, flash }: AddToCartFormProps)
             <Link to={href("/:lang/cart", { lang })}>{t("cart.viewCart")}</Link>
           )}
           {result.error === "product-not-found" && (
-            <Link to={href("/:lang", { lang })}>{t("errors.links.home")}</Link>
+            <Link to={href("/:lang/shop", { lang })}>{t("errors.links.home")}</Link>
           )}
         </Alert>
       )}

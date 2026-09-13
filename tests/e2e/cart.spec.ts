@@ -27,7 +27,7 @@ test.describe("cart page", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart is empty");
     await expect(page.getByRole("link", { name: "Continue shopping" })).toHaveAttribute(
       "href",
-      "/en",
+      "/en/shop",
     );
     await expect(page.getByRole("button", { name: "Check out" })).toHaveCount(0);
     await expect(page).toHaveTitle("Your cart — The Online Store");

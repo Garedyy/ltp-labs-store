@@ -1,6 +1,12 @@
 import type en from "~/locales/en/pages";
 
 export default {
+  home: {
+    title: "Produtos em destaque",
+    description: "Os nossos produtos mais bem avaliados, escolhidos em todo o catálogo.",
+    intro: "Os nossos produtos mais bem avaliados, escolhidos em todo o catálogo.",
+    browse: "Ver a loja",
+  },
   comingSoon: {
     body: "Esta página ainda não está disponível. Volte em breve.",
     backHome: "Voltar à loja",

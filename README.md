@@ -50,7 +50,7 @@ npm run dev        # http://localhost:5173
 
 | Requirement ([`Docs/goal.md`](Docs/goal.md))                                                                                                                                                                                        | Where                                                                                                            | Verified by                                                                                                              |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Homepage lists products fetched from the API, each linking to its detail page                                                                                                                                                       | `app/routes/catalogue.tsx`, `ProductCard`                                                                        | `catalogue.spec.ts`                                                                                                      |
+| Homepage lists products fetched from the API, each linking to its detail page                                                                                                                                                       | `home.tsx` (trending), `catalogue.tsx` (`/shop`)                                                                 | `home.spec.ts`, `catalogue.spec.ts`                                                                                      |
 | Sort by the user's preference                                                                                                                                                                                                       | `SortForm` (price ↑↓, name A–Z / Z–A, rating)                                                                    | `catalogue.spec.ts`                                                                                                      |
 | Filter by category                                                                                                                                                                                                                  | `CategoryFilter` (single selection, 24 categories)                                                               | `catalogue.spec.ts`                                                                                                      |
 | Pagination                                                                                                                                                                                                                          | `Pagination` (9 per page, window of 5, `aria-current`)                                                           | `catalogue.spec.ts`                                                                                                      |
@@ -100,11 +100,11 @@ Docs/                                brief, wireframes, API contract, plan, prog
 Measured on 2026-09-11 with the production build served by `react-router-serve` against the mock
 API (Lighthouse 13.4, mobile emulation, simulated throttling, `npx lighthouse … --form-factor=mobile`):
 
-| Page              | Performance | Accessibility | Best practices | SEO | LCP   | CLS | TBT  |
-| ----------------- | ----------- | ------------- | -------------- | --- | ----- | --- | ---- |
-| `/en` (catalogue) | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
-| `/en/products/1`  | 94          | 100           | 100            | 100 | 2.7 s | 0   | 0 ms |
-| `/en/cart`        | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
+| Page                              | Performance | Accessibility | Best practices | SEO | LCP   | CLS | TBT  |
+| --------------------------------- | ----------- | ------------- | -------------- | --- | ----- | --- | ---- |
+| `/en` (catalogue, now `/en/shop`) | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
+| `/en/products/1`                  | 94          | 100           | 100            | 100 | 2.7 s | 0   | 0 ms |
+| `/en/cart`                        | 94          | 100           | 100            | 100 | 2.6 s | 0   | 0 ms |
 
 Bundle (gzip, `gzip -c build/client/assets/<chunk>.js | wc -c`, re-measured on 2026-09-12): the
 catalogue page downloads **≈ 146 KB** of JavaScript in total — `entry.client` 79 KB (React DOM,
