@@ -25,9 +25,13 @@ test.describe("search", () => {
     await expect(page.getByText(/Showing 1-9 of \d+/)).toBeVisible();
     const announcement = page.getByRole("status").filter({ hasText: /\d+ results for "phone"/ });
     await expect(announcement).toHaveCount(1);
-    await page.getByRole("link", { name: "Page 2" }).click();
+    const pageTwo = page.getByRole("link", { name: "Page 2", exact: true });
+    await pageTwo.scrollIntoViewIfNeeded();
+    const scrollY = await page.evaluate(() => window.scrollY);
+    await pageTwo.click();
     await expect(page).toHaveURL(/\/en\/search\?q=phone&page=2$/);
-    await expect(page.locator("#results-heading")).toBeFocused();
+    await expect(pageTwo).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
     // Two alternating status regions: the first search and the page change each keep theirs.
     await expect(announcement).toHaveCount(2);
   });

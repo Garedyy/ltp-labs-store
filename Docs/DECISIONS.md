@@ -502,6 +502,37 @@ none` was tried first and replayed the whole entrance on blur) and a small addit
   of blocks in `tokens.css`, one value in `THEMES`, one icon and three strings. No new
   dependency; the icons are three more Remix Icon v4.8.0 paths (D-4).
 
+## D-21 · Pagination keeps the scroll and the focus; first and last pages are always linked
+
+- **Date / branch**: 2026-09-13 · `fix/51-pagination-scroll-and-far-pages` (#51)
+- **Context**: the plan (§4 catalogue, announcements table) moved the focus to
+  `#results-heading` on every page change so a vanishing previous/next control never held it.
+  In practice the focus call scrolled the viewport up to the heading and, on top of it, the
+  pagination links had no `preventScrollReset`, so `<ScrollRestoration>` reset the scroll to
+  the top of the document on every push navigation: a visitor reading the pagination was thrown
+  to the top of the grid on every click. The wireframe shows `1 2 3 4 5 >` because the mock has
+  five pages; the shop has 22 (194 products at `PAGE_SIZE = 9`) and nothing hinted at it, so
+  page 16 was eleven clicks away from page 1.
+- **Decision**:
+  - A page change moves neither the viewport nor the focus: every pagination link carries
+    `preventScrollReset` and the focus stays on the clicked link. Page links are keyed by
+    number, so a link that survives the window shift keeps its DOM element (and the focus)
+    while becoming the current page. When the clicked control no longer exists — previous/next
+    at the ends, a mouse click in a browser that does not focus links — `CatalogueResults`
+    moves the focus to the current page link with `preventScroll: true`. The focus never lands
+    on a control that is gone; the results announcement is unchanged. Without JavaScript the
+    browser does a full navigation and lands at the top: expected, out of scope.
+  - `pageItems(page, pageCount)` wraps the five-number window with the first and last pages
+    and a gap marker only when at least one page is hidden: `1 2 3 4 5 … 22`,
+    `1 … 7 8 9 10 11 … 22`, `1 … 18 19 20 21 22`, and `1 2 3 4 5 6 … 22` on page 4 (no
+    ellipsis between 1 and 2). The ellipsis is a 44 px `<li aria-hidden>` in `text-fg-muted`,
+    never a link. This departs from the wireframe's five numbers on purpose.
+- **Consequences**: `/shop?page=9` (two ellipses) joins the e2e route list for the WCAG,
+  reflow and layout scans; `catalogue.spec.ts` and `search.spec.ts` assert `window.scrollY`
+  and the focused link instead of `#results-heading`; `targets.spec.ts` measures the eleven
+  pagination items. `#results-heading` keeps `tabIndex={-1}` for the grid's `aria-labelledby`
+  and for any future programmatic focus. No new dependency, no new icon, no new string.
+
 ## TO VERIFY resolutions
 
 All eight items of `PROJECT_PLAN.md` §8 are resolved.

@@ -209,7 +209,10 @@ lg:grid-rows-[auto_1fr] lg:gap-x-8` of three items — head (h1 `text-h4`, toolb
   `basis-full text-body-sm text-fg-muted`, its Apply button `sr-only` until focused when scripts
   run, and the "Categories" button `min-h-11` with a chevron that rotates when open, shown only
   below `lg` with scripts), body (grid `grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3`,
-  pagination `flex-wrap justify-center sm:justify-end`; `max-lg:order-last`) and the filters
+  pagination `flex-wrap justify-center sm:justify-end` of 44 px items — previous/next chevrons
+  when applicable, the first page, a window of five numbers, the last page, and a `text-fg-muted`
+  ellipsis `aria-hidden` where pages are hidden, e.g. `< 1 … 7 8 9 10 11 … 22 >` (D-21, #51);
+  `max-lg:order-last`) and the filters
   panel, last in the DOM, `lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-start` (not sticky
   — 24 rows exceed a tablet viewport) and, below `lg`, placed between head and body, folded
   (`max-lg:[.js_&]:hidden`) until the button unfolds it (D-16, #31). The `1fr` body row absorbs

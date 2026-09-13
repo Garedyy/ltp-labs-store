@@ -23,7 +23,7 @@ test.describe("catalogue", () => {
     await openCategories(page, testInfo);
     await expect(page.getByRole("checkbox")).toHaveCount(24);
     const pagination = page.getByRole("navigation", { name: "Pagination" });
-    await expect(pagination.getByRole("link", { name: "Page 1" })).toHaveAttribute(
+    await expect(pagination.getByRole("link", { name: "Page 1", exact: true })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -165,15 +165,59 @@ test.describe("catalogue", () => {
     await expect(page).toHaveURL(/\/en\/shop\?sort=price-asc$/);
   });
 
-  test("a page change focuses the results heading and announces the range", async ({ page }) => {
+  test("a page change keeps the scroll and the focus on the clicked link and announces the range", async ({
+    page,
+  }) => {
     await page.goto("/en/shop");
-    await page.getByRole("link", { name: "Page 2" }).click();
+    const pageTwo = page.getByRole("link", { name: "Page 2", exact: true });
+    await pageTwo.scrollIntoViewIfNeeded();
+    const scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBeGreaterThan(0);
+    await pageTwo.click();
     await expect(page).toHaveURL(/\/en\/shop\?page=2$/);
-    await expect(page.locator("#results-heading")).toBeFocused();
     await expect(page.getByText("Showing 10-18 of 194")).toBeVisible();
+    await expect(pageTwo).toHaveAttribute("aria-current", "page");
+    await expect(pageTwo).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
     await expect(
       page.getByRole("status").filter({ hasText: "Showing 10 to 18 of 194 products" }),
     ).toHaveCount(1);
+  });
+
+  test("the first and last pages are one click away and a vanishing Next hands the focus to the current page", async ({
+    page,
+  }) => {
+    await page.goto("/en/shop?page=9");
+    const pagination = page.getByRole("navigation", { name: "Pagination" });
+    await expect(pagination.getByRole("link")).toHaveText([
+      "Previous page",
+      "1",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "22",
+      "Next page",
+    ]);
+    await expect(pagination.getByText("…")).toHaveCount(2);
+
+    const last = pagination.getByRole("link", { name: "Page 22", exact: true });
+    await last.click();
+    await expect(page).toHaveURL(/\/en\/shop\?page=22$/);
+    await expect(last).toBeFocused();
+    await expect(pagination.getByRole("link", { name: "Next page" })).toHaveCount(0);
+    await expect(pagination.getByText("…")).toHaveCount(1);
+
+    await pagination.getByRole("link", { name: "Page 1", exact: true }).click();
+    await expect(page).toHaveURL(/\/en\/shop$/);
+    await expect(pagination.getByRole("link", { name: "Page 1", exact: true })).toBeFocused();
+    await expect(pagination.getByRole("link", { name: "Previous page" })).toHaveCount(0);
+
+    await page.goto("/en/shop?page=21");
+    await pagination.getByRole("link", { name: "Next page" }).click();
+    await expect(page).toHaveURL(/\/en\/shop\?page=22$/);
+    await expect(pagination.getByRole("link", { name: "Page 22", exact: true })).toBeFocused();
   });
 
   test("a product service failure renders the 502 page in the shell", async ({ page }) => {

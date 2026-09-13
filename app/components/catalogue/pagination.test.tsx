@@ -13,7 +13,37 @@ describe("Pagination", () => {
     expect(screen.getByRole("link", { name: "Page 2" })).toHaveAttribute("href", "/en?page=2");
     expect(screen.queryByRole("link", { name: "Previous page" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Next page" })).toHaveAttribute("rel", "next");
-    expect(screen.getAllByRole("link")).toHaveLength(6);
+    expect(screen.getAllByRole("link")).toHaveLength(7);
+  });
+
+  it("links the first and last pages around the window and marks the hidden pages", () => {
+    const { container } = renderWithProviders(<Pagination page={9} pageCount={22} />, {
+      path: "/en?page=9",
+    });
+    expect(screen.getAllByRole("link").map((link) => link.textContent)).toEqual([
+      "Previous page",
+      "1",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "22",
+      "Next page",
+    ]);
+    expect(screen.getByRole("link", { name: "Page 22" })).toHaveAttribute("href", "/en?page=22");
+    const gaps = container.querySelectorAll('li[aria-hidden="true"]');
+    expect(gaps).toHaveLength(2);
+    expect(gaps[0]).toHaveTextContent("…");
+    expect(gaps[0]?.querySelector("a")).toBeNull();
+    expect(screen.getByRole("list").textContent).toBe("Previous page1…7891011…22Next page");
+  });
+
+  it("omits a gap when no page is hidden between the window and the ends", () => {
+    renderWithProviders(<Pagination page={4} pageCount={22} />, { path: "/en?page=4" });
+    expect(screen.getByRole("list").textContent).toBe("Previous page123456…22Next page");
+    renderWithProviders(<Pagination page={22} pageCount={22} />, { path: "/en?page=22" });
+    expect(screen.getAllByRole("list")[1]?.textContent).toBe("Previous page1…1819202122");
   });
 
   it("keeps the other params and links page 1 without the param", () => {

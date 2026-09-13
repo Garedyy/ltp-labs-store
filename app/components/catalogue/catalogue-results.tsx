@@ -41,6 +41,15 @@ function onlyPageChanged(previous: CatalogueQuery, current: CatalogueQuery): boo
   );
 }
 
+// A page change keeps the scroll and the focus on the clicked link (the grid refreshes above the
+// pagination); when that control vanished (previous/next at the ends, a mouse click that never
+// focused it) the current page takes the focus, without scrolling.
+function keepFocusInPagination() {
+  const pagination = document.getElementById("pagination");
+  if (!pagination || pagination.contains(document.activeElement)) return;
+  pagination.querySelector<HTMLElement>('[aria-current="page"]')?.focus({ preventScroll: true });
+}
+
 // Search-param changes keep the pathname, so this component owns their announcements and focus.
 function useResultsAnnouncements(
   view: CatalogueView | null,
@@ -70,9 +79,7 @@ function useResultsAnnouncements(
             total: view.total,
           }),
     );
-    if (before && onlyPageChanged(before.query, view.query)) {
-      document.getElementById("results-heading")?.focus({ preventScroll: false });
-    }
+    if (before && onlyPageChanged(before.query, view.query)) keepFocusInPagination();
   }, [view, navigation.state, announce, t, custom, emptyAnnouncement]);
 }
 
