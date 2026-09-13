@@ -220,13 +220,17 @@ id above; then run `npm run test:e2e`.
   code). The `place-order` action validates with `lib/validation.ts` (`isEmail`, Luhn
   `isCardNumber` 13–19 digits, `isCardExpiry` not before the current month, `isCardCode` 3–4
   digits) into per-field codes (`field-required`, `email-invalid`, `card-*-invalid`); card
-  fields are only required for `card`. A refusal is a **400 with the typed values** re-rendered
-  (`defaultValue`, security code never echoed) and the focus on the first invalid field
+  fields are only required for `card` and fold away while the PayPal radio is checked (a CSS
+  `:has()` rule on the form, so it works without JavaScript). A refusal is a **400 with the typed
+  values** re-rendered (`defaultValue`; card number, expiry and security code never echoed) and
+  the focus on the first invalid field
   (`autoFocus` on the no-JS document, `useFocusFirstInvalid` with JavaScript). On success the
   action writes `lastOrder = { number: "LTP-" + base36 time, method, totalCents, itemCount,
 totalFormatted }`, clears `cart` and `promoCode` in cart mode only, and answers 303 to the
   confirmation. **Card data is checked for its format and dropped**: it is never stored, logged
-  or sent anywhere.
+  or sent anywhere. In cart mode the loader passes the reconciliation notice through
+  (`FormNotice`, `handle.initialFocus`), and `readFields` caps every field (200 characters, 2 000
+  for the contact message).
 - **Content forms** (`routes/contact.tsx`, `routes/account.tsx`): the same pattern without a
   session — `readFields` / `fieldProps` (`lib/forms.ts`), `TextField` and `FormNotice`
   (`components/forms/`), errors as a 400 with values kept, success as **303 to `?sent=1` /
@@ -240,18 +244,18 @@ totalFormatted }`, clears `cart` and `promoCode` in cart mode only, and answers 
 
 JavaScript is additive. Every flow is verified with it disabled (Playwright `no-js` project).
 
-| Interaction                         | Without JavaScript                                                                                                                    | With JavaScript                                                                                |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Sort                                | GET form, visible Apply                                                                                                               | `onChange` navigates in place, optimistic selection, Apply shown on focus                      |
-| Category                            | checkbox + Apply button                                                                                                               | `onChange` navigates in place, optimistic selection, Apply shown on focus                      |
-| Page / search                       | links and GET form → full document                                                                                                    | client navigation; page change focuses the results summary                                     |
-| Gallery thumbnail                   | link `?image=n`                                                                                                                       | client navigation with `replace`, no refetch                                                   |
-| Add to cart, stepper, remove, promo | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice                                       | `fetcher.Form`, stay in place, announcements, focus handoff                                    |
-| Check out / PayPal (cart)           | links to `/checkout` (`?method=paypal`); empty cart → 302 back with a flashed, focused alert                                          | same (client navigation, `handle.initialFocus` targets the alert)                              |
-| Payment page                        | POST → 400 with values kept and `autofocus` on the first invalid field; success → 303 to the confirmation; card fields always visible | same navigation form; effect focuses the first invalid field; card fields fold away for PayPal |
-| Contact / sign-in forms             | POST → 400 with values kept, `autofocus` on the first invalid field; success → 303 to `?sent=1` / `?demo=1` with a focused status     | same; the status mounts after the navigation and takes the focus                               |
-| Language switch                     | POST form → 303 + cookie                                                                                                              | same                                                                                           |
-| Mobile menu / language panel        | native `<details>`                                                                                                                    | Escape, outside click, focus leaving, close on navigation                                      |
+| Interaction                         | Without JavaScript                                                                                                                                               | With JavaScript                                                             |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Sort                                | GET form, visible Apply                                                                                                                                          | `onChange` navigates in place, optimistic selection, Apply shown on focus   |
+| Category                            | checkbox + Apply button                                                                                                                                          | `onChange` navigates in place, optimistic selection, Apply shown on focus   |
+| Page / search                       | links and GET form → full document                                                                                                                               | client navigation; page change focuses the results summary                  |
+| Gallery thumbnail                   | link `?image=n`                                                                                                                                                  | client navigation with `replace`, no refetch                                |
+| Add to cart, stepper, remove, promo | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice                                                                  | `fetcher.Form`, stay in place, announcements, focus handoff                 |
+| Check out / PayPal (cart)           | links to `/checkout` (`?method=paypal`); empty cart → 302 back with a flashed, focused alert                                                                     | same (client navigation, `handle.initialFocus` targets the alert)           |
+| Payment page                        | POST → 400 with values kept and `autofocus` on the first invalid field; success → 303 to the confirmation; card fields fold away for PayPal through CSS `:has()` | same navigation form; effect focuses the first invalid field; same CSS fold |
+| Contact / sign-in forms             | POST → 400 with values kept, `autofocus` on the first invalid field; success → 303 to `?sent=1` / `?demo=1` with a focused status                                | same; the status mounts after the navigation and takes the focus            |
+| Language switch                     | POST form → 303 + cookie                                                                                                                                         | same                                                                        |
+| Mobile menu / language panel        | native `<details>`                                                                                                                                               | Escape, outside click, focus leaving, close on navigation                   |
 
 ## Security
 

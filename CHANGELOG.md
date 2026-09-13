@@ -20,9 +20,11 @@ All notable changes to this project are documented here. The format follows
   `components/forms/` (`TextField`, `FormNotice`, `useFocusFirstInvalid`).
 - A payment page at `/:lang/checkout` between the cart and the confirmation (#30, D-15). It
   recaps the order, asks for an e-mail, a shipping address and the payment method (card fields
-  — name, number, MM/YY, security code — required for card only and folded away for PayPal with
-  JavaScript), validates everything server-side (Luhn, expiry, code) and places the order the way
-  the cart's checkout used to. Card data is format-checked and dropped, never stored or logged.
+  — name, number, MM/YY, security code — required for card only and folded away for PayPal
+  through CSS, with and without JavaScript), validates everything server-side (Luhn, expiry,
+  code) and places the order the way the cart's checkout used to. Card data is format-checked
+  and dropped, never stored, logged or echoed back; every field is length-capped; a reconciled
+  cart is announced on the page.
   Buy now now lands on this page in product mode (`?product=<id>`): one unit, cart and promo
   untouched. Covered by `checkout.spec.ts` in the four Playwright projects, IBM scans of every
   new state and reflow at 320 px.
