@@ -34,7 +34,7 @@ Sources, by authority:
 - **No new runtime dependency** beyond: react, react-dom, react-router, @react-router/node,
   @react-router/serve, i18next, react-i18next, remix-i18next, isbot. Dev deps are an approved list
   (plan §2 decision 18); anything else needs the user's approval. No zod (hand-written guards), no
-  icon package (~12 Remix Icon paths inlined as SVG), no CSS beyond Tailwind v4.
+  icon package (18 Remix Icon paths inlined as SVG), no CSS beyond Tailwind v4.
 - Code style: ultra-readable, minimal comments, TypeScript strict with `noUncheckedIndexedAccess`
   and `verbatimModuleSyntax`, `~/*` alias → `app/*`. No hard-coded UI strings in JSX
   (`eslint-plugin-i18next/no-literal-string`). Logical CSS properties only (`ps-`, `pe-`, `start`,
@@ -78,8 +78,9 @@ npm run check:licenses   # scripts/check-licenses.mjs
 npm run check            # typecheck && lint && format:check && check:licenses && test
 ```
 
-Playwright has four Chromium projects: `desktop-chromium`, `mobile-chromium` (Pixel 7), `no-js`
-(`javaScriptEnabled: false`, `testMatch: /no-js/`) and `pt` (`locale: pt-PT`). E2E never hits the
+Playwright has five Chromium projects: `desktop-chromium`, `mobile-chromium` (Pixel 7), `no-js`
+(`javaScriptEnabled: false`, `testMatch: /no-js/`), `pt` (`locale: pt-PT`) and `dark-chromium`
+(`colorScheme: "dark"`, the a11y scan under the system dark preference). E2E never hits the
 real DummyJSON: `tests/e2e/mock-api.server.ts` serves fixtures with fault injection
 (`/products/999` → 500, `/products/998` → 10 s delay, `?fail=1` on categories → 500).
 `tests/e2e/routes.ts` is the route list every feature PR must append to.
@@ -108,8 +109,9 @@ pathless `locale-errors.tsx` (shared `ErrorBoundary` so leaf errors render insid
 `search`, `products/:productId`, `cart`, `checkout` (payment page: the cart, or one unit of
 `?product=<id>` after Buy now), `checkout/confirmation`, `about`, `contact` (demo form),
 `blog`, `account` (device session + sign-in mock) — content pages with invented copy, D-14 —,
-`*` (404). `set-language` is an action-only
-resource route and the **only** writer of the `lng` cookie. Loaders/actions/middleware read `url`
+`*` (404). `set-language` and `set-theme` are action-only
+resource routes and the **only** writers of the `lng` and `theme` cookies (D-20: `theme` is
+`light`/`dark`, "system" deletes it; the root loader renders it as `data-theme` on `<html>`). Loaders/actions/middleware read `url`
 from their args, never parse `request.url` (client navigations carry `.data` suffixes).
 
 **Action ownership**: the product route owns `intent=add` and `intent=buy-now` (303 to the
@@ -147,10 +149,12 @@ loader data carries formatted strings next to numeric values. Client i18next tak
 
 **Design system**: three-layer tokens in `app/styles/tokens.css` — raw ltplabs.com palette →
 semantic roles (`--surface`, `--fg`, `--primary`, `--accent`, `--focus`…) → Tailwind `@theme inline`
-with `--color-*: initial`, so components only ever use semantic colour utilities and a future
-dark/high-contrast theme is one CSS block. Font is self-hosted variable Manrope (OFL) — weights
-400/500/600, bold = 500 never 700. Two-tone focus ring (orange outer + medium-blue inner) because
-orange alone is 2.9:1.
+with `--color-*: initial`, so components only ever use semantic colour utilities; the dark theme
+(#47) is two identical token blocks (`data-theme="dark"` and `prefers-color-scheme` without a
+cookie) kept in sync by `contrast.test.ts`, never a per-component `dark:` class. Font is
+self-hosted variable Manrope (OFL) — weights 400/500/600, bold = 500 never 700. Two-tone focus
+ring (orange outer + medium-blue inner, dark inner in the dark theme) because orange alone is
+2.9:1.
 
 **Accessibility (WCAG 2.2 AA, with and without JS)** is architectural, not a final pass: named
 landmarks, one visible `<h1>` per page, skip link first in `<body>`, `noValidate` forms with

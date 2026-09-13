@@ -11,7 +11,7 @@
 no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
 2. `routes/locale-layout.tsx` middleware `validateLocale`: asset-like segment → 404; upper-case →
    301; unknown → 302 to the detected locale; otherwise `next()`.
-3. Loaders run (root: `{ locale, origin, brand }`; layout: `{ cartCount }`; leaf).
+3. Loaders run (root: `{ locale, origin, brand, theme }`; layout: `{ cartCount }`; leaf).
 4. `entry.server.tsx` renders inside `I18nextProvider` with the request's instance (EN fallback
    instance when the middleware never ran).
 
@@ -21,6 +21,7 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
 /                          locale-redirect.tsx   302 → /{detected}
 /:lang                     locale-layout.tsx     middleware + shell
   set-language             set-language.tsx      action only (lng cookie), GET → 405
+  set-theme                set-theme.tsx         action only (theme cookie), GET → 405
   (pathless)               locale-errors.tsx     shared ErrorBoundary inside the shell
     index                  home.tsx              loader: 8 best-rated products (trending); catalogue params → 301 to shop
     shop                   catalogue.tsx         loader: categories → query → products → CatalogueView
@@ -43,6 +44,14 @@ layout's own middleware (asset deny-list) reach the shell-less root boundary; ev
 renders inside the mounted shell through `locale-errors.tsx`. Loaders, actions and middleware
 read `url` from their arguments — never `request.url`, which may carry `.data` suffixes.
 Internal links use `href("/:lang/…", { lang })`.
+
+**Theme** (#47, D-20): the root loader reads the `theme` cookie (`app/theme/theme-cookie.server.ts`,
+`light` | `dark`, anything else → `system`) and `root.tsx` renders `data-theme` on `<html>` plus
+`<meta name="color-scheme">`, so an explicit choice is applied before any stylesheet or script;
+`system` leaves the attribute off and the CSS follows `prefers-color-scheme`. The `set-theme`
+action is the only writer of the cookie; choosing `system` deletes it. The root loader
+revalidates on every submission (`revalidateOnPathnameOrSubmit`), which is what updates the
+attribute after a client-side POST.
 
 ## Data layer (DummyJSON)
 
@@ -252,23 +261,25 @@ false`.
 
 JavaScript is additive. Every flow is verified with it disabled (Playwright `no-js` project).
 
-| Interaction                         | Without JavaScript                                                                                                                                               | With JavaScript                                                                                                                                                                              |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sort                                | GET form, visible Apply                                                                                                                                          | `onChange` navigates in place, optimistic selection, Apply shown on focus                                                                                                                    |
-| Category                            | checkbox + Apply button; below `lg` the panel is shown in place under the toolbar                                                                                | `onChange` navigates in place, optimistic selection, Apply shown on focus; below `lg` a "Categories" button (`aria-expanded`) unfolds the panel, focus moves into it, Escape folds it (D-16) |
-| Page / search                       | links and GET form → full document                                                                                                                               | client navigation; page change focuses the results summary                                                                                                                                   |
-| Gallery thumbnail                   | link `?image=n`                                                                                                                                                  | client navigation with `replace`, no refetch                                                                                                                                                 |
-| Add to cart, stepper, remove, promo | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice                                                                  | `fetcher.Form`, stay in place, announcements, focus handoff                                                                                                                                  |
-| Check out / PayPal (cart)           | links to `/checkout` (`?method=paypal`); empty cart → 302 back with a flashed, focused alert                                                                     | same (client navigation, `handle.initialFocus` targets the alert)                                                                                                                            |
-| Payment page                        | POST → 400 with values kept and `autofocus` on the first invalid field; success → 303 to the confirmation; card fields fold away for PayPal through CSS `:has()` | same navigation form; effect focuses the first invalid field; same CSS fold                                                                                                                  |
-| Contact / sign-in forms             | POST → 400 with values kept, `autofocus` on the first invalid field; success → 303 to `?sent=1` / `?demo=1` with a focused status                                | same; the status mounts after the navigation and takes the focus                                                                                                                             |
-| Language switch                     | POST form → 303 + cookie                                                                                                                                         | same                                                                                                                                                                                         |
-| Mobile menu / language panel        | native `<details>`                                                                                                                                               | Escape, outside click, focus leaving, close on navigation                                                                                                                                    |
+| Interaction                          | Without JavaScript                                                                                                                                               | With JavaScript                                                                                                                                                                              |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sort                                 | GET form, visible Apply                                                                                                                                          | `onChange` navigates in place, optimistic selection, Apply shown on focus                                                                                                                    |
+| Category                             | checkbox + Apply button; below `lg` the panel is shown in place under the toolbar                                                                                | `onChange` navigates in place, optimistic selection, Apply shown on focus; below `lg` a "Categories" button (`aria-expanded`) unfolds the panel, focus moves into it, Escape folds it (D-16) |
+| Page / search                        | links and GET form → full document                                                                                                                               | client navigation; page change focuses the results summary                                                                                                                                   |
+| Gallery thumbnail                    | link `?image=n`                                                                                                                                                  | client navigation with `replace`, no refetch                                                                                                                                                 |
+| Add to cart, stepper, remove, promo  | POST → 303 back with a flashed result (`noJs` hidden input inside `<noscript>`), focused notice                                                                  | `fetcher.Form`, stay in place, announcements, focus handoff                                                                                                                                  |
+| Check out / PayPal (cart)            | links to `/checkout` (`?method=paypal`); empty cart → 302 back with a flashed, focused alert                                                                     | same (client navigation, `handle.initialFocus` targets the alert)                                                                                                                            |
+| Payment page                         | POST → 400 with values kept and `autofocus` on the first invalid field; success → 303 to the confirmation; card fields fold away for PayPal through CSS `:has()` | same navigation form; effect focuses the first invalid field; same CSS fold                                                                                                                  |
+| Contact / sign-in forms              | POST → 400 with values kept, `autofocus` on the first invalid field; success → 303 to `?sent=1` / `?demo=1` with a focused status                                | same; the status mounts after the navigation and takes the focus                                                                                                                             |
+| Language switch                      | POST form → 303 + cookie                                                                                                                                         | same                                                                                                                                                                                         |
+| Theme switch                         | POST form → 303 to the same URL + cookie (`system` deletes it); `data-theme` rendered by the server                                                              | same navigation; the switcher closes its panel, focuses its summary and announces the theme                                                                                                  |
+| Mobile menu / language / theme panel | native `<details>`                                                                                                                                               | Escape, outside click, focus leaving, close on navigation                                                                                                                                    |
 
 ## Security
 
 - `__cart` is signed (tampering → empty cart) and `httpOnly`; `lng` is validated against
-  `LOCALES` and written only by the `set-language` action with a same-origin `redirectTo`.
+  `LOCALES` and written only by the `set-language` action with a same-origin `redirectTo`;
+  `theme` is validated against `THEMES` and written only by the `set-theme` action, same rules.
 - Every mutation is a same-origin `POST` on a `SameSite=Lax` cookie: no CSRF token is needed.
 - `SESSION_SECRET` rotation empties every cart (documented); no user-generated HTML is rendered.
 - Response headers: `Cache-Control: private, no-cache` (pages depend on cookies),
@@ -279,7 +290,8 @@ JavaScript is additive. Every flow is verified with it disabled (Playwright `no-
 ## Conventions and recipes
 
 - `*.server.ts` files never reach the client bundle; `Intl`, cookies and the API client live
-  there. Components receive preformatted strings.
+  there. Preferences follow one pattern: a validated cookie (`lng`, `theme`), one action-only
+  resource route as its single writer, a POST form with a same-origin `redirectTo`. Components receive preformatted strings.
 - Route modules import `type { Route } from "./+types/<name>"`; loaders read `url` from their
   arguments; links use `href("/:lang/…", { lang })`.
 - UI text lives in `app/locales/<lang>/<domain>.ts`; primitives take labels as props;

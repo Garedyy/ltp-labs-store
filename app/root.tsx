@@ -16,6 +16,8 @@ import { ensureLocaleResources } from "~/i18n/load-locale.client";
 import { switchLocale } from "~/i18n/paths";
 import { getInstance, getLocale, i18nextMiddleware } from "~/middleware/i18next";
 import { responseHeadersMiddleware } from "~/middleware/response-headers";
+import { readTheme } from "~/theme/theme-cookie.server";
+import { useTheme } from "~/theme/use-theme";
 import type { Route } from "./+types/root";
 import manropeUrl from "./fonts/manrope-latin.woff2?url";
 import "./styles/app.css";
@@ -34,12 +36,13 @@ export const links: Route.LinksFunction = () => [
 
 export const shouldRevalidate = revalidateOnPathnameOrSubmit;
 
-export function loader({ context, url }: Route.LoaderArgs) {
+export async function loader({ context, request, url }: Route.LoaderArgs) {
   const locale = getLocale(context);
   return {
     locale,
     origin: process.env.APP_ORIGIN || url.origin,
     brand: getInstance(context).t("common.brand"),
+    theme: await readTheme(request),
   };
 }
 
@@ -70,12 +73,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
   const locale = isLocale(rootData?.locale) ? rootData.locale : localeFromHtmlLang(i18n.language);
   const { htmlLang, dir } = LOCALES[locale];
+  // An explicit choice is rendered on the server, so the page never flashes the other theme;
+  // "system" leaves data-theme off and lets the CSS follow prefers-color-scheme. The meta lets
+  // the browser paint the canvas in the right colour before the stylesheet arrives.
+  const theme = useTheme();
 
   return (
-    <html lang={htmlLang} dir={dir}>
+    <html lang={htmlLang} dir={dir} data-theme={theme === "system" ? undefined : theme}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content={theme === "system" ? "light dark" : theme} />
         <Meta />
         <Links />
         {rootData && <AlternateLinks origin={rootData.origin} />}

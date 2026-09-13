@@ -1,7 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 import { expectAccessible } from "./a11y-check";
-import { payByCard } from "./helpers";
+import { cookieValue, payByCard } from "./helpers";
 
 // States the route list cannot express: errors from fault injection, filled cart, invalid
 // forms, open disclosures, and media emulation. Desktop project only (mobile menu is covered
@@ -138,6 +138,49 @@ test.describe("accessibility of states", () => {
     await expectAccessible(page, `state-language-open-${testInfo.project.name}`, {
       manualReview: ["element_tabbable_unobscured"],
     });
+  });
+
+  test("open theme panel", async ({ page }, testInfo) => {
+    await page.goto("/en");
+    await page
+      .locator("summary", { hasText: /Change theme/ })
+      .filter({ visible: true })
+      .click();
+    await expect(page.getByRole("button", { name: "Dark" })).toBeVisible();
+    await expectAccessible(page, `state-theme-open-${testInfo.project.name}`, {
+      manualReview: ["element_tabbable_unobscured"],
+    });
+  });
+
+  // The explicit dark theme (cookie, data-theme on <html>); the system preference without a
+  // cookie is covered on every route by the dark-chromium project of a11y.spec.ts.
+  test("explicit dark theme", async ({ page, context }, testInfo) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto("/en");
+    await page
+      .locator("summary", { hasText: /Change theme/ })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("button", { name: "Dark" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    expect(await cookieValue(context, "theme")).toBe("dark");
+    for (const route of [
+      "/en",
+      "/en/shop",
+      "/en/products/1",
+      "/en/cart",
+      "/en/checkout?product=1",
+    ]) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      await expectAccessible(
+        page,
+        `state-dark${route.replace(/[/?=]/g, "-")}-${testInfo.project.name}`,
+      );
+    }
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.goto("/en/products/1");
+    await expectAccessible(page, `state-dark-forced-colors-${testInfo.project.name}`);
   });
 
   test("reduced motion and forced colours emulation", async ({ page }, testInfo) => {

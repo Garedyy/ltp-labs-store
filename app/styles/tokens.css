@@ -14,10 +14,15 @@
   --palette-dark-gray: #6a6a68;
   --palette-error: #e5484d;
   --palette-error-text: #b42318; /* derived: #e5484d is 3.9:1, too low for text */
+  /* Derived for the dark theme, where the light values fall under AA on dark-blue. */
+  --palette-gray-on-dark: #a3a7b3; /* dark-gray is 3.4:1 on dark-blue; this is 7.7:1 */
+  --palette-green-on-dark: #1f9e73; /* light-green is 3.3:1 on dark-blue; this is 5.5:1, white on it 3.4:1 */
+  --palette-error-on-dark: #f47c80; /* error-text is 2.8:1 on dark-blue; this is 7.1:1 */
 }
 
-/* 2. Semantic roles (light theme). A future theme is one more :root[data-theme="…"] block. */
+/* 2. Semantic roles. Light theme first; the dark theme remaps the same roles below. */
 :root {
+  color-scheme: light;
   --surface: var(--palette-white);
   --surface-muted: var(--palette-light-gray);
   --surface-placeholder: var(--palette-medium-gray);
@@ -39,11 +44,77 @@
   --success: var(--palette-light-green);
   --error: var(--palette-error-text);
   --error-border: var(--palette-error);
+  /* Floating card and panels: a shadow alone vanishes on a dark surface, so the dark theme adds
+     a 1px ring; the light theme keeps its shadow only. */
+  --elevation-ring: transparent;
+  --elevation-shadow: rgb(8 10 25 / 0.05);
 }
 
+/* Dark theme, applied twice with the same values: once for an explicit choice (the "theme"
+   cookie, rendered as data-theme on <html>), once for the system preference when nothing is
+   chosen. contrast.test.ts checks that the two blocks stay identical and that every pairing
+   keeps AA. Orange stays accent and focus only; focus-inner turns dark so the orange ring has
+   3:1 on both sides even around a light primary button. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: var(--palette-dark-blue);
+  --surface-muted: var(--palette-dark-blue-lighter);
+  --surface-placeholder: var(--palette-medium-blue-lighter);
+  --surface-inverse: var(--palette-dark-blue-lighter);
+  --fg: var(--palette-light-gray);
+  --fg-muted: var(--palette-gray-on-dark);
+  --fg-inverse: var(--palette-white);
+  --primary: var(--palette-light-gray);
+  --primary-hover: var(--palette-white);
+  --primary-fg: var(--palette-medium-blue);
+  --accent: var(--palette-orange);
+  --accent-fg: var(--palette-medium-blue);
+  --link: var(--palette-light-gray);
+  --link-hover: var(--palette-white);
+  --border: var(--palette-medium-blue-lighter);
+  --border-strong: var(--palette-gray-on-dark);
+  --focus: var(--palette-orange);
+  --focus-inner: var(--palette-dark-blue);
+  --success: var(--palette-green-on-dark);
+  --error: var(--palette-error-on-dark);
+  --error-border: var(--palette-error);
+  --elevation-ring: var(--palette-medium-blue-lighter);
+  --elevation-shadow: rgb(0 0 0 / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface: var(--palette-dark-blue);
+    --surface-muted: var(--palette-dark-blue-lighter);
+    --surface-placeholder: var(--palette-medium-blue-lighter);
+    --surface-inverse: var(--palette-dark-blue-lighter);
+    --fg: var(--palette-light-gray);
+    --fg-muted: var(--palette-gray-on-dark);
+    --fg-inverse: var(--palette-white);
+    --primary: var(--palette-light-gray);
+    --primary-hover: var(--palette-white);
+    --primary-fg: var(--palette-medium-blue);
+    --accent: var(--palette-orange);
+    --accent-fg: var(--palette-medium-blue);
+    --link: var(--palette-light-gray);
+    --link-hover: var(--palette-white);
+    --border: var(--palette-medium-blue-lighter);
+    --border-strong: var(--palette-gray-on-dark);
+    --focus: var(--palette-orange);
+    --focus-inner: var(--palette-dark-blue);
+    --success: var(--palette-green-on-dark);
+    --error: var(--palette-error-on-dark);
+    --error-border: var(--palette-error);
+    --elevation-ring: var(--palette-medium-blue-lighter);
+    --elevation-shadow: rgb(0 0 0 / 0.5);
+  }
+}
+
+/* Theme-agnostic: the strong border and the full-contrast text of whichever theme is active. */
 @media (prefers-contrast: more) {
   :root {
-    --border: var(--palette-dark-gray);
+    --border: var(--border-strong);
     --fg-muted: var(--fg);
     --surface-muted: var(--surface);
   }
@@ -75,7 +146,6 @@
   --text-body-sm--line-height: 1.6;
   --text-tagline: 0.875rem;
   --text-tagline--line-height: 1.2;
-  --shadow-header: 0 4px 7.5px rgb(8 10 25 / 0.05);
   --radius-block: 1.5rem;
   --spacing-header: 3.75rem;
   --spacing-header-lg: 4rem;
@@ -124,6 +194,7 @@
 }
 
 @theme inline {
+  --shadow-header: 0 0 0 1px var(--elevation-ring), 0 4px 7.5px var(--elevation-shadow);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
   --color-surface-placeholder: var(--surface-placeholder);

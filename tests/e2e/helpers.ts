@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import { type BrowserContext, expect, type Locator, type Page } from "@playwright/test";
 
 // The language switcher lives in the header on large screens and inside the menu below lg.
 export async function openLanguagePanel(page: Page, navName: string): Promise<void> {
@@ -50,4 +50,11 @@ export async function precedes(first: Locator, second: Locator): Promise<boolean
       Boolean(element.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING),
     await second.elementHandle(),
   );
+}
+
+// The value of a cookie written with React Router's createCookie (base64 JSON), or undefined.
+export async function cookieValue(context: BrowserContext, name: string): Promise<unknown> {
+  const cookie = (await context.cookies()).find((c) => c.name === name);
+  if (!cookie) return undefined;
+  return JSON.parse(Buffer.from(decodeURIComponent(cookie.value), "base64").toString("utf8"));
 }

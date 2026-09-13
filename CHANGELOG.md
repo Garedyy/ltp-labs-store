@@ -8,6 +8,22 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- A dark theme and a system / light / dark switch in the header (#47, D-20). With no choice
+  the page follows `prefers-color-scheme`; the switch stores an explicit choice in a `theme`
+  cookie written by the action-only `set-theme` route (System deletes the cookie), which the
+  server renders as `data-theme` on `<html>` and a `color-scheme` meta so nothing flashes and
+  no script is needed; the flow works without JavaScript. The dark theme is a token remap in
+  `tokens.css` (two identical blocks, explicit and system, kept in sync by
+  `contrast.test.ts`) with three derived palette values so every role pair keeps WCAG 2.2 AA,
+  a dark inner focus ring, a dark footer and a 1 px ring under the floating header and the
+  panels; `color-scheme: dark` lets native controls follow. The switch is a `<details>` pill
+  next to the language switcher with three icons (Remix Icon v4.8.0 `contrast-2-line`,
+  `sun-line`, `moon-line`); after a choice it closes, takes the focus back and announces
+  "Dark theme applied" ("Tema escuro aplicado"). Covered by `theme.spec.ts` (desktop, mobile,
+  `pt`), `no-js.spec.ts`, `a11y-states.spec.ts` (open panel, explicit dark on the shell pages,
+  dark under forced colours) and a fifth Playwright project `dark-chromium` that runs the WCAG
+  scan of every route x locale under the system dark preference; unit tests for the cookie,
+  the config, the switcher and the dark contrast pairs.
 - A back link above the heading of the product page, the cart page (with items) and the
   payment page (#45, D-19): a `BackLink` primitive (`components/ui/`), a left chevron plus a
   translated label (`common.backTo.*`, "Back to the shop" / "Voltar à loja") in a 44 px target.

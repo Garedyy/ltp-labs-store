@@ -35,6 +35,21 @@ test("the language switcher works without JavaScript", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "pt-PT");
 });
 
+test("the theme switcher works without JavaScript", async ({ page }) => {
+  await page.goto("/en/nowhere?x=1");
+  await page
+    .locator("summary", { hasText: /Change theme/ })
+    .filter({ visible: true })
+    .click();
+  await page.getByRole("button", { name: "Dark" }).click();
+  await expect(page).toHaveURL(/\/en\/nowhere\?x=1$/);
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.locator("details[open]")).toHaveCount(0);
+  expect(
+    await page.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor),
+  ).toBe("rgb(16, 19, 28)");
+});
+
 test("sorting and filtering work without JavaScript through the GET forms", async ({ page }) => {
   await page.goto("/en/shop");
   await page.getByRole("combobox", { name: "Sort by" }).selectOption("price-desc");

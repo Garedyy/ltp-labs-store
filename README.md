@@ -78,7 +78,7 @@ Every script is a plain Node or npm command, so they behave the same on macOS, L
 | `npm run lint`           | ESLint (`lint:fix` applies the fixes)                                                    |
 | `npm run format`         | Prettier (`format:check` only verifies)                                                  |
 | `npm run test`           | Vitest unit tests (`test:watch` for watch mode)                                          |
-| `npm run test:e2e`       | Playwright: boots the mock API and the built app, four Chromium projects (`test:e2e:ui`) |
+| `npm run test:e2e`       | Playwright: boots the mock API and the built app, five Chromium projects (`test:e2e:ui`) |
 | `npm run check:licenses` | `scripts/check-licenses.mjs`, fails on any non-permissive package                        |
 | `npm run check`          | `typecheck && lint && format:check && check:licenses && test`                            |
 
@@ -95,6 +95,7 @@ Every script is a plain Node or npm command, so they behave the same on macOS, L
 | "Add to cart" adds to the cart                                                                                                                                                                                                      | product route `action` (`intent=add`), signed cookie session                                                     | `cart-session.spec.ts`, no-JS spec                                                                                               |
 | Cart page reachable from the header icon, shows items, quantities, total, removal                                                                                                                                                   | `app/routes/cart.tsx`, `CartLineItem`, `QuantityStepper`, `CartSummary`                                          | `cart.spec.ts`                                                                                                                   |
 | Responsive mobile + desktop                                                                                                                                                                                                         | mobile-first Tailwind, reflow at 320 px                                                                          | `reflow.spec.ts`, Pixel 7 project                                                                                                |
+| Dark theme (system preference, or a system / light / dark choice kept in a cookie)                                                                                                                                                  | `tokens.css` dark blocks, `set-theme` route, `ThemeSwitcher` (#47, D-20)                                         | `theme.spec.ts`, `dark-chromium` project, `contrast.test.ts`                                                                     |
 | Loaders / actions used appropriately, clean routing                                                                                                                                                                                 | every read is a loader, every mutation an action; `app/routes.ts`                                                | e2e suite                                                                                                                        |
 | i18n: EN default + PT, server-resolved locale, switcher keeping the page, no hard-coded strings, `Intl` formatting, plurals, `<html lang>`, hreflang, logical properties                                                            | `app/i18n/`, `app/locales/`, `LanguageSwitcher`                                                                  | `i18n.spec.ts`, `locales.test.ts`, ESLint                                                                                        |
 | a11y: landmarks, one `h1`, keyboard, skip link, names on icon controls, alt text, labelled controls, pagination nav, live announcements, contrast, 44 px targets, reduced motion, works without JS, automated audit + screen reader | see [`Docs/ACCESSIBILITY.md`](Docs/ACCESSIBILITY.md)                                                             | IBM WCAG 2.2 scans on every route, locale and state, Lighthouse a11y 100, keyboard specs; the VoiceOver run is logged as pending |
@@ -186,7 +187,7 @@ Third-party credits:
 - [DummyJSON](https://dummyjson.com): product data.
 - [Manrope](https://github.com/sharanda/manrope): font, SIL Open Font License 1.1
   (`app/fonts/OFL.txt`), self-hosted latin subset from Google Fonts.
-- [Remix Icon](https://remixicon.com) v4.8.0: 15 icon paths, Apache License 2.0
+- [Remix Icon](https://remixicon.com) v4.8.0: 18 icon paths, Apache License 2.0
   (`app/components/ui/icon.tsx`). Later Remix Icon releases use a custom licence and are not used.
 - IBM Equal Access [`accessibility-checker`](https://github.com/IBMa/equal-access): Apache-2.0.
 - [`web-animation-design`](https://github.com/vercel-labs/open-agents/tree/main/.agents/skills/web-animation-design):

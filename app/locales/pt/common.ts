@@ -33,4 +33,12 @@ export default {
     current: "{{code}}, {{name}}. Mudar de idioma",
     switchTo: "Mudar para {{name}}",
   },
+  theme: {
+    label: "Tema",
+    current: "Tema: {{name}}. Mudar de tema",
+    applied: "Tema {{name}} aplicado",
+    system: "Sistema",
+    light: "Claro",
+    dark: "Escuro",
+  },
 } satisfies typeof en;

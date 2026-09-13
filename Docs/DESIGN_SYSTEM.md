@@ -10,8 +10,13 @@ Three layers, so that components only ever use **semantic** colour utilities:
 1. **Raw palette** — `--palette-*` custom properties copied from ltplabs.com (plus one derived value,
    `--palette-error-text`). No Tailwind utility is generated from them.
 2. **Semantic roles** — `--surface`, `--fg`, `--primary`, `--accent`, `--focus`… mapped to the
-   palette for the light theme. `@media (prefers-contrast: more)` remaps `--border`, `--fg-muted`
-   and `--surface-muted`. A dark or high-contrast theme is one extra `:root[data-theme="…"]` block.
+   palette for the light theme, then remapped for the dark theme (#47, D-20) in two identical
+   blocks: `:root[data-theme="dark"]` for an explicit choice and
+   `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }` for the system
+   preference; `contrast.test.ts` fails if the two blocks drift apart. Each block also sets
+   `color-scheme` so native controls follow. `@media (prefers-contrast: more)` remaps `--border`
+   to `--border-strong`, `--fg-muted` to `--fg` and `--surface-muted` to `--surface`, whichever
+   theme is active. A high-contrast theme would be one more pair of blocks.
 3. **Tailwind theme** — `@theme { --color-*: initial; … }` removes the default palette and declares
    the type scale, weights, shadows and radii; `@theme inline` exposes the semantic roles as
    `bg-surface`, `text-fg`, `border-border`, `text-primary`, `bg-accent`, `outline-focus`…
@@ -33,11 +38,36 @@ Three layers, so that components only ever use **semantic** colour utilities:
 Other pairs: `accent-fg` on `accent` (discount badge) 6.0:1; `fg` on `surface-muted` 17.2:1.
 The test fails the build if any pairing drops under 4.5:1 (text) or 3:1 (UI components).
 
+#### Dark theme (`data-theme="dark"` or system preference)
+
+The surface is `dark-blue`, muted surfaces `dark-blue-lighter`, placeholders and borders
+`medium-blue-lighter`; `primary` becomes `light-gray` with `medium-blue` text (the dark
+call-to-action turns light, 16.1:1), links and text `light-gray`, hover and inverse text white.
+Three values are derived because the light ones fall under AA on `dark-blue`:
+
+| Palette token   | Value     | vs `dark-blue` | Semantic roles                                                                   |
+| --------------- | --------- | -------------- | -------------------------------------------------------------------------------- |
+| `light-gray`    | `#f4f7f9` | 17.2:1         | `fg`, `link`, `primary` (button background)                                      |
+| `white`         | `#fff`    | 18.6:1         | `fg-inverse`, `link-hover`, `primary-hover`                                      |
+| `gray-on-dark`  | `#a3a7b3` | 7.7:1          | `fg-muted`, `border-strong` (`dark-gray` is 3.4:1); 5.8:1 on the placeholder     |
+| `green-on-dark` | `#1f9e73` | 5.5:1          | `success` (`light-green` is 3.3:1); white on it 3.4:1 for the confirmation disc  |
+| `error-on-dark` | `#f47c80` | 7.1:1          | `error` text (`error-text` is 2.8:1); `error-border` keeps `#e5484d`, 4.7:1      |
+| `orange`        | `#ff6a00` | 6.5:1          | `accent`, `focus` — still **never text**; `accent-fg` stays `medium-blue`, 6.0:1 |
+| `dark-blue`     | `#10131c` | —              | `focus-inner`: 17.2:1 against the light primary button, where orange is 2.7:1    |
+
+The footer keeps a dark surface (`surface-inverse` = `dark-blue-lighter`, white text) rather
+than turning light: a bright block at the bottom of a dark page is what a dark theme is meant
+to avoid. The floating header card and the panels add a 1 px `medium-blue-lighter` ring to
+their shadow (`--elevation-ring`, transparent in the light theme, so the light rendering is
+byte-identical) because a shadow alone vanishes on a dark surface.
+
 ### Focus ring
 
 `:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-focus-inner) }`
 — orange alone is 2.9:1 on white, the inner medium-blue ring restores ≥ 3:1 (SC 1.4.11) and the
-outline survives forced colours (`Highlight`). `outline-none` is banned except on `main`.
+outline survives forced colours (`Highlight`). In the dark theme the inner ring is `dark-blue`:
+orange is 6.5:1 on the surface and 2.7:1 on the light primary button, and the dark inner ring
+separates the two. `outline-none` is banned except on `main`.
 
 ## Typography (`app/styles/fonts.css`, `app/fonts/`)
 
@@ -103,8 +133,9 @@ Breakpoints: Tailwind defaults; every grid collapses to one column at 320 px. `h
   branch: same scores and same LCP on `/`, `/en/shop` and `/en/products/1` (README table).
 
 - Forced colours: `forced-colors:border` on buttons, badges and cards; focus outline uses
-  `Highlight`.
-- `prefers-contrast: more`: stronger borders, muted text becomes full-contrast text.
+  `Highlight`. Unchanged by the theme.
+- `prefers-contrast: more`: stronger borders, muted text becomes full-contrast text, in both
+  themes.
 
 ## Components (`app/components/ui/`)
 
@@ -116,7 +147,7 @@ and pass `eslint-plugin-i18next/no-literal-string`. Each has a role/name test ne
 | `Button`         | `variant: primary \| secondary \| ghost \| icon`, `size: md \| sm`, `pending`, `pendingLabel`   | `type="button"` by default; pending keeps the button enabled with `aria-busy`; `disabled` only for out-of-stock |
 | `ButtonLink`     | same variants, React Router `Link` props                                                        | never `aria-disabled` — blocked states omit the control                                                         |
 | `BackLink`       | React Router `Link` props                                                                       | chevron + label above the h1, fixed destination (never `history.back()`), 44 px, `rtl:-scale-x-100` on the icon |
-| `Icon`           | `name: IconName`, SVG props                                                                     | `aria-hidden focusable="false" fill="currentColor"`, 15 Remix Icon paths                                        |
+| `Icon`           | `name: IconName`, SVG props                                                                     | `aria-hidden focusable="false" fill="currentColor"`, 18 Remix Icon paths                                        |
 | `VisuallyHidden` | `as?`, `children`                                                                               | `sr-only`                                                                                                       |
 | `Field`          | `name`, `label`, `hideLabel?`, `hint?`, `error?`, `errorPrefix`, `children: (ids) => ReactNode` | render-prop instead of `cloneElement`; error is `role="alert"` with icon + sr prefix                            |
 | `useFieldIds`    | `name`, `{ hint, error }`                                                                       | `{ inputId, hintId, errorId, describedBy }`                                                                     |
@@ -131,7 +162,7 @@ and pass `eslint-plugin-i18next/no-literal-string`. Each has a role/name test ne
 
 ### Icons
 
-15 paths from **Remix Icon v4.8.0** — the last release published under the Apache License 2.0
+18 paths from **Remix Icon v4.8.0** — the last release published under the Apache License 2.0
 (later releases use the custom "Remix Icon License v1.0", which is not on the licence allow-list;
 see `DECISIONS.md` D-4). Path data is copied verbatim into `icon.tsx`; attribution in the README.
 Icons never carry meaning alone: every icon-only control has an accessible name and every status
@@ -152,10 +183,16 @@ icon sits next to text.
   `absolute -end-1 -top-1 min-w-5 rounded-full bg-accent px-1 text-[0.6875rem] leading-5 font-medium text-accent-fg`.
 - Language switcher: outlined pill `min-h-11 rounded-xl border border-border px-3`; panel
   `absolute end-0 mt-2 rounded-xl border bg-surface p-2 shadow-header`.
+- Theme switcher (#47): the same pill and panel, the current theme's icon (`contrast` for
+  system, `sun`, `moon`) plus the chevron in the pill; three `min-h-11` rows (icon `size-4` +
+  label) in the panel, the current one `bg-surface-muted font-medium`. Sits after the language
+  switcher, `gap-2`, in the header at `lg+` and in the mobile menu below.
 - Breakpoints: `< sm` logo + cart + menu (Search/Account inside the menu); `sm`–`lg` adds the
-  Search and Account icons; `lg+` three-column card with the nav and the switcher inline.
+  Search and Account icons; `lg+` three-column card with the nav and the two switchers inline
+  (checked at 1024 px: nothing wraps).
 - Loading bar: `h-0.5 bg-accent` under the card, revealed by a 300 ms CSS delay.
-- Footer: `mt-16 rounded-t-3xl bg-surface-inverse px-4 py-8 text-fg-inverse lg:px-6 lg:py-12`;
+- Footer: `mt-16 rounded-t-3xl bg-surface-inverse px-4 py-8 text-fg-inverse lg:px-6 lg:py-12`
+  (`dark-blue` in the light theme, `dark-blue-lighter` in the dark one);
   brand link, footer nav in header order, language links. The 4 rem gap above it is a margin, not
   `mt-auto`, so long pages keep the same spacing as short ones.
 
@@ -240,3 +277,4 @@ border-border bg-surface-muted p-3`, `role="status"`) for a success.
 | Closed `<details>` content hidden with `display: none`                                                                                                  | Chromium keeps layout boxes for closed panels, which overlap other content                                                                       |
 | Product image box square on phones, 5:3 from `md` (the wireframe shows the 5:3 box only)                                                                | a square box as wide as its column is ~800 px tall on tablet and desktop, pushing the thumbnails and the buy block out of the first screen (#27) |
 | Visible "Results update when you choose" hint under the sort select, Apply button `sr-only` until focused with JS (the wireframe shows the bare select) | the sort applies on selection (#25, D-11); SC 3.2.2 needs the user told before the change of context, and the form keeps a submit for every user |
+| A dark theme and a theme switcher in the header (ltplabs.com and the wireframes are light only)                                                         | #47: a dark OS preference deserves a dark page; the tokens were built for it (decision 15)                                                       |
