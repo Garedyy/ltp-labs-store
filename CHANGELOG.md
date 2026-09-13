@@ -124,6 +124,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- Catalogue pagination: the current page number faded out on hover (#49). Every page link
+  shared `hover:bg-surface-muted` and the current page added `hover:bg-primary-hover` on top;
+  Tailwind emits the muted variant last, so the primary background gave way to the muted
+  surface while the text kept its inverted colour, in both themes. The current page is not a
+  navigation target, so it no longer carries any hover class and keeps `bg-primary` /
+  `text-primary-fg`; the other page links and prev/next keep their muted hover feedback.
+  Covered by `pagination.test.tsx`.
 - Order confirmation: the page was a bare title, one sentence and three definitions, with no
   sign that the order succeeded and nothing about the products ordered (#38). It now opens on a
   green check disc, "Thank you for your order", the order number set apart, then an "Order
