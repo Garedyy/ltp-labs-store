@@ -4,7 +4,7 @@ import type { ProductCardView } from "~/lib/catalogue/types";
 import { ProductCard } from "./product-card";
 
 const EAGER_COUNT = 3;
-const STAGGER_MS = 60;
+const STAGGER_MS = 80;
 
 function priorityFor(index: number): "high" | "eager" | "lazy" {
   if (index === 0) return "high";

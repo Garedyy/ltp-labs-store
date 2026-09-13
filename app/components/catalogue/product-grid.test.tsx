@@ -44,7 +44,7 @@ describe("ProductGrid", () => {
     expect(screen.getByRole("list", { name: "Trending products" })).toBeInTheDocument();
   });
 
-  it("cascades the cards in only when staggered, one every 60 ms", () => {
+  it("cascades the cards in only when staggered, one every 80 ms", () => {
     renderWithProviders(
       <>
         <h1 id="trending-heading">Trending products</h1>
@@ -54,7 +54,7 @@ describe("ProductGrid", () => {
     const [first, second] = screen.getAllByRole("listitem");
     expect(first).toHaveClass("motion-safe:animate-card-enter");
     expect(first).toHaveStyle({ animationDelay: "0ms" });
-    expect(second).toHaveStyle({ animationDelay: "60ms" });
+    expect(second).toHaveStyle({ animationDelay: "80ms" });
   });
 
   it("leaves the cards still by default, as in the shop", () => {

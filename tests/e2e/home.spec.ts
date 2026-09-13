@@ -26,20 +26,33 @@ test.describe("home", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Shop");
   });
 
-  // The landing page opens with more motion than the other pages (#43, D-18): the hero rises and
-  // the cards cascade in. The suite runs under reduced motion; this test opts back in.
-  test("the hero rises and the trending cards cascade in, except under reduced motion", async ({
+  // The landing page opens with more motion than the other pages (#43, D-18): the header comes
+  // in three beats, the cards cascade in, See more follows. The suite runs under reduced motion;
+  // this test opts back in.
+  test("the header, the trending cards and See more enter in sequence, except under reduced motion", async ({
     page,
   }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto("/en");
-    const hero = page.getByRole("heading", { level: 1 }).locator("xpath=../..");
+    const hero = page.getByRole("heading", { level: 1 });
+    const main = page.getByRole("main");
     const cards = page.getByRole("list", { name: "Trending products" }).getByRole("listitem");
-    expect(await hero.evaluate((el) => getComputedStyle(el).animationName)).toBe("hero-enter");
-    const delays = await cards.evaluateAll((items) =>
-      items.map((item) => getComputedStyle(item).animationDelay),
+    const timing = (el: Element) => {
+      const style = getComputedStyle(el);
+      return `${style.animationName} ${style.animationDelay}`;
+    };
+    expect(await hero.evaluate(timing)).toBe("hero-enter 0s");
+    expect(await main.getByText("Our best-rated products", { exact: false }).evaluate(timing)).toBe(
+      "hero-enter 0.12s",
     );
-    expect(delays).toEqual(["0s", "0.06s", "0.12s", "0.18s", "0.24s", "0.3s", "0.36s", "0.42s"]);
+    expect(await main.getByRole("link", { name: "Browse the shop" }).evaluate(timing)).toBe(
+      "hero-enter 0.24s",
+    );
+    expect(
+      await cards.evaluateAll((items) =>
+        items.map((item) => getComputedStyle(item).animationDelay),
+      ),
+    ).toEqual(["0s", "0.08s", "0.16s", "0.24s", "0.32s", "0.4s", "0.48s", "0.56s"]);
     // fill-mode both keeps a finished card animation listed: wait until none is still running.
     await expect
       .poll(
@@ -51,6 +64,7 @@ test.describe("home", () => {
       )
       .toBe(0);
     await expect(cards.last()).toBeVisible();
+    await expect(main.getByRole("link", { name: "See more" })).toBeVisible();
     await page.emulateMedia({ reducedMotion: "reduce" });
     expect(await hero.evaluate((el) => getComputedStyle(el).animationName)).toBe("none");
     expect(
