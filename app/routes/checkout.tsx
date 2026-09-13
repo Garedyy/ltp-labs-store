@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { data, href, Link, redirect } from "react-router";
+import { data, href, redirect } from "react-router";
 
 import { CartSummary } from "~/components/cart/cart-summary";
 import { FormNotice } from "~/components/forms/form-notice";
@@ -9,6 +9,7 @@ import {
   type CheckoutResult,
 } from "~/components/cart/checkout-form";
 import { OrderLines } from "~/components/cart/order-lines";
+import { BackLink } from "~/components/ui/back-link";
 import { isLocale } from "~/i18n/config";
 import { useLocale } from "~/i18n/use-locale";
 import { type FieldErrors, hasErrors, readFields } from "~/lib/forms";
@@ -146,16 +147,17 @@ export default function Checkout({ loaderData, actionData }: Route.ComponentProp
   const { view, method, notice } = loaderData;
   const back =
     view.productId === undefined
-      ? { to: href("/:lang/cart", { lang }), label: t("cart.checkout.backToCart") }
+      ? { to: href("/:lang/cart", { lang }), label: t("common.backTo.cart") }
       : {
           to: href("/:lang/products/:productId", { lang, productId: String(view.productId) }),
-          label: t("cart.checkout.backToProduct"),
+          label: t("common.backTo.product"),
         };
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-12">
       <div className="flex min-w-0 flex-col gap-6">
         <div className="flex flex-col gap-2">
+          <BackLink to={back.to}>{back.label}</BackLink>
           <h1 id={PAYMENT_HEADING} className="text-h4 font-medium">
             {loaderData.title}
           </h1>
@@ -171,9 +173,6 @@ export default function Checkout({ loaderData, actionData }: Route.ComponentProp
           productId={view.productId}
           result={actionData}
         />
-        <p>
-          <Link to={back.to}>{back.label}</Link>
-        </p>
       </div>
       <CartSummary
         totals={view.totals}

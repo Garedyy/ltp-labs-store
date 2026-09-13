@@ -6,6 +6,7 @@ import { ProductGallery } from "~/components/product/product-gallery";
 import { ProductInfoList } from "~/components/product/product-info-list";
 import { ReviewList } from "~/components/product/review-list";
 import { StockStatus } from "~/components/product/stock-status";
+import { BackLink } from "~/components/ui/back-link";
 import { DiscountBadge } from "~/components/ui/discount-badge";
 import { Price } from "~/components/ui/price";
 import { Rating } from "~/components/ui/rating";
@@ -134,43 +135,49 @@ export default function Product({ loaderData }: Route.ComponentProps) {
   const { view } = loaderData;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12">
-      <ProductGallery title={view.title} images={view.images} />
-      <div className="flex flex-col gap-4">
-        <h1 className="text-h3 font-medium md:text-h2" lang={lang}>
-          {view.title}
-        </h1>
-        <Rating
-          value={view.rating}
-          valueFormatted={view.ratingFormatted}
-          label={t("product.rating.label", {
-            value: view.ratingFormatted,
-            count: view.reviewCount,
-          })}
-        />
-        <div className="flex flex-wrap items-center gap-3">
-          <Price
-            priceFormatted={view.priceFormatted}
-            originalPriceFormatted={view.originalPriceFormatted}
-            labels={{ price: t("product.price.sale"), originalPrice: t("product.price.original") }}
-            className="text-h4"
+    <div className="flex flex-col gap-4">
+      <BackLink to={href("/:lang/shop", { lang: locale })}>{t("common.backTo.shop")}</BackLink>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12">
+        <ProductGallery title={view.title} images={view.images} />
+        <div className="flex flex-col gap-4">
+          <h1 className="text-h3 font-medium md:text-h2" lang={lang}>
+            {view.title}
+          </h1>
+          <Rating
+            value={view.rating}
+            valueFormatted={view.ratingFormatted}
+            label={t("product.rating.label", {
+              value: view.ratingFormatted,
+              count: view.reviewCount,
+            })}
           />
-          {view.discountFormatted && <DiscountBadge percentFormatted={view.discountFormatted} />}
+          <div className="flex flex-wrap items-center gap-3">
+            <Price
+              priceFormatted={view.priceFormatted}
+              originalPriceFormatted={view.originalPriceFormatted}
+              labels={{
+                price: t("product.price.sale"),
+                originalPrice: t("product.price.original"),
+              }}
+              className="text-h4"
+            />
+            {view.discountFormatted && <DiscountBadge percentFormatted={view.discountFormatted} />}
+          </div>
+          <StockStatus stock={view.stock} />
+          <AddToCartForm productId={view.id} inStock={view.inStock} flash={loaderData.flash} />
+          <section aria-labelledby="details-heading" className="border-t border-border pt-4">
+            <h2 id="details-heading" className="text-body-sm font-medium tracking-wide uppercase">
+              {t("product.details.heading")}
+            </h2>
+            <p className="mt-2 text-body-sm" lang={lang}>
+              {view.description}
+            </p>
+          </section>
+          <ProductInfoList items={view.info} tags={view.tags} lang={lang} />
         </div>
-        <StockStatus stock={view.stock} />
-        <AddToCartForm productId={view.id} inStock={view.inStock} flash={loaderData.flash} />
-        <section aria-labelledby="details-heading" className="border-t border-border pt-4">
-          <h2 id="details-heading" className="text-body-sm font-medium tracking-wide uppercase">
-            {t("product.details.heading")}
-          </h2>
-          <p className="mt-2 text-body-sm" lang={lang}>
-            {view.description}
-          </p>
-        </section>
-        <ProductInfoList items={view.info} tags={view.tags} lang={lang} />
-      </div>
-      <div className="lg:col-span-2">
-        <ReviewList reviews={view.reviews} lang={lang} />
+        <div className="lg:col-span-2">
+          <ReviewList reviews={view.reviews} lang={lang} />
+        </div>
       </div>
     </div>
   );

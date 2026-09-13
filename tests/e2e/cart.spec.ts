@@ -1,5 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
+import { precedes } from "./helpers";
+
 const row = (page: Page, label: RegExp) =>
   page
     .locator("dl > div")
@@ -44,6 +46,9 @@ test.describe("cart page", () => {
     await expect(page).toHaveURL(/\/en\/cart$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your cart");
     await expect(page).toHaveTitle("Shopping cart (3 units) - The Online Store");
+    const back = page.getByRole("link", { name: "Back to the shop" });
+    await expect(back).toHaveAttribute("href", "/en/shop");
+    expect(await precedes(back, page.getByRole("heading", { level: 1 }))).toBe(true);
     const items = page.getByRole("list", { name: "Items" }).getByRole("listitem");
     await expect(items).toHaveCount(2);
     await expect(

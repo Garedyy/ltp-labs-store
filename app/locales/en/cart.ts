@@ -81,8 +81,6 @@ export default {
       "A real store would send you to PayPal to approve the payment. In this demo the order is placed directly.",
     pay: "Pay {{total}}",
     paying: "Placing your order...",
-    backToCart: "Back to the cart",
-    backToProduct: "Back to the product",
   },
   confirmation: {
     title: "Order {{number}} confirmed",

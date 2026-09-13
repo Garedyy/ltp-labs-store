@@ -51,3 +51,15 @@ test("the Remove code button is at least 44 px tall", async ({ page }) => {
   await expect(page.getByText("Code LTP10 applied", { exact: true })).toBeVisible();
   await expectTallEnough(page.getByRole("button", { name: "Remove code" }));
 });
+
+test("the back links are at least 44 px tall", async ({ page }) => {
+  await page.goto("/en/products/1");
+  await page.evaluate(() => document.fonts.ready);
+  await expectTallEnough(page.getByRole("link", { name: "Back to the shop" }));
+  await page.getByRole("button", { name: "Add to cart" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "You now have 1 item" })).toBeVisible();
+  await page.goto("/en/cart");
+  await expectTallEnough(page.getByRole("link", { name: "Back to the shop" }));
+  await page.goto("/en/checkout");
+  await expectTallEnough(page.getByRole("link", { name: "Back to the cart" }));
+});
