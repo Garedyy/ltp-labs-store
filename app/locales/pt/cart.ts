@@ -83,13 +83,16 @@ export default {
     paypalNote:
       "Uma loja real enviá-lo-ia para o PayPal para aprovar o pagamento. Nesta demonstração a encomenda é registada diretamente.",
     pay: "Pagar {{total}}",
-    paying: "A registar a encomenda…",
+    paying: "A registar a encomenda...",
     backToCart: "Voltar ao carrinho",
     backToProduct: "Voltar ao produto",
   },
   confirmation: {
-    title: "Obrigado — encomenda {{number}}",
+    title: "Encomenda {{number}} confirmada",
+    heading: "Obrigado pela sua encomenda",
     description: "A sua encomenda de demonstração está confirmada.",
+    number: "Número da encomenda",
+    summary: "Resumo da encomenda",
     items: "Artigos",
     payment: "Método de pagamento",
     card: "Cartão",

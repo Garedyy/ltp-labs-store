@@ -19,11 +19,11 @@ describe("ProductGrid", () => {
   it("is named by the results heading by default", () => {
     renderWithProviders(
       <>
-        <p id="results-heading">Showing 1–1 of 1</p>
+        <p id="results-heading">Showing 1-1 of 1</p>
         <ProductGrid products={products} />
       </>,
     );
-    expect(screen.getByRole("list", { name: "Showing 1–1 of 1" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Showing 1-1 of 1" })).toBeInTheDocument();
   });
 
   it("can be named by another heading, as on the home page", () => {

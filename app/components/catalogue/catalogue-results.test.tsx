@@ -51,7 +51,7 @@ describe("CatalogueResults announcements", () => {
     expect(statusText()).toBe("|");
 
     await userEvent.click(screen.getByRole("button", { name: "Show results" }));
-    expect(statusText()).toContain("23 results for “phone”");
+    expect(statusText()).toContain('23 results for "phone"');
     expect(screen.getByRole("combobox", { name: "Sort by" })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Clear" }));

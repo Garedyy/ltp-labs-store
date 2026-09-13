@@ -121,7 +121,7 @@ async function act({ context, request }: Route.ActionArgs) {
   const loaded = await loadCheckout(request, locale, productId);
   const view = loaded.view ?? (await redirectToEmptyCart(loaded.session, locale, 303));
   const { session } = loaded;
-  session.set("lastOrder", buildOrder(view, method, view.totals.totalFormatted));
+  session.set("lastOrder", buildOrder(view, method));
   if (view.productId === undefined) {
     session.unset("cart");
     session.unset("promoCode");

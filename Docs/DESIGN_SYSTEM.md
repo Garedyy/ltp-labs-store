@@ -152,8 +152,18 @@ lg:grid-rows-[auto_1fr] lg:gap-x-8` of three items — head (h1 `text-h4`, toolb
   stepper `inline-flex rounded-lg border` with 44 px buttons; summary card
   `rounded-2xl border border-border p-6 lg:sticky lg:top-28` (static under 30 rem height) with the
   `<dl>`, Check out / PayPal links (`ButtonLink`, primary / secondary, to the payment page), demo
-  note and promo form. Empty cart and confirmation use the centred `max-w-prose` recipe. 404 and
+  note and promo form. Empty cart uses the centred `max-w-prose` recipe. 404 and
   error pages: centred `max-w-prose`, `text-h2 md:text-h1` heading, body, `ButtonLink`.
+- **Order confirmation** (#38): a `max-w-2xl` column, `gap-8`. Success block centred: a
+  `size-14 rounded-full bg-success text-fg-inverse` disc (`forced-colors:border`) holding the
+  `check` icon at `size-8` (white on `light-green` 5.6:1, in the contrast test), the
+  `text-h2 md:text-h1` `<h1>`, the lead, then the order number set apart as a two-line `<p>`
+  (`text-body-sm text-fg-muted` label over a `text-h3 font-medium` `<strong>`). Below, an
+  "Order summary" `<section aria-labelledby>` card (`rounded-2xl border border-border p-6`)
+  reusing the payment page's `OrderLines` (`size-12` thumbnails, title, "Qty n", line price)
+  followed by the items / payment method / total `DefinitionList` under a `border-t` rule; the
+  demo note and the "Continue shopping" `ButtonLink` close the page. The green disc is the only
+  place `success` is used as a background.
 - **Payment page** (`/checkout`, D-15): `grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-12`;
   `<h1 class="text-h4 font-medium">`, `text-body-sm text-fg-muted` intro, then the form as stacked
   `<fieldset class="flex flex-col gap-4">` blocks with `text-h5 font-medium` legends (contact,

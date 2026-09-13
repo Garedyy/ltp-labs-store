@@ -7,13 +7,13 @@ import {
   type SignInResult,
 } from "~/components/pages/account-page";
 import { isLocale, LOCALES } from "~/i18n/config";
-import { formatDate } from "~/i18n/format.server";
+import { formatDate, formatPrice } from "~/i18n/format.server";
 import { type FieldErrors, hasErrors, readFields } from "~/lib/forms";
 import { badRequest, notFound } from "~/lib/http";
 import { pageMeta } from "~/lib/meta";
 import { isEmail } from "~/lib/validation";
 import { getInstance, getLocale } from "~/middleware/i18next";
-import { countItems, sanitiseLines } from "~/services/cart/cart";
+import { countItems, sanitiseLines, sanitiseOrder } from "~/services/cart/cart";
 import { getCartSession } from "~/services/cart/session.server";
 import type { Route } from "./+types/account";
 
@@ -25,9 +25,13 @@ export async function loader({ context, request, url }: Route.LoaderArgs) {
   if (!isLocale(locale)) notFound();
   const t = getInstance(context).t;
   const session = await getCartSession(request);
+  const order = sanitiseOrder(session.get("lastOrder"));
   const view: AccountView = {
     cartCount: countItems(sanitiseLines(session.get("cart"))),
-    lastOrder: session.get("lastOrder"),
+    lastOrder: order && {
+      number: order.number,
+      totalFormatted: formatPrice(order.totalCents, locale),
+    },
     sinceFormatted: formatDate(CUSTOMER_SINCE, locale),
     languageName: LOCALES[locale].nativeName,
   };

@@ -2,7 +2,7 @@ import type en from "~/locales/en/common";
 
 export default {
   brand: "The Online Store",
-  tagline: "Desafio de programação para a LTP Labs — loja de demonstração",
+  tagline: "Desafio de programação para a LTP Labs - loja de demonstração",
   skipToContent: "Saltar para o conteúdo principal",
   loading: "A carregar",
   errorPrefix: "Erro:",

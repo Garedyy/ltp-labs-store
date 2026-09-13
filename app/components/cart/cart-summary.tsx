@@ -40,7 +40,7 @@ export function CartSummary({ totals, heading, lines, children }: CartSummaryPro
         {totals.discountFormatted && totals.promoCode && (
           <div className="flex justify-between gap-4">
             <dt>{t("cart.summary.discount", { code: totals.promoCode })}</dt>
-            <dd>−{totals.discountFormatted}</dd>
+            <dd>-{totals.discountFormatted}</dd>
           </div>
         )}
         <div className="flex justify-between gap-4">

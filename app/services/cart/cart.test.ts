@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { addLine, countItems, MAX_LINES, removeLine, sanitiseLines, setQuantity } from "./cart";
+import {
+  addLine,
+  countItems,
+  MAX_LINES,
+  removeLine,
+  sanitiseLines,
+  sanitiseOrder,
+  setQuantity,
+} from "./cart";
 
 describe("sanitiseLines", () => {
   it("drops anything that is not a well-formed line and clamps quantities", () => {
@@ -26,6 +34,33 @@ describe("sanitiseLines", () => {
   it("keeps the first 50 lines only", () => {
     const many = Array.from({ length: 60 }, (_, i) => ({ productId: i + 1, quantity: 1 }));
     expect(sanitiseLines(many)).toHaveLength(MAX_LINES);
+  });
+});
+
+describe("sanitiseOrder", () => {
+  const order = {
+    number: "LTP-MFN2K1",
+    method: "paypal",
+    totalCents: 2999,
+    lines: [{ productId: 1, quantity: 1 }],
+  };
+
+  it("keeps a well-formed order and sanitises its lines", () => {
+    expect(sanitiseOrder(order)).toEqual(order);
+    expect(
+      sanitiseOrder({ ...order, lines: [...order.lines, { productId: 2, quantity: 500 }] }),
+    ).toEqual({ ...order, lines: [...order.lines, { productId: 2, quantity: 99 }] });
+  });
+
+  it("reads an older or malformed order as no order", () => {
+    expect(sanitiseOrder(undefined)).toBeUndefined();
+    expect(sanitiseOrder("LTP-1")).toBeUndefined();
+    const { lines: _lines, ...withoutLines } = order;
+    expect(sanitiseOrder({ ...withoutLines, itemCount: 1 })).toBeUndefined();
+    expect(sanitiseOrder({ ...order, lines: [] })).toBeUndefined();
+    expect(sanitiseOrder({ ...order, number: "<script>" })).toBeUndefined();
+    expect(sanitiseOrder({ ...order, method: "cash" })).toBeUndefined();
+    expect(sanitiseOrder({ ...order, totalCents: 12.5 })).toBeUndefined();
   });
 });
 

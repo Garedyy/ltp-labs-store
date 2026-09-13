@@ -71,13 +71,7 @@ describe("AccountPage", () => {
   });
 
   it("links the last order and shows the demo notice", () => {
-    const lastOrder = {
-      number: "LTP-ABC",
-      method: "card" as const,
-      totalCents: 2999,
-      itemCount: 1,
-      totalFormatted: "$29.99",
-    };
+    const lastOrder = { number: "LTP-ABC", totalFormatted: "$29.99" };
     renderWithProviders(<AccountPage title="Account" view={{ ...view, lastOrder }} demo />);
     expect(screen.getByText("LTP-ABC, $29.99")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View the confirmation" })).toHaveAttribute(

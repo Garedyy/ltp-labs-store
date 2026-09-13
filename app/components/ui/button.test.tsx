@@ -17,11 +17,11 @@ describe("Button", () => {
 
   it("stays enabled while pending and announces busy with the pending label", () => {
     render(
-      <Button type="submit" pending pendingLabel="Adding…">
+      <Button type="submit" pending pendingLabel="Adding...">
         Add to cart
       </Button>,
     );
-    const button = screen.getByRole("button", { name: "Adding…" });
+    const button = screen.getByRole("button", { name: "Adding..." });
     expect(button).toBeEnabled();
     expect(button).toHaveAttribute("aria-busy", "true");
   });

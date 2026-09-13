@@ -28,7 +28,7 @@ no-cache`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`).
     search                 search.tsx            ?q → searchProducts; empty q renders the prompt without fetching
     cart                   cart.tsx              loader: loadCartView; action: set-quantity | remove | apply-promo | remove-promo
     checkout               checkout.tsx          payment page: loader prices the cart or ?product=<id>; action: place-order
-    checkout/confirmation  order-confirmation.tsx lastOrder from the session; never revalidates
+    checkout/confirmation  order-confirmation.tsx lastOrder from the session, lines priced again; never revalidates
     about                  about.tsx             static content (story, values, fictional team)
     contact                contact.tsx           details + form; action: send → 400 codes or 303 ?sent=1
     blog                   blog.tsx              three invented posts, dates formatted in the loader
@@ -167,7 +167,8 @@ id above; then run `npm run test:e2e`.
   `{ cart: { productId, quantity }[], promoCode?, lastOrder? }` plus flash slots. A tampered cookie
   fails the signature and reads as an empty cart (`session.server.test.ts`, `cart-session.spec.ts`).
 - **Sanitisation** (`cart.ts`): every read goes through `sanitiseLines` — array, integer ids,
-  quantity 1..99, duplicates merged, first 50 lines. A 50-line cart serialises under 4000 bytes
+  quantity 1..99, duplicates merged, first 50 lines — and `lastOrder` through `sanitiseOrder`
+  (number pattern, method, integer cents, at least one sanitised line). A 50-line cart serialises under 4000 bytes
   (unit-tested).
 - **Maths** (`totals.ts`): integer cents; shipping $20 on a non-empty cart; `LTP10` = 10 % of the
   subtotal (rounded); `FREESHIP` = free shipping (`promo-codes.ts`, case-insensitive, trimmed).
@@ -228,9 +229,9 @@ id above; then run `npm run test:e2e`.
   values** re-rendered (`defaultValue`; card number, expiry and security code never echoed) and
   the focus on the first invalid field
   (`autoFocus` on the no-JS document, `useFocusFirstInvalid` with JavaScript). On success the
-  action writes `lastOrder = { number: "LTP-" + base36 time, method, totalCents, itemCount,
-totalFormatted }`, clears `cart` and `promoCode` in cart mode only, and answers 303 to the
-  confirmation. **Card data is checked for its format and dropped**: it is never stored, logged
+  action writes `lastOrder = { number: "LTP-" + base36 time, method, totalCents, lines }` (the
+  `{ productId, quantity }` lines of the order, D-17), clears `cart` and `promoCode` in cart mode
+  only, and answers 303 to the confirmation. **Card data is checked for its format and dropped**: it is never stored, logged
   or sent anywhere. In cart mode the loader passes the reconciliation notice through
   (`FormNotice`, `handle.initialFocus`), and `readFields` caps every field (200 characters, 2 000
   for the contact message).
@@ -240,8 +241,12 @@ totalFormatted }`, clears `cart` and `promoCode` in cart mode only, and answers 
   `?demo=1`** (the URL is the state, no flash) where the loader renders a focused
   `role="status"`. Nothing is sent, created or stored: both are demo forms and say so.
 - **Confirmation** (`routes/order-confirmation.tsx`): `lastOrder` persists until the next cart
-  mutation, so reloads and language switches keep it; missing → redirect to the cart;
-  `shouldRevalidate: () => false`.
+  mutation, so reloads and language switches keep it; it goes through `sanitiseOrder` (an older
+  cookie without `lines`, or a malformed one, reads as no order); missing → redirect to the cart.
+  The loader fetches the ordered products again (`getProductsByIds`, cached) to render the lines
+  with `toLineView`, skipping a product gone from the catalogue, derives the item count from the
+  lines and formats the total from `totalCents` in the current locale; `shouldRevalidate: () =>
+false`.
 
 ## Progressive enhancement
 

@@ -63,7 +63,7 @@ export default {
       email: "Email address",
       message: "Message",
       submit: "Send message",
-      sending: "Sending…",
+      sending: "Sending...",
       note: "This is a demo store: the message is checked but not sent anywhere.",
     },
     sent: {
@@ -117,7 +117,7 @@ export default {
       email: "Email address",
       password: "Password",
       submit: "Sign in",
-      signingIn: "Signing in…",
+      signingIn: "Signing in...",
       note: "Any address and password pass the check; no account is created.",
       demo: "Sign-in is a demo: no account was created and nothing was stored. Your cart and your last order live in a cookie on this device.",
     },

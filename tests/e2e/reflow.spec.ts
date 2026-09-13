@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { payByCard } from "./helpers";
 import { LOCALES, localised, ROUTES } from "./routes";
 
 // WCAG 1.4.10 (reflow at 320 px) and 1.4.12 (text spacing): no horizontal scrolling anywhere.
@@ -38,6 +39,22 @@ test("a filled cart reflows at 320 px", async ({ page }, testInfo) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await page.getByLabel("Open menu").click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+});
+
+// The confirmation route without an order redirects to the cart, so the routes loop never sees
+// the success page with its line list (product 78 has a long title).
+test("a placed order's confirmation reflows at 320 px", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "one project is enough");
+  await page.goto("/en/products/78");
+  await page.getByRole("button", { name: "Buy now" }).click();
+  await expect(page).toHaveURL(/\/en\/checkout\?product=78$/);
+  await payByCard(page);
+  await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
+  await page.evaluate(() => document.fonts.ready);
+  const width = () => page.evaluate(() => document.documentElement.scrollWidth);
+  expect(await width()).toBeLessThanOrEqual(320);
+  await page.addStyleTag({ content: TEXT_SPACING_CSS });
+  expect(await width()).toBeLessThanOrEqual(320);
 });
 
 test("the unfolded categories reflow at 320 px", async ({ page }, testInfo) => {

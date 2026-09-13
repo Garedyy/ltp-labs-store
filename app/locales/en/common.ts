@@ -1,6 +1,6 @@
 export default {
   brand: "The Online Store",
-  tagline: "Coding challenge for LTP Labs — demo store",
+  tagline: "Coding challenge for LTP Labs - demo store",
   skipToContent: "Skip to main content",
   loading: "Loading",
   errorPrefix: "Error:",

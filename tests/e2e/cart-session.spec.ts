@@ -60,9 +60,7 @@ test.describe("add to cart", () => {
     await expect(page.getByRole("link", { name: "Cart, 1 item" })).toBeVisible();
     await payByCard(page);
     await expect(page).toHaveURL(/\/en\/checkout\/confirmation$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      /Thank you — order LTP-[A-Z0-9]+/,
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Thank you for your order");
     // Product 1 costs $9.99: one unit plus the $20 shipping, no promo, nothing from the cart.
     await expect(page.getByRole("definition").filter({ hasText: /^1$/ })).toBeVisible();
     await expect(page.getByRole("definition").filter({ hasText: "Card" })).toBeVisible();

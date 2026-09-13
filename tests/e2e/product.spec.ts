@@ -6,7 +6,7 @@ test.describe("product detail", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Essence Mascara Lash Princess",
     );
-    await expect(page).toHaveTitle("Essence Mascara Lash Princess — The Online Store");
+    await expect(page).toHaveTitle("Essence Mascara Lash Princess - The Online Store");
     await expect(
       page.getByRole("img", { name: "Essence Mascara Lash Princess, image 1 of 1" }),
     ).toBeVisible();
@@ -81,7 +81,7 @@ test.describe("product detail", () => {
     expect(missing?.status()).toBe(404);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Product not found");
     await expect(page.getByRole("banner")).toBeVisible();
-    await expect(page).toHaveTitle("Product not found — The Online Store");
+    await expect(page).toHaveTitle("Product not found - The Online Store");
     expect((await page.goto("/en/products/abc"))?.status()).toBe(404);
     await page.goto("/en/products/1?image=9");
     await expect(page.getByRole("img", { name: /image 1 of 1/ })).toBeVisible();
