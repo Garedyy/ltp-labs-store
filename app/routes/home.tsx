@@ -63,7 +63,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         {loaderData.title}
       </h1>
       <p className="text-body-sm text-fg-muted">{t("pages.home.intro")}</p>
-      <div>
+      <div className="flex justify-end">
         <ButtonLink to={href("/:lang/shop", { lang })} prefetch="intent">
           {t("pages.home.browse")}
         </ButtonLink>
