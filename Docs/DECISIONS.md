@@ -294,15 +294,24 @@ Format: `## D-<n> · <title>` with **Context**, **Decision**, **Consequences**, 
   (`/checkout`, `/checkout?method=paypal`), so the wireframe's summary keeps its two calls to
   action. The form asks for an e-mail, a shipping address (name, address, postal code, city,
   country) and the payment method; card fields (name on card, number, MM/YY, security code) are
-  required only for `card` and, with JavaScript, fold away for PayPal. The `place-order` action
+  required only for `card` and fold away while the PayPal radio is checked through a CSS `:has()`
+  rule on the form — no JavaScript involved, so the fold follows every native click in both
+  modes (the first cut drove it from React state, which left the fields hidden for a no-JS
+  visitor entering with `?method=paypal`; caught by the PR review). The `place-order` action
   validates with `lib/validation.ts` (`isEmail`, Luhn `isCardNumber` 13–19 digits, `isCardExpiry`
   not before the current month, `isCardCode` 3–4 digits) into per-field codes, answers 400 with
-  the typed values (security code never echoed) or writes `lastOrder` exactly as the cart's
+  the typed values (card number, expiry and security code never echoed) or writes `lastOrder`
+  exactly as the cart's
   `checkout` intent used to (`method`, `totalCents`, `itemCount`, `totalFormatted`), clears
   `cart` and `promoCode` in cart mode only, and answers 303 to the confirmation. **Card data is
   format-checked and dropped**: never stored in the cookie, never logged, never sent anywhere;
   `LastOrder` keeps its shape. The cart route loses the `checkout` intent and its
   `shouldRevalidate` clause; the checkout route is the only writer of `lastOrder`.
+  In cart mode the loader also passes the cart's reconciliation notice (`items-removed`,
+  `quantities-adjusted`) through, rendered as a focused `FormNotice` above the form
+  (`handle.initialFocus`) so a silently changed total never goes unexplained. Every demo form
+  reads its fields through `readFields`, which caps single-line values at 200 characters
+  (2 000 for the contact message) before validation.
 - **Consequences**: plan §2 decision 8 / item 23 ("Check out / PayPal → mocked confirmation")
   and D-12's "303 to the confirmation" are superseded as stated above; D-12's cart-untouched and
   no-promo rules hold. `CartSummary` takes an optional `heading` and a `lines` slot
